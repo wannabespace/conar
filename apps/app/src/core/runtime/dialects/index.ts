@@ -1,4 +1,3 @@
-import { prepareQuery } from '@tamery/connection/queries/dialects/clickhouse/prepare-query'
 import { kyselyDialects } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction } from '@tamery/shared/utils'
@@ -23,15 +22,7 @@ export const dialects = {
       new Kysely<ClickhouseDatabase>({
         dialect: {
           ...kyselyDialects.clickhouse,
-          createDriver: () =>
-            createKyselyDriver(
-              Dialect.ClickHouse,
-              options,
-              (compiledQuery) => ({
-                query: prepareQuery(compiledQuery),
-                values: [],
-              })
-            ),
+          createDriver: () => createKyselyDriver(Dialect.ClickHouse, options),
         },
       }),
     byConnection

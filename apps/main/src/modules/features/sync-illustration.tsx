@@ -7,8 +7,8 @@ import { motion } from 'motion/react'
 import { ProductCrop } from './product-crop'
 import { appear, pop, rise, vanish } from './variants'
 
+const ROWS_AT = 0.2
 const ARRIVE_STEP = 0.18
-const SYNCED_AT = 0.2 + 4 * ARRIVE_STEP + 0.2
 
 const CONNECTIONS = [
   {
@@ -38,6 +38,8 @@ const CONNECTIONS = [
   },
 ]
 
+const SYNCED_AT = ROWS_AT + (CONNECTIONS.length + 1) * ARRIVE_STEP
+
 export const SyncIllustration = () => (
   <ProductCrop className="min-w-0">
     <div className="text-muted-foreground flex h-8 items-center border-b px-3 text-xs font-medium">
@@ -63,7 +65,7 @@ export const SyncIllustration = () => (
       ({ label, name, provider, sync, type: connectionType }, index) => (
         <motion.div
           key={name}
-          variants={rise(0.2 + index * ARRIVE_STEP)}
+          variants={rise(ROWS_AT + index * ARRIVE_STEP)}
           className="flex h-11 items-center gap-2.5 border-b px-3 text-sm"
         >
           <ConnectionIcon
@@ -74,7 +76,7 @@ export const SyncIllustration = () => (
           <span className="font-medium">{name}</span>
           <span className="text-muted-foreground">{label}</span>
           <motion.span
-            variants={pop(0.35 + index * ARRIVE_STEP, 0)}
+            variants={pop(ROWS_AT + 0.15 + index * ARRIVE_STEP, 0)}
             className="bg-secondary text-muted-foreground text-2xs ml-auto rounded-md px-1.5 py-0.5"
           >
             {sync}

@@ -1,17 +1,12 @@
-import type {
-  ActiveFilter,
-  ColumnTypes,
-  FilterValueBinding,
-} from '@tamery/shared/filters'
+import { selectPage } from '@tamery/connection/queries/select-page'
+import type { ActiveFilter, ColumnTypes } from '@tamery/shared/filters'
 import {
   clickhouseFilterValues,
   EQUAL_FILTER,
   sqliteFilterValues,
-  toKyselyFilter,
 } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import type { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -41,59 +36,27 @@ export interface RowsQueryProps {
   }
 }
 
-const orderEntries = (orderBy: Record<string, 'ASC' | 'DESC'> | undefined) =>
-  Object.entries(orderBy ?? {}) as [string, 'ASC' | 'DESC'][]
-
-const selectPage = (
-  // oxlint-disable-next-line ts/no-explicit-any
-  db: Kysely<any>,
-  {
-    limit = DEFAULT_PAGE_LIMIT,
-    select,
-    offset,
-    table,
-    schema,
-    query: { orderBy, filters, filtersConcatOperator },
-  }: RowsQueryProps & { offset: number },
-  bind?: FilterValueBinding
-) => {
-  let query = db
-    .withSchema(schema)
-    .$extendTables<{ [table]: Record<string, unknown> }>()
-    .selectFrom(table)
-
-  query = select === undefined ? query.selectAll() : query.select(select)
-
-  if (filters !== undefined) {
-    query = query.where((eb) =>
-      toKyselyFilter(eb, filters, filtersConcatOperator, bind)
-    )
-  }
-
-  for (const [column, direction] of orderEntries(orderBy)) {
-    query = query.orderBy(
-      column,
-      direction.toLowerCase() as Lowercase<typeof direction>
-    )
-  }
-
-  return query.limit(limit).offset(offset).execute()
-}
-
 export const resourceRowsQuery = memoize(
-  (props: RowsQueryProps & { offset: number }) =>
-    createQuery({
+  ({
+    columns,
+    limit = DEFAULT_PAGE_LIMIT,
+    query,
+    ...props
+  }: RowsQueryProps & { offset: number }) => {
+    const page = { ...props, ...query, limit }
+    return createQuery({
       query: {
         clickhouse: (db) =>
-          selectPage(db, props, clickhouseFilterValues(props.columns)),
-        mssql: (db) => selectPage(db, props),
-        mysql: (db) => selectPage(db, props),
-        postgres: (db) => selectPage(db, props),
+          selectPage(db, page, clickhouseFilterValues(columns)).execute(),
+        mssql: (db) => selectPage(db, page).execute(),
+        mysql: (db) => selectPage(db, page).execute(),
+        postgres: (db) => selectPage(db, page).execute(),
         sqlite: (db) =>
-          selectPage(db, props, sqliteFilterValues(props.columns)),
+          selectPage(db, page, sqliteFilterValues(columns)).execute(),
       },
       type: rowType.array(),
     })
+  }
 )
 
 export const resourceRowsQueryKey = ({

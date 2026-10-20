@@ -1,31 +1,15 @@
-import {
-  BinaryCodeIcon,
-  BracesIcon,
-  Calendar03Icon,
-  CheckmarkSquare02Icon,
-  Clock01Icon,
-  EraserIcon,
-  FingerPrintIcon,
-  HashtagIcon,
-  Key01Icon,
-  LeftToRightListBulletIcon,
-  Link01Icon,
-  Tag01Icon,
-  TextIcon,
-} from '@hugeicons/core-free-icons'
-import type { IconSvgElement } from '@hugeicons/react'
+import { EraserIcon, Key01Icon, Link01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi } from '@tanstack/react-router'
 
-import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
-import { isNumericColumn } from '~/core/table/cell/utils'
+import { getColumnKind } from '~/core/table/cell/utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -44,45 +28,6 @@ const columnClauses = (column: Column) =>
       `(${column.availableValues.map((value) => `'${value}'`).join(', ')})`,
     ],
   ].filter((clause) => Array.isArray(clause))
-
-const UI_TYPE_ICONS: Partial<Record<Column['uiType'], IconSvgElement>> = {
-  boolean: CheckmarkSquare02Icon,
-  date: Calendar03Icon,
-  datetime: Calendar03Icon,
-  list: LeftToRightListBulletIcon,
-  select: Tag01Icon,
-  time: Clock01Icon,
-}
-
-const columnIcon = (
-  column: Column,
-  { json, xml }: ReturnType<typeof getCapabilities>['columnTypes']
-) => {
-  if (column.primaryKey) {
-    return Key01Icon
-  }
-  if (column.foreign) {
-    return Link01Icon
-  }
-  const uiTypeIcon = UI_TYPE_ICONS[column.uiType]
-  if (uiTypeIcon) {
-    return uiTypeIcon
-  }
-  if (isNumericColumn(column)) {
-    return HashtagIcon
-  }
-  const type = column.type?.toLowerCase() ?? ''
-  if (json.test(type) || xml?.test(type)) {
-    return BracesIcon
-  }
-  if (type.includes('uuid') || type.includes('uniqueidentifier')) {
-    return FingerPrintIcon
-  }
-  if (/blob|binary|bytea/u.test(type)) {
-    return BinaryCodeIcon
-  }
-  return TextIcon
-}
 
 const ColumnClauses = ({ column }: { column: Column }) => (
   <TooltipContent side="bottom" className="max-w-sm">
@@ -104,14 +49,9 @@ export const ColumnHeading = ({ column }: { column: Column }) => {
       <TooltipTrigger
         render={<div className="flex min-w-0 items-center gap-1.5" />}
       >
-        <HugeiconsIcon
-          icon={columnIcon(column, getCapabilities(dialect).columnTypes)}
-          strokeWidth={2}
-          aria-label={column.typeLabel}
-          className={cn(
-            'size-3.5 shrink-0',
-            column.primaryKey ? 'text-primary' : 'text-muted-foreground'
-          )}
+        <ColumnKindIcon
+          kind={getColumnKind(dialect, column)}
+          label={column.typeLabel}
         />
         <span data-mask className="truncate text-xs font-medium">
           {column.id}

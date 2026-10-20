@@ -3,6 +3,7 @@ import { motion, useMotionValue, useTransform } from 'motion/react'
 import { useRef } from 'react'
 
 import { ProductCrop } from './product-crop'
+import { EASE } from './variants'
 
 const CARD_WIDTH = 112
 const HEADER_HEIGHT = 24
@@ -69,7 +70,7 @@ const Edge = ({
         hidden: { pathLength: 0 },
         shown: {
           pathLength: 1,
-          transition: { delay: 0.5, duration: 0.6, ease: [0.32, 0.72, 0, 1] },
+          transition: { delay: 0.5, duration: 0.6, ease: EASE },
         },
       }}
       className="stroke-primary"
@@ -97,7 +98,7 @@ const TableCard = ({
         transition: {
           delay: card.delay,
           duration: 0.3,
-          ease: [0.32, 0.72, 0, 1],
+          ease: EASE,
         },
       },
     }}

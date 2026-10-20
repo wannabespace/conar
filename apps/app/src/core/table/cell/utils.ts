@@ -1,3 +1,4 @@
+import type { ColumnKind } from '@tamery/shared/column-kind'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { format, isValid, parseISO } from 'date-fns'
 
@@ -146,6 +147,45 @@ const NUMERIC_TYPE_REGEX =
 
 export const isNumericColumn = (column: Column) =>
   column.uiType === 'raw' && NUMERIC_TYPE_REGEX.test(column.type ?? '')
+
+const UI_TYPE_KINDS: Partial<Record<Column['uiType'], ColumnKind>> = {
+  boolean: 'boolean',
+  date: 'date',
+  datetime: 'date',
+  list: 'list',
+  select: 'select',
+  time: 'time',
+}
+
+const BINARY_TYPE_REGEX = /blob|binary|bytea/u
+
+export const getColumnKind = (dialect: Dialect, column: Column): ColumnKind => {
+  if (column.primaryKey) {
+    return 'key'
+  }
+  if (column.foreign) {
+    return 'link'
+  }
+  const uiTypeKind = UI_TYPE_KINDS[column.uiType]
+  if (uiTypeKind) {
+    return uiTypeKind
+  }
+  if (isNumericColumn(column)) {
+    return 'number'
+  }
+  const { json, xml } = getCapabilities(dialect).columnTypes
+  const type = column.type?.toLowerCase() ?? ''
+  if (json.test(type) || xml?.test(type)) {
+    return 'json'
+  }
+  if (type.includes('uuid') || type.includes('uniqueidentifier')) {
+    return 'uuid'
+  }
+  if (BINARY_TYPE_REGEX.test(type)) {
+    return 'binary'
+  }
+  return 'text'
+}
 
 export const hasTabularFigures = (column: Column) =>
   column.uiType !== 'raw' || isNumericColumn(column)

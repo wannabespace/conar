@@ -1,6 +1,6 @@
 import type { Variants } from 'motion/react'
 
-const EASE = [0.32, 0.72, 0, 1] as const
+export const EASE = [0.32, 0.72, 0, 1] as const
 
 export const rise = (delay: number): Variants => ({
   hidden: { opacity: 0, y: 8 },

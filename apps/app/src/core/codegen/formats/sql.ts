@@ -1,4 +1,4 @@
-import { coldDialects } from '@tamery/connection/queries/kysely'
+import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
 
@@ -44,7 +44,7 @@ export const generateQuerySQL = ({
   filters,
   dialect,
 }: QueryParams) => {
-  const db = coldDialects[dialect]()
+  const db = coldDialect(dialect)
   const base = db
     .withSchema(schema)
     .$extendTables<{ [table]: Record<string, unknown> }>()

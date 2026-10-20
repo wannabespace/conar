@@ -1,5 +1,5 @@
 import { db } from '@tamery/db'
-import { shares } from '@tamery/db/schema'
+import { shares, users } from '@tamery/db/schema'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { shareSaveInput } from '@tamery/shared/share'
 import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
@@ -47,22 +47,6 @@ export const save = orpc
       throw errors.NOT_SYNCED()
     }
 
-    const count = await db.$count(
-      shares,
-      and(
-        eq(shares.userId, context.user.id),
-        or(
-          ne(shares.connectionResourceId, connectionResourceId),
-          ne(shares.schema, schema),
-          ne(shares.table, table)
-        )
-      )
-    )
-
-    if (!context.permissions.check('share.create', { count })) {
-      throw errors.FORBIDDEN()
-    }
-
     const changes = {
       description,
       expiresAt,
@@ -74,20 +58,45 @@ export const save = orpc
         passwordHash: password && (await Bun.password.hash(password)),
       }),
     }
-    const [saved] = await db
-      .insert(shares)
-      .values({
-        ...changes,
-        connectionResourceId,
-        schema,
-        table,
-        userId: context.user.id,
-      })
-      .onConflictDoUpdate({
-        set: changes,
-        target: [shares.connectionResourceId, shares.schema, shares.table],
-      })
-      .returning({ id: shares.id })
 
-    return saved
+    // The user's row lock serializes their saves, or two at once both count under the free limit.
+    return db.transaction(async (tx) => {
+      await tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, context.user.id))
+        .for('update')
+
+      const count = await tx.$count(
+        shares,
+        and(
+          eq(shares.userId, context.user.id),
+          or(
+            ne(shares.connectionResourceId, connectionResourceId),
+            ne(shares.schema, schema),
+            ne(shares.table, table)
+          )
+        )
+      )
+
+      if (!context.permissions.check('share.create', { count })) {
+        throw errors.FORBIDDEN()
+      }
+
+      const [row] = await tx
+        .insert(shares)
+        .values({
+          ...changes,
+          connectionResourceId,
+          schema,
+          table,
+          userId: context.user.id,
+        })
+        .onConflictDoUpdate({
+          set: changes,
+          target: [shares.connectionResourceId, shares.schema, shares.table],
+        })
+        .returning({ id: shares.id })
+      return row
+    })
   })

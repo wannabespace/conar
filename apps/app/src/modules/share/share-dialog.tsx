@@ -4,8 +4,8 @@ import {
   ShareRefresh,
   shareRefreshLabels,
 } from '@tamery/shared/enums/share-refresh'
-import type { ShareView } from '@tamery/shared/share'
-import { objectEntries } from '@tamery/shared/utils'
+import { enabledFilters } from '@tamery/shared/filters'
+import { objectEntries, pick } from '@tamery/shared/utils'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
@@ -33,17 +33,20 @@ import { getRouteApi } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { addDays, format } from 'date-fns'
 import { AnimatePresence } from 'motion/react'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import { OptionField } from '~/components/option-field'
+import { getColumnKind } from '~/core/table/cell/utils'
 import { orpc, orpcProxy } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 import { shareUrl } from '~/lib/urls'
+import { useTableColumnsContext } from '~/modules/table/lib/columns'
+import { columnView, useTablePageStore } from '~/modules/table/lib/store'
 import { plural } from '~/utils/plural'
 
 import { ShareLinkActions } from './share-link'
-import type { Share } from './shares-query'
 import { sharesQueryOptions } from './shares-query'
 import { useTableShare } from './use-table-share'
 
@@ -55,26 +58,48 @@ const EXPIRY_DAYS = { day: 1, month: 30, week: 7 }
 
 type Expiry = keyof typeof EXPIRY_DAYS | 'current' | 'never'
 
+const getExpiresAt = (expires: Expiry, current: Date | null) => {
+  if (expires === 'current') {
+    return current
+  }
+  if (expires === 'never') {
+    return null
+  }
+  return addDays(new Date(), EXPIRY_DAYS[expires])
+}
+
 const REFRESH_ITEMS = objectEntries(shareRefreshLabels).map(
   ([value, label]) => ({ label, value })
 )
 
-export type TableView = Omit<ShareView, 'schema' | 'table'>
-
 interface ShareTarget {
   schema: string
   table: string
-  view: TableView
 }
 
-const ShareForm = ({
-  schema,
-  share,
-  table,
-  view,
-}: ShareTarget & { share: Share | null }) => {
+const ShareForm = ({ schema, table }: ShareTarget) => {
   const { connectionResource, dialect } = useRouteContext()
-  const { filters } = view
+  const { share } = useTableShare(schema, table)
+  const { columns } = useTableColumnsContext()
+  const { filters, orderBy, ...layout } = useSubscription(useTablePageStore(), {
+    selector: (state) => ({
+      ...pick(state, ['columnOrder', 'hiddenColumns', 'pinnedColumns']),
+      filters: enabledFilters(state.filters),
+      orderBy: state.orderBy,
+    }),
+  })
+  const view = {
+    columnTypes: columns.flatMap(({ id, type: columnType }) =>
+      columnType === undefined ? [] : [{ id, type: columnType }]
+    ),
+    columns: columnView(columns, layout, true).visible.map((column) => ({
+      id: column.id,
+      kind: getColumnKind(dialect, column),
+      type: column.type ?? null,
+    })),
+    filters,
+    orderBy,
+  }
   const expiryItems: { label: string; value: Expiry }[] = [
     ...(share?.expiresAt
       ? [
@@ -99,12 +124,6 @@ const ShareForm = ({
         schema,
         table,
       }
-      let expiresAt = share?.expiresAt ?? null
-      if (values.expires === 'never') {
-        expiresAt = null
-      } else if (values.expires !== 'current') {
-        expiresAt = addDays(new Date(), EXPIRY_DAYS[values.expires])
-      }
       await orpcProxy.shares.check({
         ...shared,
         dialect,
@@ -114,7 +133,7 @@ const ShareForm = ({
         ...shared,
         connectionResourceId: connectionResource.id,
         description: values.description.trim() || null,
-        expiresAt,
+        expiresAt: getExpiresAt(values.expires, share?.expiresAt ?? null),
         name: values.name.trim(),
         refresh: values.refresh,
         ...(!values.protect && { password: null }),
@@ -162,6 +181,10 @@ const ShareForm = ({
 
   return (
     <>
+      <DialogHeader>
+        <DialogTitle>{share ? 'Shared table' : 'Share table'}</DialogTitle>
+        <DialogDescription data-mask>{`${schema}.${table}`}</DialogDescription>
+      </DialogHeader>
       {share && (
         <Field>
           <FieldLabel htmlFor="share-link">Link</FieldLabel>
@@ -316,20 +339,10 @@ export const ShareDialog = ({
 }: ShareTarget & {
   onOpenChange: (open: boolean) => void
   open: boolean
-}) => {
-  const { share } = useTableShare(target.schema, target.table)
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{share ? 'Shared table' : 'Share table'}</DialogTitle>
-          <DialogDescription data-mask>
-            {`${target.schema}.${target.table}`}
-          </DialogDescription>
-        </DialogHeader>
-        <ShareForm {...target} share={share} />
-      </DialogContent>
-    </Dialog>
-  )
-}
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent>
+      <ShareForm {...target} />
+    </DialogContent>
+  </Dialog>
+)

@@ -5,10 +5,9 @@ import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { AnimatePresence } from 'motion/react'
 
-import { WindowButtons } from '~/components/product/window-buttons'
-
+import { WindowButtons } from '../window-buttons'
 import { ApprovalDialog } from './approval-dialog'
-import { OrdersGrid } from './orders-grid'
+import { OrdersTable } from './orders-table'
 import { APPROVAL_STEP, RUN_PRESS_STEP, UPDATED_STEP } from './script'
 
 export const TameryWindow = ({ step }: { step: number }) => (
@@ -28,7 +27,7 @@ export const TameryWindow = ({ step }: { step: number }) => (
       </span>
     </div>
     <div className="relative p-1.5">
-      <OrdersGrid refunded={step >= UPDATED_STEP} />
+      <OrdersTable refunded={step >= UPDATED_STEP} />
       <AnimatePresence>
         {step >= APPROVAL_STEP && step < UPDATED_STEP && (
           <ApprovalDialog pressed={step === RUN_PRESS_STEP} />

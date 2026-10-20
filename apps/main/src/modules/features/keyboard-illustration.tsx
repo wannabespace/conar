@@ -13,11 +13,19 @@ import { Typed, typedEnd } from './typed'
 import { appear, collapse, rise } from './variants'
 
 const QUERY = 'ord'
-const TABLES = ['customers', 'invoices', 'orders', 'order_items', 'products']
+const PICKED_TABLE = 'orders'
+const TABLES = [
+  'customers',
+  'invoices',
+  PICKED_TABLE,
+  'order_items',
+  'products',
+]
 
 const TYPE_AT = 0.3
 const TYPE_STEP = 0.14
 const MATCH_AT = typedEnd(TYPE_AT, TYPE_STEP, QUERY) + 0.05
+const PICKED_AT = MATCH_AT + 0.25
 
 export const KeyboardIllustration = () => (
   <ProductCrop className="min-w-0">
@@ -49,10 +57,10 @@ export const KeyboardIllustration = () => (
           className="overflow-hidden"
         >
           <div className="relative isolate flex h-8 items-center gap-2 rounded-md px-2">
-            {table === 'orders' && (
+            {table === PICKED_TABLE && (
               <motion.span
                 aria-hidden
-                variants={appear(MATCH_AT + 0.25)}
+                variants={appear(PICKED_AT)}
                 className="bg-accent absolute inset-0 -z-10 rounded-md"
               />
             )}
@@ -62,11 +70,8 @@ export const KeyboardIllustration = () => (
               className="text-muted-foreground size-3.5"
             />
             {table}
-            {table === 'orders' && (
-              <motion.span
-                variants={appear(MATCH_AT + 0.25)}
-                className="ml-auto"
-              >
+            {table === PICKED_TABLE && (
+              <motion.span variants={appear(PICKED_AT)} className="ml-auto">
                 <Kbd>
                   <HugeiconsIcon icon={CornerDownLeftIcon} strokeWidth={2} />
                 </Kbd>

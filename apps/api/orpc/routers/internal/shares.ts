@@ -1,3 +1,5 @@
+import { timingSafeEqual } from 'node:crypto'
+
 import { resourceConnectionString } from '@tamery/connection/utils'
 import { db } from '@tamery/db'
 import { shares as sharesTable } from '@tamery/db/schema'
@@ -6,6 +8,7 @@ import { getDialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 
+import { env } from '~/env'
 import { redis } from '~/lib/redis'
 import { getWorkspaceSecret, orpc } from '~/orpc'
 
@@ -26,6 +29,12 @@ const passwordFailures = {
       .exec(),
 }
 
+// Signed over the hash, so changing the password turns away every viewer who unlocked with the old one.
+const getUnlockToken = (shareId: string, passwordHash: string) =>
+  new Bun.CryptoHasher('sha256', env.BETTER_AUTH_SECRET)
+    .update(`share-unlock:${shareId}:${passwordHash}`)
+    .digest('hex')
+
 export const shares = {
   report: orpc
     .use(proxySecretMiddleware)
@@ -38,7 +47,13 @@ export const shares = {
     }),
   resolve: orpc
     .use(proxySecretMiddleware)
-    .input(type({ id: 'string.uuid', password: 'string | null' }))
+    .input(
+      type({
+        id: 'string.uuid',
+        password: 'string | null',
+        token: 'string.hex == 64 | null',
+      })
+    )
     .errors({
       LOCKED: { message: 'This table needs a password.' },
       NOT_FOUND: { message: 'This table is not shared anymore.' },
@@ -75,8 +90,19 @@ export const shares = {
         throw errors.NOT_FOUND()
       }
 
+      const token = share.passwordHash
+        ? getUnlockToken(share.id, share.passwordHash)
+        : null
+      const unlocked =
+        token === null ||
+        (input.token !== null &&
+          timingSafeEqual(
+            Buffer.from(input.token, 'hex'),
+            Buffer.from(token, 'hex')
+          ))
+
       // The lockout is checked before verifying, or a guess past it would still be answered.
-      if (share.passwordHash) {
+      if (!unlocked && share.passwordHash) {
         if ((await passwordFailures.count(share.id)) >= MAX_PASSWORD_FAILURES) {
           throw errors.TOO_MANY_ATTEMPTS()
         }
@@ -103,6 +129,7 @@ export const shares = {
           connectionResource.name
         ),
         dialect: getDialect(connection.type),
+        token,
       }
     }),
 }

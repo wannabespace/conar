@@ -2,8 +2,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 
-import { WindowButtons } from '~/components/product/window-buttons'
-
+import { WindowButtons } from '../window-buttons'
 import {
   APPROVAL_STEP,
   DONE_STEP,

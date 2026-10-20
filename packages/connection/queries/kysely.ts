@@ -1,5 +1,5 @@
-import type { Dialect } from '@tamery/shared/enums/connection-type'
-import type { Dialect as KyselyDialect } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import type { CompiledQuery, Dialect as KyselyDialect } from 'kysely'
 import {
   DummyDriver,
   Kysely,
@@ -13,6 +13,7 @@ import {
 } from 'kysely'
 import { memoize } from 'memoza'
 
+import { prepareQuery } from './dialects/clickhouse/prepare-query'
 import { MssqlQueryCompiler } from './dialects/mssql/query-compiler'
 
 const createIntrospector = () => {
@@ -27,7 +28,6 @@ const clickhouseAdapter = () => ({
   supportsTransactionalDdl: false,
 })
 
-/** How each engine's statements are spelled; a dialect adds its own `createDriver`. */
 export const kyselyDialects = {
   clickhouse: {
     createAdapter: clickhouseAdapter,
@@ -56,19 +56,19 @@ export const kyselyDialects = {
   },
 } satisfies Record<Dialect, Omit<KyselyDialect, 'createDriver'>>
 
-const coldDialect = (spelling: Omit<KyselyDialect, 'createDriver'>) =>
-  memoize(
-    () =>
-      new Kysely({
-        dialect: { ...spelling, createDriver: () => new DummyDriver() },
-      })
-  )
+/** Compile-only: executing on one fails. Run what it compiles through `toQueryPayload`. */
+export const coldDialect = memoize(
+  (dialect: Dialect) =>
+    new Kysely({
+      dialect: {
+        ...kyselyDialects[dialect],
+        createDriver: () => new DummyDriver(),
+      },
+    })
+)
 
-/** Compile-only: executing on one fails. ClickHouse's statements still go through `prepareQuery`. */
-export const coldDialects = {
-  clickhouse: coldDialect(kyselyDialects.clickhouse),
-  mssql: coldDialect(kyselyDialects.mssql),
-  mysql: coldDialect(kyselyDialects.mysql),
-  postgres: coldDialect(kyselyDialects.postgres),
-  sqlite: coldDialect(kyselyDialects.sqlite),
-} satisfies Record<Dialect, () => Kysely<unknown>>
+/** What an executor runs for a compiled statement: ClickHouse takes its values inlined. */
+export const toQueryPayload = (dialect: Dialect, compiled: CompiledQuery) =>
+  dialect === Dialect.ClickHouse
+    ? { query: prepareQuery(compiled), values: [] }
+    : { query: compiled.sql, values: [...compiled.parameters] }

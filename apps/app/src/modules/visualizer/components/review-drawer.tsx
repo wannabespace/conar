@@ -1,4 +1,4 @@
-import { coldDialects } from '@tamery/connection/queries/kysely'
+import { coldDialect } from '@tamery/connection/queries/kysely'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
@@ -55,7 +55,7 @@ const draftLabel = (draft: DiagramDraft) => {
 const previewSql = (dialect: Dialect, draft: DiagramDraft) => {
   const { parameters, sql } = draftStatement(
     dialect,
-    coldDialects[dialect](),
+    coldDialect(dialect),
     draft
   )
   return formatSql(

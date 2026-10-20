@@ -1,10 +1,12 @@
 import { ORPCError } from '@orpc/client'
-import { SHARE_PAGE_SIZE, shareSort } from '@tamery/shared/share'
+import type { ColumnKind } from '@tamery/shared/column-kind'
+import { sharePage, shareSort } from '@tamery/shared/share'
+import { valueToText } from '@tamery/shared/value-text'
 import { createServerFn } from '@tanstack/react-start'
 import { type } from 'arktype'
 import { Result } from 'better-result'
 
-import { cellText, proxy, sharePassword } from './share.server'
+import { proxy, unlockToken } from './share.server'
 
 const LOCKED_CODES = new Set(['LOCKED', 'TOO_MANY_ATTEMPTS'])
 const GONE_CODES = new Set(['BAD_REQUEST', 'NOT_FOUND'])
@@ -22,17 +24,24 @@ const failure = (cause: unknown) => {
   return { status: 'unavailable' as const }
 }
 
+// Engines hand booleans back as 1 and 0 too (SQLite), which read as text would never check the box.
+const cellText = (value: unknown, kind: ColumnKind | null) => {
+  if (value === null || value === undefined) {
+    return null
+  }
+  return valueToText(kind === 'boolean' ? Boolean(value) : value)
+}
+
 export const getShare = createServerFn({ method: 'GET' })
-  .validator(
-    type({ id: 'string', page: 'number.integer >= 1', sort: shareSort })
-  )
+  .validator(type({ id: 'string', page: sharePage, sort: shareSort }))
   .handler(async ({ data }) => {
     const result = await Result.tryPromise(() =>
       proxy.shares.rows({
         id: data.id,
-        offset: (data.page - 1) * SHARE_PAGE_SIZE,
-        password: sharePassword.get(data.id),
+        page: data.page,
+        password: null,
         sort: data.sort,
+        token: unlockToken.get(data.id),
       })
     )
 
@@ -58,12 +67,17 @@ export const getShare = createServerFn({ method: 'GET' })
       filters: filters.map(({ column, ref, values, via }) => ({
         column: via ? `${via.table}.${via.target}` : column,
         operator: ref.label,
-        value: ref.hasValue === false ? null : values.map(cellText).join(', '),
+        value:
+          ref.hasValue === false
+            ? null
+            : values.map((value) => cellText(value, null)).join(', '),
       })),
       hasMore,
       name,
       refresh,
-      rows: rows.map((row) => row.map(cellText)),
+      rows: rows.map((row) =>
+        row.map((value, index) => cellText(value, columns[index]?.kind ?? null))
+      ),
       status: 'ready' as const,
     }
   })
@@ -74,17 +88,22 @@ export const unlockShare = createServerFn({ method: 'POST' })
     const result = await Result.tryPromise(() =>
       proxy.shares.rows({
         id: data.id,
-        offset: 0,
+        page: 1,
         password: data.password,
         sort: null,
+        token: null,
       })
     )
-    const refused = result.isErr() ? failure(result.error.cause) : null
 
-    if (refused?.status === 'locked') {
-      return refused.message ?? 'That password is not right.'
+    if (result.isErr()) {
+      const refused = failure(result.error.cause)
+      return refused.status === 'locked'
+        ? (refused.message ?? 'That password is not right.')
+        : null
     }
 
-    sharePassword.set(data.id, data.password)
+    if (result.value.token) {
+      unlockToken.set(data.id, result.value.token)
+    }
     return null
   })

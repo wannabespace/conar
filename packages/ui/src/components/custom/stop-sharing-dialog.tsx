@@ -9,31 +9,23 @@ import {
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { useMutation } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-
-import { stopSharing } from '~/lib/account'
 
 export const StopSharingDialog = ({
   onClose,
+  onStop,
+  pending,
   share,
 }: {
   onClose: () => void
+  onStop: (id: string) => void
+  pending: boolean
   share: { id: string; name: string } | null
 }) => {
-  const router = useRouter()
   const [shown, setShown] = useState(share)
   if (share && share !== shown) {
     setShown(share)
   }
-  const stop = useMutation({
-    mutationFn: (id: string) => stopSharing({ data: { id } }),
-    onSuccess: async () => {
-      await router.invalidate()
-      onClose()
-    },
-  })
 
   return (
     <AlertDialog
@@ -58,12 +50,10 @@ export const StopSharingDialog = ({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              disabled={stop.isPending}
-              onClick={() => share && stop.mutate(share.id)}
+              disabled={pending}
+              onClick={() => share && onStop(share.id)}
             >
-              <LoadingContent loading={stop.isPending}>
-                Stop sharing
-              </LoadingContent>
+              <LoadingContent loading={pending}>Stop sharing</LoadingContent>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -36,6 +36,7 @@ const SharePage = () => {
       shareRowsQueryOptions({ id: shareId, sort: toSort(search) })
     )
   const [first] = data.pages
+  const last = data.pages.at(-1)
 
   if (first?.status === 'locked') {
     return <PasswordForm shareId={shareId} message={first.message} />
@@ -71,7 +72,7 @@ const SharePage = () => {
           {`${plural(first.columns.length, 'column')} · `}
           <Tooltip>
             <TooltipTrigger render={<span />}>
-              {hasNextPage
+              {last?.status === 'ready' && last.hasMore
                 ? `${rows.length}+ rows`
                 : plural(rows.length, 'row')}
             </TooltipTrigger>
@@ -87,7 +88,7 @@ const SharePage = () => {
                 key={`${column}-${operator}-${value}`}
                 column={column}
                 operator={operator}
-                value={value ?? undefined}
+                value={value}
               />
             ))}
           </div>

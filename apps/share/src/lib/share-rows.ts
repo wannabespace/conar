@@ -1,5 +1,6 @@
 import { SHARE_REFRESH_MS } from '@tamery/shared/enums/share-refresh'
 import type { shareSort } from '@tamery/shared/share'
+import { SHARE_MAX_PAGES } from '@tamery/shared/share'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 
 import { getShare } from './share'
@@ -18,7 +19,10 @@ export const shareRowsQueryOptions = ({
       last: Awaited<ReturnType<typeof getShare>>,
       _pages,
       page: number
-    ) => (last.status === 'ready' && last.hasMore ? page + 1 : null),
+    ) =>
+      last.status === 'ready' && last.hasMore && page < SHARE_MAX_PAGES
+        ? page + 1
+        : null,
     initialPageParam: 1,
     queryFn: ({ pageParam }) =>
       getShare({ data: { id, page: pageParam, sort } }),

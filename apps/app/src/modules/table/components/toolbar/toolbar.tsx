@@ -6,7 +6,6 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
-import { pick } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import {
   DropdownMenu,
@@ -36,7 +35,7 @@ import { ShareDialog } from '~/modules/share/share-dialog'
 import { ShareMenuItem } from '~/modules/share/share-menu-item'
 
 import { useTableColumnsContext } from '../../lib/columns'
-import { columnView, useTablePageStore } from '../../lib/store'
+import { useTablePageStore } from '../../lib/store'
 import { ActionsAdd } from './actions/actions-add'
 import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
@@ -74,9 +73,8 @@ export const TableToolbar = ({
       .find((s) => s.name === schema)
       ?.tables?.find((t) => t.name === table)?.type ?? 'table'
   const isTable = tableType === 'table'
-  const { filters, orderBy, ...layout } = useSubscription(store, {
+  const { filters, orderBy } = useSubscription(store, {
     selector: (state) => ({
-      ...pick(state, ['columnOrder', 'hiddenColumns', 'pinnedColumns']),
       filters: enabledFilters(state.filters),
       orderBy: state.orderBy,
     }),
@@ -214,17 +212,6 @@ export const TableToolbar = ({
           onOpenChange={setShareOpen}
           schema={schema}
           table={table}
-          view={{
-            columnTypes: columns.map(({ id, type: columnType }) => ({
-              id,
-              type: columnType ?? '',
-            })),
-            columns: columnView(columns, layout, true).visible.map(
-              ({ id }) => id
-            ),
-            filters,
-            orderBy,
-          }}
         />
         {isTable && (
           <>

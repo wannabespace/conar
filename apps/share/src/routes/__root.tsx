@@ -8,28 +8,36 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { MotionConfig } from 'motion/react'
+import { useEffect } from 'react'
 
 import { StatusPage } from '~/components/status-page'
+import { posthog } from '~/lib/posthog'
 import { viewerQueryOptions } from '~/lib/viewer'
 
 import appCss from '~/styles.css?url'
 
-const RootComponent = () => (
-  <html lang="en" suppressHydrationWarning>
-    <head>
-      <HeadContent />
-    </head>
-    <body className="bg-body relative">
-      <MotionConfig reducedMotion="user">
-        <TooltipProvider>
-          <ThemeObserver />
-          <Outlet />
-        </TooltipProvider>
-      </MotionConfig>
-      <Scripts />
-    </body>
-  </html>
-)
+const RootComponent = () => {
+  useEffect(() => {
+    void posthog.start()
+  }, [])
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body className="bg-body relative">
+        <MotionConfig reducedMotion="user">
+          <TooltipProvider>
+            <ThemeObserver />
+            <Outlet />
+          </TooltipProvider>
+        </MotionConfig>
+        <Scripts />
+      </body>
+    </html>
+  )
+}
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {

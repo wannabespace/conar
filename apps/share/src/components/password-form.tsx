@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useActionState } from 'react'
 
+import { posthog } from '~/lib/posthog'
 import { unlockShare } from '~/lib/share'
 import { shareRowsQueryKey } from '~/lib/share-rows'
 
@@ -24,6 +25,7 @@ export const PasswordForm = ({
       const refused = await unlockShare({
         data: { id: shareId, password: String(form.get('password')) },
       })
+      void posthog.capture('share_unlocked', { success: !refused })
       if (!refused) {
         queryClient.removeQueries({ queryKey: shareRowsQueryKey(shareId) })
         await router.invalidate()

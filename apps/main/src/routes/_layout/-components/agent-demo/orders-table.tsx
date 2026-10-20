@@ -15,7 +15,7 @@ import { ORDER_ID } from './script'
 
 const ROWS = ORDERS.filter((order) => order.status !== 'refunded').slice(0, 7)
 
-export const OrdersGrid = ({ refunded }: { refunded: boolean }) => (
+export const OrdersTable = ({ refunded }: { refunded: boolean }) => (
   <div className="bg-background ring-foreground/4 overflow-hidden rounded-lg ring">
     <Table size="sm">
       <TableHeader>

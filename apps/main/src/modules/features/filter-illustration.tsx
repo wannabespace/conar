@@ -15,11 +15,12 @@ import { ProductCrop } from './product-crop'
 import { Typed, typedEnd } from './typed'
 import { appear, pop, vanish } from './variants'
 
-const SENTENCE = 'paid orders over $580'
+const MIN_TOTAL = 580
+const SENTENCE = `paid orders over $${MIN_TOTAL}`
 
 const FILTERS = [
   { column: 'status', operator: 'is', value: 'paid' },
-  { column: 'total', operator: 'over', value: '580' },
+  { column: 'total', operator: 'over', value: String(MIN_TOTAL) },
 ]
 
 const TYPE_AT = 0.2
@@ -72,7 +73,7 @@ export const FilterIllustration = () => (
         filtered={{
           at: CONVERT_AT + 0.3,
           matches: ({ status, total }) =>
-            status === 'paid' && Number(total.slice(1)) > 580,
+            status === 'paid' && Number(total.slice(1)) > MIN_TOTAL,
         }}
         orders={ORDERS.slice(0, 8)}
       />

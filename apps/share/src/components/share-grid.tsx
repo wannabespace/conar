@@ -1,15 +1,16 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- the app's virtualized flex grid cannot be built from table elements */
 import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import type { ColumnKind } from '@tamery/shared/column-kind'
 import type { GridRow } from '@tamery/table'
 import { getColumnSize, Grid } from '@tamery/table'
+import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { Checkbox } from '@tamery/ui/components/checkbox'
+import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
 import { cn } from '@tamery/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useRef } from 'react'
-
-import { getColumnKind } from './column-kind'
 
 export const shareSearch = type({
   'order?': '"asc" | "desc"',
@@ -37,17 +38,14 @@ export const ShareGrid = ({
   rows,
   search,
 }: {
-  columns: { id: string; type: string }[]
+  columns: { id: string; kind: ColumnKind; type: string | null }[]
   isFetching: boolean
   onEndReached: () => void
   rows: GridRow[]
   search: ShareSearch
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const kinds = new Map(
-    columns.map((column) => [column.id, getColumnKind(column.type)])
-  )
-  const kindOf = (id: string) => kinds.get(id) ?? getColumnKind('')
+  const kinds = new Map(columns.map(({ id, kind }) => [id, kind]))
 
   return (
     <div className="min-h-0 flex-1">
@@ -59,7 +57,7 @@ export const ShareGrid = ({
         rows={rows}
         columns={columns.map(({ id, type: columnType }) => ({
           id,
-          size: getColumnSize(columnType),
+          size: columnType ? getColumnSize(columnType) : DEFAULT_COLUMN_WIDTH,
         }))}
         renderHeader={({ column, style }) => {
           const sorted =
@@ -77,11 +75,7 @@ export const ShareGrid = ({
                 search={nextSort(search, column.id)}
                 className="text-foreground flex min-w-0 flex-1 items-center gap-1.5"
               >
-                <HugeiconsIcon
-                  icon={kindOf(column.id).icon}
-                  strokeWidth={2}
-                  className="text-muted-foreground size-3.5 shrink-0"
-                />
+                <ColumnKindIcon kind={kinds.get(column.id) ?? 'text'} />
                 <span data-mask className="truncate text-xs font-medium">
                   {column.id}
                 </span>
@@ -98,7 +92,7 @@ export const ShareGrid = ({
         }}
         renderCell={({ column, row, style }) => {
           const value = row[column.id]
-          const { kind } = kindOf(column.id)
+          const kind = kinds.get(column.id)
           return (
             <div
               role="gridcell"
@@ -123,7 +117,10 @@ export const ShareGrid = ({
                     data-mask
                     className={cn(
                       'truncate',
-                      (kind === 'number' || kind === 'date') && 'tabular-nums'
+                      (kind === 'number' ||
+                        kind === 'date' ||
+                        kind === 'time') &&
+                        'tabular-nums'
                     )}
                   >
                     {value}

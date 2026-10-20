@@ -1,6 +1,8 @@
+import { ORPCError } from '@orpc/server'
 import {
   SHARE_PAGE_SIZE,
   shareCheckInput,
+  sharePage,
   shareSort,
 } from '@tamery/shared/share'
 import { silently, toError } from '@tamery/shared/utils'
@@ -49,7 +51,6 @@ export const shares = {
           dialect,
           limit: 1,
           offset: 0,
-          share: { id: resourceId, updatedAt: new Date() },
           sort: null,
           view,
         })
@@ -65,9 +66,10 @@ export const shares = {
     .input(
       type({
         id: 'string.uuid',
-        offset: 'number.integer >= 0',
+        page: sharePage,
         password: 'string | null',
         sort: shareSort,
+        token: 'string | null',
       })
     )
     .errors({
@@ -75,26 +77,38 @@ export const shares = {
         message: 'This table cannot be loaded right now. Try again later.',
       },
     })
-    .handler(async ({ errors, input: { id, offset, password, sort } }) => {
+    .handler(async ({ errors, input: { id, page, password, sort, token } }) => {
       const api = createApiClient({})
-      const share = await api.internal.shares.resolve({ id, password })
+      const share = await api.internal.shares.resolve({ id, password, token })
       const view = { ...share.view, schema: share.schema, table: share.table }
       const read = await Result.tryPromise(async () => {
         await assertReachable(share.connectionString)
-        return shareRows[share.refresh]({
+        return shareRows.read(share, {
           connectionString: share.connectionString,
           dialect: share.dialect,
           limit: SHARE_PAGE_SIZE + 1,
-          offset,
-          share,
+          offset: (page - 1) * SHARE_PAGE_SIZE,
           // A hidden column must not even order what the viewer sees.
-          sort: sort && view.columns.includes(sort.column) ? sort : null,
+          sort:
+            sort && view.columns.some((column) => column.id === sort.column)
+              ? sort
+              : null,
           view,
         })
       })
+
+      if (read.isErr() && read.error.cause instanceof ORPCError) {
+        throw read.error.cause
+      }
+
       const failing = read.isErr()
 
-      if (failing !== (share.failingSince !== null)) {
+      // Only the owner's own view reports, so no viewer's page or sort can mark the share failing.
+      if (
+        page === 1 &&
+        sort === null &&
+        failing !== (share.failingSince !== null)
+      ) {
         await silently(() => api.internal.shares.report({ failing, id }))
       }
 
@@ -103,12 +117,7 @@ export const shares = {
       }
 
       return {
-        columns: view.columns.map((column) => ({
-          id: column,
-          type:
-            view.columnTypes.find(({ id: typed }) => typed === column)?.type ??
-            '',
-        })),
+        columns: view.columns,
         description: share.description,
         fetchedAt: read.value.fetchedAt,
         filters: view.filters,
@@ -116,6 +125,7 @@ export const shares = {
         name: share.name,
         refresh: share.refresh,
         rows: read.value.rows.slice(0, SHARE_PAGE_SIZE),
+        token: share.token,
       }
     }),
 }

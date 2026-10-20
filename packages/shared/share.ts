@@ -1,11 +1,17 @@
 import { type } from 'arktype'
 
+import { columnKind } from './column-kind'
 import { Dialect } from './enums/connection-type'
 import { ShareRefresh } from './enums/share-refresh'
 import { SQL_OPERATORS } from './filters'
 import { objectEntries } from './utils'
 
 export const SHARE_PAGE_SIZE = 100
+export const SHARE_MAX_PAGES = 100
+
+export const sharePage = type('number.integer')
+  .atLeast(1)
+  .atMost(SHARE_MAX_PAGES)
 
 const orderDirection = type('"ASC" | "DESC"')
 
@@ -33,7 +39,10 @@ const shareFilter = type({
 export const shareView = type({
   /** The type of every column in the table, which ClickHouse and SQLite bind filter values by. */
   columnTypes: type({ id: 'string', type: 'string' }).array(),
-  columns: 'string[] > 0',
+  /** The shown columns, in their order. */
+  columns: type({ id: 'string', kind: columnKind, type: 'string | null' })
+    .array()
+    .atLeastLength(1),
   filters: shareFilter.array(),
   orderBy: { '[string]': orderDirection },
   schema: 'string',
