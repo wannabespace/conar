@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "almond",
   "name": "Tamery",
-  "description": "Documentation for Tamery, the AI database client for PostgreSQL, MySQL, MariaDB, SQL Server, ClickHouse and SQLite: connections, SQL editor, AI assistant, CLI and MCP.",
+  "description": "Documentation for Tamery, the AI database client for PostgreSQL, TimescaleDB, MySQL, MariaDB, SQL Server, ClickHouse and SQLite: connections, SQL editor, AI assistant, CLI and MCP.",
   "colors": {
     "primary": "#497def",
     "light": "#a4c4f8",

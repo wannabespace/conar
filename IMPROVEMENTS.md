@@ -217,3 +217,5 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
 - **Link straight to the Support form from emails.** The early-access email can only say "click your avatar and pick Support"; a deep link that opens the Support dialog would turn the feedback ask into one click.
 - **Non-blocking Paper shader compilation.** The library checks WebGL compilation synchronously. Adopt upstream asynchronous initialization when available so cold startup can avoid compilation stalls as well as keeping them out of entrance animations.
+- **Rescan found databases each time the form opens.** The list is scanned once per window, so a Docker container started (or a Docker daemon that recovered) after the first scan stays missing until a reload.
+- **Show what TimescaleDB adds.** Hypertables read as plain tables and continuous aggregates as views; a mark on each, with chunk count, compression ratio and refresh policy in the table's details, would surface what users choose TimescaleDB for.

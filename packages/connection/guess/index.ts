@@ -1,4 +1,7 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionType,
+  getDialect,
+} from '@tamery/shared/enums/connection-type'
 import { Result } from 'better-result'
 
 import { CLICKHOUSE_HTTP_PORT_OF_NATIVE } from '../connection-parts'
@@ -46,6 +49,14 @@ const credentialsBeside = (
   return { password, user }
 }
 
+const narrowestType = (
+  named: ConnectionType | undefined,
+  hinted: ConnectionType | undefined
+) =>
+  named && hinted && getDialect(named) === getDialect(hinted)
+    ? hinted
+    : (named ?? hinted)
+
 /** `isConnection`: the text is known to name a database (a Host field, a found server), so a bare http(s) URL is ClickHouse. */
 export const guessConnection = (
   text: string,
@@ -71,7 +82,7 @@ export const guessConnection = (
     const parts = throughForwards(pasted, forwards)
     const hint = getHostHint(parts.host ?? '')
     const port = parts.port || hint?.port || ''
-    const type = parts.type ?? TYPE_OF_PORT[port] ?? hint?.type
+    const type = narrowestType(parts.type ?? TYPE_OF_PORT[port], hint?.type)
     const httpPort =
       type === ConnectionType.ClickHouse && CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
     const { fixes, parts: fixed } = fixParts(

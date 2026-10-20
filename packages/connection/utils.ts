@@ -22,6 +22,11 @@ const SERVER_STRING: EngineString = {
   resource: null,
 }
 
+const POSTGRES_STRING: EngineString = {
+  ...SERVER_STRING,
+  defaultDatabase: (user) => user,
+}
+
 const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
   [ConnectionType.ClickHouse]: {
     ...SERVER_STRING,
@@ -30,14 +35,12 @@ const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
   [ConnectionType.MariaDB]: SERVER_STRING,
   [ConnectionType.MSSQL]: SERVER_STRING,
   [ConnectionType.MySQL]: SERVER_STRING,
-  [ConnectionType.Postgres]: {
-    ...SERVER_STRING,
-    defaultDatabase: (user) => user,
-  },
+  [ConnectionType.Postgres]: POSTGRES_STRING,
   [ConnectionType.SQLite]: {
     label: ({ database }) => database.slice(database.lastIndexOf('/') + 1),
     resource: SQLITE_RESOURCE_NAME,
   },
+  [ConnectionType.Timescale]: POSTGRES_STRING,
   [Provider.CloudflareD1]: {
     label: ({ database }) => database,
     resource: SQLITE_RESOURCE_NAME,

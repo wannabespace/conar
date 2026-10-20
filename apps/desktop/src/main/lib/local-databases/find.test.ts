@@ -54,6 +54,9 @@ const DOCKER_ANSWERS: Record<string, unknown> = {
   '/containers/c3/json': {
     Config: { Env: ['POSTGRES_USER=me', 'POSTGRES_PASSWORD=pw'] },
   },
+  '/containers/c4/json': {
+    Config: { Env: ['POSTGRES_PASSWORD=pw'] },
+  },
   '/containers/json': [
     {
       Id: 'c1',
@@ -72,6 +75,12 @@ const DOCKER_ANSWERS: Record<string, unknown> = {
       Image: 'postgres:16',
       Names: ['/mysql-port'],
       Ports: [{ IP: '0.0.0.0', PrivatePort: 3306, PublicPort: 13_308 }],
+    },
+    {
+      Id: 'c4',
+      Image: 'timescale/timescaledb-ha:pg17',
+      Names: ['/tsdb'],
+      Ports: [{ IP: '0.0.0.0', PrivatePort: 5432, PublicPort: 15_433 }],
     },
     {
       Id: 'exited',
@@ -255,6 +264,17 @@ describe('localDatabases', () => {
       'Docker',
       'maria-image',
       { port: '13307', type: 'mariadb', user: 'root' },
+    ],
+    [
+      "Docker: the image's TimescaleDB type over the port's Postgres",
+      'Docker',
+      'tsdb',
+      {
+        database: 'postgres',
+        port: '15433',
+        type: 'timescale',
+        user: 'postgres',
+      },
     ],
     [
       "Docker: the published port's engine over the env's and the image's",

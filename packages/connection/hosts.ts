@@ -57,7 +57,7 @@ const HOST_HINTS: HostHint[] = [
   {
     label: 'Timescale',
     suffixes: ['.tsdb.cloud.timescale.com'],
-    type: ConnectionType.Postgres,
+    type: ConnectionType.Timescale,
   },
   {
     label: 'Prisma Postgres',
