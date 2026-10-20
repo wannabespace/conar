@@ -46,6 +46,8 @@ export const registerMongoTokens = (id: string) => {
   const tokens = languages.setMonarchTokensProvider(id, {
     constructors: CONSTRUCTORS,
     keywords: ['db', 'false', 'new', 'null', 'true', 'undefined'],
+    // Monarch starts in the first state it lists otherwise, and `sort-keys` puts `comment` first.
+    start: 'root',
     tokenizer: {
       comment: [
         [/\*\//u, 'comment', '@pop'],
@@ -58,10 +60,12 @@ export const registerMongoTokens = (id: string) => {
         [
           /[A-Za-z_][\w$]*/u,
           {
+            // Monarch tries the cases in order, so `@default` must come last.
+            // oxlint-disable-next-line sort-keys
             cases: {
               '@constructors': 'predefined',
-              '@default': 'identifier',
               '@keywords': 'keyword',
+              '@default': 'identifier',
             },
           },
         ],

@@ -29,6 +29,8 @@ const call = (method: string, ...args: unknown[]) => {
 
 type Execute = (text: string) => Promise<ResultSet[]>
 
+const SYSTEM_COLLECTION = /^system\./u
+
 const reader = (execute: Execute) => ({
   affected: async (text: string) => {
     const [set] = await execute(text)
@@ -86,6 +88,7 @@ export interface MongoDatabase {
     fields?: MongoDocument
   ) => Promise<T[]>
   collection: (name: string) => MongoCollection
+  /** Without the server's own collections (`system.views`, `system.profile`, a time series' buckets). */
   collections: () => Promise<{ name: string; type: string }[]>
   /** The server reads a command's first key as its name, so the name comes apart from the options. */
   command: <T = MongoDocument>(
@@ -128,7 +131,7 @@ const createMongoDatabase = (
     collection: (name) => mongoCollection(execute, name),
     collections: () =>
       reader(execute).documents(
-        `db.${call('getCollectionInfos', {}, { authorizedCollections: true, nameOnly: true })}`
+        `db.${call('getCollectionInfos', { name: { $not: SYSTEM_COLLECTION } }, { authorizedCollections: true, nameOnly: true })}`
       ),
     command: (name, fields) =>
       reader(execute).documents(

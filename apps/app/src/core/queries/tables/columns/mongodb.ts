@@ -1,6 +1,5 @@
 import type { MongoDatabase } from '~/core/runtime/dialects/mongodb'
 
-import { MONGODB_SYSTEM_PREFIX } from '../list'
 import type { ColumnsFilter } from '../shape'
 
 const SAMPLE_SIZE = 100
@@ -75,9 +74,7 @@ export const mongodbColumns = async (
   }
   const collections = await db.collections()
   const columns = await Promise.all(
-    collections
-      .filter(({ name }) => !name.startsWith(MONGODB_SYSTEM_PREFIX))
-      .map(({ name }) => collectionColumns(db, db.name, name))
+    collections.map(({ name }) => collectionColumns(db, db.name, name))
   )
   return columns.flat()
 }
