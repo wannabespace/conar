@@ -104,6 +104,31 @@ export const addConstraint = (
   }[kind]()
 }
 
+// Oracle has no ON UPDATE, and spells NO ACTION by leaving ON DELETE out.
+export const oracleAddConstraint = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  target: Omit<ConstraintTarget, 'name'>,
+  shape: ConstraintShape
+) => {
+  if (shape.kind !== 'foreignKey') {
+    return addConstraint(db, target, shape)
+  }
+  const key = db
+    .withSchema(target.schema)
+    .schema.alterTable(target.table)
+    .addForeignKeyConstraint(
+      shape.name,
+      shape.columns,
+      `${shape.foreignSchema}.${shape.foreignTable}`,
+      shape.foreignColumns
+    )
+
+  return shape.onDelete === 'NO ACTION'
+    ? key
+    : key.onDelete(foreignActions[shape.onDelete])
+}
+
 export const dropConstraint = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,

@@ -3,9 +3,11 @@ import { type } from 'arktype'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
-import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/default-schema'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
+import { userSchemas } from '~/core/queries/shared/oracle-catalog'
 import { userTables } from '~/core/queries/shared/sqlite-catalog'
 import {
   connectionResourceToQueryParams,
@@ -150,6 +152,71 @@ export const resourceTablesAndSchemasQuery = memoize(
             ])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
             .execute(),
+        oracle: (db) =>
+          db
+            .selectFrom(userSchemas(db).as('u'))
+            .leftJoin(
+              (eb) =>
+                eb
+                  .selectFrom('ALL_TABLES as t')
+                  // ALL_TABLES also lists the table that holds a materialized view's rows, under the view's name.
+                  .leftJoin('ALL_MVIEWS as m', (join) =>
+                    join
+                      .onRef('m.OWNER', '=', 't.OWNER')
+                      .onRef('m.CONTAINER_NAME', '=', 't.TABLE_NAME')
+                  )
+                  .select((sub) => [
+                    't.OWNER as owner',
+                    't.TABLE_NAME as name',
+                    sub
+                      .case()
+                      .when('m.MVIEW_NAME', 'is', null)
+                      .then('base table')
+                      .else('materialized view')
+                      .end()
+                      .as('type'),
+                  ])
+                  .where('t.NESTED', '=', 'NO')
+                  .where('t.SECONDARY', '=', 'N')
+                  .where('t.DROPPED', '=', 'NO')
+                  .where((where) =>
+                    where.or([
+                      where('t.IOT_TYPE', 'is', null),
+                      where('t.IOT_TYPE', '=', 'IOT'),
+                    ])
+                  )
+                  .unionAll(
+                    eb
+                      .selectFrom('ALL_VIEWS')
+                      .select([
+                        'OWNER as owner',
+                        'VIEW_NAME as name',
+                        sql.lit('view').as('type'),
+                      ])
+                  )
+                  .as('o'),
+              (join) => join.onRef('o.owner', '=', 'u.USERNAME')
+            )
+            .leftJoin('ALL_TAB_COMMENTS as tc', (join) =>
+              join
+                .onRef('tc.OWNER', '=', 'o.owner')
+                .onRef('tc.TABLE_NAME', '=', 'o.name')
+            )
+            .leftJoin('ALL_MVIEW_COMMENTS as mc', (join) =>
+              join
+                .onRef('mc.OWNER', '=', 'o.owner')
+                .onRef('mc.MVIEW_NAME', '=', 'o.name')
+            )
+            .select((eb) => [
+              'u.USERNAME as schema',
+              'o.name as table',
+              eb.fn.coalesce('tc.COMMENTS', 'mc.COMMENTS').as('comment'),
+              eb.fn.coalesce('o.type', sql.lit('base table')).as('type'),
+            ])
+            .$narrowType<{
+              type: 'base table' | 'materialized view' | 'view'
+            }>()
+            .execute(),
         postgres: (db) =>
           db
             .selectFrom('pg_catalog.pg_namespace as n')
@@ -225,10 +292,7 @@ export const resourceTablesAndSchemasQueryOptions = ({
         database: connectionResource.name,
       }).run(params)
       const bySchema = Object.groupBy(results, (table) => table.schema)
-      const defaultSchema = getDefaultSchema(
-        params.dialect,
-        connectionResource.name
-      )
+      const defaultSchema = getDefaultSchema(params.dialect, connectionResource)
 
       if (defaultSchema) {
         bySchema[defaultSchema] ??= []
@@ -256,10 +320,10 @@ export const resourceTablesAndSchemasQueryOptions = ({
 
       return {
         schemas: schemas.toSorted((a, b) => {
-          if (a.name === 'public' && b.name !== 'public') {
+          if (a.name === defaultSchema && b.name !== defaultSchema) {
             return -1
           }
-          if (b.name === 'public' && a.name !== 'public') {
+          if (b.name === defaultSchema && a.name !== defaultSchema) {
             return 1
           }
           return a.name.localeCompare(b.name)

@@ -10,10 +10,12 @@ interface VariableGroup {
   prefix: string
   /** A group with a user reads only its password (`MYSQL_ROOT_HOST` is an allow-list, not a host) and implies the user when nothing else named one. */
   user?: string
+  /** The variable holding the user this group's password belongs to, read like `user`. */
+  userVariable?: string
 }
 
 const SUFFIXES_OF_FIELD: Record<ServerField, string[]> = {
-  database: ['DATABASE', 'DBNAME', 'DB', 'NAME'],
+  database: ['DATABASE', 'DBNAME', 'DB', 'NAME', 'SERVICE_NAME'],
   host: ['HOST', 'HOSTNAME', 'SERVER', 'ENDPOINT', 'ADDRESS'],
   password: ['PASSWORD', 'PASS', 'PWD', 'AUTH_TOKEN'],
   port: ['PORT'],
@@ -33,7 +35,7 @@ const HOST_AND_PORT = /^(?<host>[^:\s]+):(?<port>\d+)$/u
 const PUBLISHED_PORT =
   /^\s*-\s*["']?(?:[\d.]+:)?(?<published>\d+):(?<target>\d+)(?:\/tcp)?["']?\s*$/gmu
 const UNPACKED_TEMPLATE = /\$\{|<%|process\.env/u
-const BARE_NAME = 'NAME'
+const BARE_SUFFIXES = new Set(['NAME', 'SERVICE_NAME'])
 
 const GROUPS: VariableGroup[] = [
   { prefix: 'PG', type: ConnectionType.Postgres },
@@ -46,6 +48,13 @@ const GROUPS: VariableGroup[] = [
   { prefix: 'MSSQL_', type: ConnectionType.MSSQL },
   { prefix: 'MSSQL_SA_', type: ConnectionType.MSSQL, user: 'sa' },
   { prefix: 'SA_', type: ConnectionType.MSSQL, user: 'sa' },
+  // Before `ORACLE_`: the Oracle images' ORACLE_PASSWORD is SYSTEM's, and the app user created beside it must win.
+  {
+    prefix: 'APP_USER_',
+    type: ConnectionType.Oracle,
+    userVariable: 'APP_USER',
+  },
+  { prefix: 'ORACLE_', type: ConnectionType.Oracle },
   { prefix: 'TURSO_' },
   { prefix: 'LIBSQL_' },
   { prefix: 'SPRING.DATASOURCE.' },
@@ -60,6 +69,11 @@ const LINE =
 const QUOTED = /^(?<quote>["'`])(?<inner>.*)\k<quote>/u
 const UNQUOTED_TAIL = /\s+#.*$|,$/u
 
+const getGroupUser = (
+  { user, userVariable }: VariableGroup,
+  variables: Record<string, string>
+) => (userVariable ? variables[userVariable] : user)
+
 /** Keys must be uppercase. */
 export const partsOfVariables = (
   variables: Record<string, string>
@@ -72,6 +86,7 @@ export const partsOfVariables = (
   let type: GuessedParts['type']
 
   for (const group of GROUPS) {
+    const user = getGroupUser(group, variables)
     const named =
       group.type ??
       TYPE_SUFFIXES.values()
@@ -83,10 +98,12 @@ export const partsOfVariables = (
         .find(Boolean)
     const found: GuessedParts = {}
     for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {
-      if (!group.user || field === 'password') {
+      if (!user || field === 'password') {
         found[field] = valueOf(
           suffixes
-            .filter((suffix) => group.prefix || named || suffix !== BARE_NAME)
+            .filter(
+              (suffix) => group.prefix || named || !BARE_SUFFIXES.has(suffix)
+            )
             .map((suffix) => group.prefix + suffix)
         )
       }
@@ -102,8 +119,8 @@ export const partsOfVariables = (
     ) {
       continue
     }
-    if (!group.user || (!parts.user && !parts.password)) {
-      parts = mergeParts(parts, { user: group.user, ...found })
+    if (!user || (!parts.user && !parts.password)) {
+      parts = mergeParts(parts, { user, ...found })
     }
     type ??= named
   }

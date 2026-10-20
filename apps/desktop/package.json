@@ -1,7 +1,7 @@
 {
   "name": "@tamery/desktop",
   "version": "0.99.2",
-  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL, ClickHouse and SQLite.",
+  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL, Oracle, ClickHouse and SQLite.",
   "homepage": "https://tamery.app",
   "author": {
     "name": "Wannabe Space, LLC",
@@ -30,6 +30,7 @@
     "ini": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
+    "oracledb": "catalog:",
     "pg": "catalog:",
     "ssh-config": "catalog:",
     "ssh2": "catalog:",
@@ -42,6 +43,7 @@
     "@todesktop/cli": "catalog:",
     "@types/ini": "catalog:",
     "@types/mssql": "catalog:",
+    "@types/oracledb": "catalog:",
     "@types/pg": "catalog:",
     "electron": "catalog:",
     "typescript": "catalog:",

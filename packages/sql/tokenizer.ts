@@ -1,4 +1,4 @@
-import type { DialectSpec } from './dialect'
+import type { DialectSpec, NameCase } from './dialect'
 
 type TokenKind =
   | 'comment'
@@ -229,6 +229,9 @@ const tokenAt = (
   return null
 }
 
+const foldName = (name: string, nameCase: NameCase) =>
+  nameCase === 'upper' ? name.toUpperCase() : name.toLowerCase()
+
 export const tokenize = (
   text: string,
   dialect: DialectSpec,
@@ -287,8 +290,8 @@ export const tokenize = (
         token.kind,
         index,
         token.end,
-        token.kind === 'identifier' && dialect.foldsNames
-          ? { name: text.slice(index, token.end).toLowerCase() }
+        token.kind === 'identifier' && dialect.nameCase
+          ? { name: foldName(text.slice(index, token.end), dialect.nameCase) }
           : undefined
       )
     } else {

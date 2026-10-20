@@ -177,6 +177,7 @@ const NATIVE_TYPES: Record<Dialect, Record<string, string>> = {
   clickhouse: {},
   mssql: { date: '@db.Date' },
   mysql: { date: '@db.Date' },
+  oracle: {},
   postgres: {
     date: '@db.Date',
     'time without time zone': '@db.Time',

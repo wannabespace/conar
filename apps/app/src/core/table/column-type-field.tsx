@@ -15,7 +15,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/default-schema'
 import { quoteIdentifier } from '~/core/codegen/utils'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 
@@ -36,7 +37,7 @@ const useColumnTypes = () => {
     ...resourceEnumsQueryOptions({ connectionResource }),
     throwOnError: false,
   })
-  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
+  const defaultSchema = getDefaultSchema(dialect, connectionResource)
   const identifier = (name: string) =>
     bareIdentifierRegex.test(name) ? name : quoteIdentifier(name, dialect)
   const namedEnums = enums

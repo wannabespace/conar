@@ -19,7 +19,8 @@ import {
 } from 'react'
 
 import { OptionField } from '~/components/option-field'
-import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/default-schema'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { createViewQuery } from '~/core/queries/views/create'
@@ -156,7 +157,7 @@ export const CreateViewDialog = () => {
       setRequest({
         schema:
           schema ??
-          getDefaultSchema(dialect, connectionResource.name) ??
+          getDefaultSchema(dialect, connectionResource) ??
           schemas[0]?.name ??
           '',
         table: null,

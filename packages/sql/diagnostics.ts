@@ -299,7 +299,7 @@ const unqualifiedColumnDiagnostics = (
   ) {
     return []
   }
-  const key = (name: string) => (catalog.exactNames ? name : name.toLowerCase())
+  const key = (name: string) => (catalog.nameCase ? name : name.toLowerCase())
   const refTokens = new Set(scope.tables.map((ref) => ref.token))
   const known = new Set(
     [

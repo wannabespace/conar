@@ -179,7 +179,7 @@ export const createMcpServer = (
     'query',
     {
       annotations: { readOnlyHint: true },
-      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL, ClickHouse and SQLite also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
+      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL, Oracle, ClickHouse and SQLite also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
       inputSchema: sqlInput,
     },
     (args, { signal }) =>
@@ -193,7 +193,7 @@ export const createMcpServer = (
     {
       annotations: { readOnlyHint: true },
       description:
-        'List the schemas of a Tamery connection with their tables and views. In MySQL and ClickHouse a schema is a database. Pass schema to list only that one on a large database.',
+        'List the schemas of a Tamery connection with their tables and views. In MySQL and ClickHouse a schema is a database, in Oracle a user. Pass schema to list only that one on a large database.',
       inputSchema: {
         ...targetInput,
         schema: z.string().optional(),
@@ -229,7 +229,7 @@ export const createMcpServer = (
     'execute',
     {
       annotations: { destructiveHint: true, readOnlyHint: false },
-      description: `Run one SQL statement that may change data or schema, on a Tamery connection whose access is "ask" or "write", in the connection's own SQL dialect. It commits; wrap several statements in BEGIN … COMMIT to run them as one transaction, except on ClickHouse, which has no transactions. On "ask" it waits until the user approves it in Tamery, and fails if they decline. Use query for reads. At most ${MCP_MAX_ROWS} rows come back.`,
+      description: `Run one SQL statement that may change data or schema, on a Tamery connection whose access is "ask" or "write", in the connection's own SQL dialect. It commits; wrap several statements in BEGIN … COMMIT to run them as one transaction (on Oracle, in one PL/SQL BEGIN … END; block ending in COMMIT), except on ClickHouse, which has no transactions. On "ask" it waits until the user approves it in Tamery, and fails if they decline. Use query for reads. At most ${MCP_MAX_ROWS} rows come back.`,
       inputSchema: sqlInput,
     },
     (args, { signal }) =>

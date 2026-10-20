@@ -64,6 +64,8 @@ export interface ColumnTypeCapabilities {
   bytes: RegExp | null
   // Words a date or timestamp column takes in place of a date; the rest fail on save.
   dateKeywords: RegExp | null
+  // Named like a date but hold a time of day too (Oracle's DATE), so they edit as a datetime.
+  datesWithTime: RegExp | null
   enum: InlineEnum | null
   id: string
   // ORDER BY, GROUP BY or COUNT(DISTINCT) reject these; Distinct Values also skips `bytes`.
@@ -92,6 +94,8 @@ export interface ConnectionCapabilities {
   ilike: boolean
   indexes: IndexCapabilities
   materializedViews: boolean
+  // A foreign key's ON UPDATE action, which Oracle lacks.
+  onUpdate: boolean
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean

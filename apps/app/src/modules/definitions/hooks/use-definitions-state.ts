@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { getDefaultSchema } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/default-schema'
 import { getSectionCapabilities } from '~/core/catalog/section-capabilities'
 import type { DefinitionsSection } from '~/core/catalog/sections'
 import type { RelationKind } from '~/core/queries/tables/list'
@@ -36,7 +36,7 @@ export const useDefinitionsState = ({
     [
       linkedSchema,
       pickedSchema,
-      getDefaultSchema(dialect, connectionResource.name),
+      getDefaultSchema(dialect, connectionResource),
     ].find((schema) => schema && schemas.includes(schema)) ?? schemas[0]
   const getRelationNames = (schema: string, kind: RelationKind) =>
     data?.schemas

@@ -126,7 +126,7 @@ export const mcpSource: McpSource = {
     const dialect = getDialect(connection.type)
     if (splitStatements(sql, dialects[dialect]).length !== 1) {
       throw new Error(
-        'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together (not on ClickHouse, which has no transactions).'
+        'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together (on Oracle, in one BEGIN … END; block; not on ClickHouse, which has no transactions).'
       )
     }
     await assertQuota()

@@ -45,6 +45,13 @@ export const createViewQuery = ({
               .schema.createView(view)
               .as(definition)
               .execute(),
+      oracle: (db) => {
+        const create = db.withSchema(schema).schema.createView(view)
+
+        return (materialized ? create.materialized() : create)
+          .as(definition)
+          .execute()
+      },
       postgres: (db) => {
         const create = db.withSchema(schema).schema.createView(view)
 

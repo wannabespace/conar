@@ -52,6 +52,7 @@ export const transactionQuery = ({
       clickhouse: run,
       mssql: run,
       mysql: run,
+      oracle: run,
       postgres: run,
       sqlite: run,
     },

@@ -21,6 +21,12 @@ export const textContains: Record<Dialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), sql`nvarchar(max)`), 'like', pattern),
   mysql: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'char'), 'like', pattern),
+  oracle: (eb, column, pattern) =>
+    eb(
+      eb.fn('upper', [eb.ref(column)]),
+      'like',
+      eb.fn('upper', [eb.val(pattern)])
+    ),
   postgres: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'text'), 'ilike', pattern),
   sqlite: (eb, column, pattern) =>
@@ -82,6 +88,7 @@ export const bindValue: Record<Dialect, BindValue> = {
   ),
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
+  oracle: bindJsonAsText(Dialect.Oracle),
   postgres: bindJsonAsText(Dialect.Postgres),
   sqlite: bindJsonAsText(Dialect.SQLite),
 }

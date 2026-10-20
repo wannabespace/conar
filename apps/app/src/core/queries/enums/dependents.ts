@@ -24,6 +24,7 @@ const dependentsQuery = ({ name, schema }: { name: string; schema: string }) =>
       clickhouse: () => Promise.resolve([]),
       mssql: () => Promise.resolve([]),
       mysql: () => Promise.resolve([]),
+      oracle: () => Promise.resolve([]),
       postgres: (db) =>
         db
           .selectFrom('pg_catalog.pg_type as e')

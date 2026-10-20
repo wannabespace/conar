@@ -539,16 +539,18 @@ const ConstraintInspector = ({
                 />
               )}
             </form.AppField>
-            <form.AppField name="onUpdate">
-              {() => (
-                <SelectField
-                  label="On update"
-                  disabled={shapeLocked}
-                  options={getCapabilities(dialect).referentialActions}
-                  placeholder="Action"
-                />
-              )}
-            </form.AppField>
+            {getCapabilities(dialect).onUpdate && (
+              <form.AppField name="onUpdate">
+                {() => (
+                  <SelectField
+                    label="On update"
+                    disabled={shapeLocked}
+                    options={getCapabilities(dialect).referentialActions}
+                    placeholder="Action"
+                  />
+                )}
+              </form.AppField>
+            )}
           </div>
           <FieldDescription>
             What the database does to these rows when a referenced row is

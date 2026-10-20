@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
-import { getDefaultSchema } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/default-schema'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import {
   getColumnDefinition,
@@ -33,7 +33,7 @@ export const useReferenceTargets = (enabled: boolean) => {
     enabled,
     throwOnError: false,
   })
-  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
+  const defaultSchema = getDefaultSchema(dialect, connectionResource)
   const typeOf = new Map(
     columns.map((column) => [
       `${column.schema}.${column.table}.${column.id}`,

@@ -82,6 +82,38 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
     user: 'e.g. sa',
   }),
   [ConnectionType.MySQL]: MYSQL_FIELDS,
+  // No `sshTunnel`: node-oracledb opens its own socket, so the executor refuses one.
+  [ConnectionType.Oracle]: {
+    field: 'host',
+    message: 'Enter the host',
+    rows: [
+      {
+        label: 'Host',
+        name: 'host',
+        placeholder: 'db.example.com or any connection string',
+        port: true,
+      },
+      { label: 'User', name: 'user', placeholder: 'e.g. system' },
+      {
+        label: 'Password',
+        name: 'password',
+        placeholder: 'None',
+        secret: true,
+      },
+      {
+        label: 'Service name',
+        name: 'database',
+        placeholder: 'e.g. FREEPDB1',
+        required: 'Enter the service name',
+      },
+      {
+        label: 'Options',
+        name: 'options',
+        optional: true,
+        placeholder: 'e.g. ssl=true',
+      },
+    ],
+  },
   [ConnectionType.Postgres]: serverFields({
     database: 'postgres',
     options: 'e.g. sslmode=require',

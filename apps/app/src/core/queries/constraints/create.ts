@@ -3,7 +3,7 @@ import { unsupported } from '@tamery/shared/unsupported'
 import { createQuery } from '~/core/runtime/query'
 
 import type { ConstraintShape } from './shape'
-import { addConstraint } from './shape'
+import { addConstraint, oracleAddConstraint } from './shape'
 
 export const createConstraintQuery = ({
   schema,
@@ -19,6 +19,8 @@ export const createConstraintQuery = ({
       clickhouse: (db) => addConstraint(db, { schema, table }, shape).execute(),
       mssql: (db) => addConstraint(db, { schema, table }, shape).execute(),
       mysql: (db) => addConstraint(db, { schema, table }, shape).execute(),
+      oracle: (db) =>
+        oracleAddConstraint(db, { schema, table }, shape).execute(),
       postgres: (db) => addConstraint(db, { schema, table }, shape).execute(),
       sqlite: unsupported('Adding constraints'),
     },

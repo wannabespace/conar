@@ -48,6 +48,7 @@ describe('guessConnection — bare hosts', () => {
     ['acme.database.windows.net', ConnectionType.MSSQL],
     ['aws.connect.psdb.cloud', ConnectionType.MySQL],
     ['gateway01.eu-central-1.prod.aws.tidbcloud.com', ConnectionType.MySQL],
+    ['adb.eu-frankfurt-1.oraclecloud.com', ConnectionType.Oracle],
   ])('types %s from its provider', (host, type) => {
     expect(guessConnection(host)?.parts.type).toBe(type)
   })

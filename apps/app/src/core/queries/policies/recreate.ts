@@ -14,6 +14,7 @@ export const recreatePolicyQuery = (
       clickhouse: unsupported('Row policies'),
       mssql: unsupported('Row policies'),
       mysql: unsupported('Row policies'),
+      oracle: unsupported('Row policies'),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           await sql`DROP POLICY ${policyOn(target)}`.execute(tx)

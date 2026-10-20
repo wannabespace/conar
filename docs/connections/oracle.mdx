@@ -1,0 +1,48 @@
+---
+title: 'Oracle'
+sidebarTitle: 'Oracle'
+description: 'Connect to Oracle Database 12c or later.'
+---
+
+Choose **Oracle** under **Engine**, or paste:
+
+```text
+oracle://user:password@localhost:1521/FREEPDB1
+```
+
+The path is the service name. The default port is **1521**. You can also paste a JDBC URL such as `jdbc:oracle:thin:@//localhost:1521/FREEPDB1`.
+
+## Schemas
+
+Each Oracle user is a schema. Tamery opens your own schema and lists the other schemas you can see. Oracle's built-in accounts, such as `SYS` and `XDB`, stay hidden.
+
+**New schema** creates a schema-only user, which needs the `CREATE USER` privilege.
+
+## Encryption
+
+Add `ssl=true` to connect over TCPS, Oracle's TLS listener (often port **2484**):
+
+```text
+oracle://user:password@db.example.com:2484/ORCLPDB1?ssl=true
+```
+
+Without it, Tamery connects over plain TCP.
+
+## Transactions and schema changes
+
+Each statement in a Query tab commits when it runs. Oracle commits schema changes immediately, so a failed change can leave earlier ones applied.
+
+End a PL/SQL block, function, procedure, or trigger with a line holding only `/` when more statements follow it.
+
+## Limits
+
+- SSH tunnels are not available for Oracle connections.
+- Wallets and `tnsnames.ora` aliases are not supported. Use the host, port, and service name.
+
+## Local Oracle in Docker
+
+```bash
+docker run -d -p 1521:1521 -e ORACLE_PASSWORD=password gvenzl/oracle-free
+```
+
+Connect as `system` to the `FREEPDB1` service. On desktop, Tamery lists the running container under detected databases.

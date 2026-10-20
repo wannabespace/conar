@@ -186,7 +186,7 @@ describe('completion', () => {
     const exact: SqlCatalog = {
       defaultSchema: 'public',
       enums: [],
-      exactNames: true,
+      nameCase: 'lower',
       schemas: [
         {
           name: 'public',

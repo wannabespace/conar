@@ -12,6 +12,7 @@ import type { LISTED_CONSTRAINT_TYPES } from '../shape'
 import { clickhouseConstraints } from './clickhouse'
 import { mssqlConstraints } from './mssql'
 import { mysqlConstraints } from './mysql'
+import { oracleConstraints } from './oracle'
 import { postgresConstraints } from './postgres'
 import { sqliteConstraints } from './sqlite'
 
@@ -44,6 +45,7 @@ export const constraintsType = type({
 }).pipe(
   ({
     type: constraintKind,
+    expression,
     foreign_column,
     foreign_table,
     foreign_schema,
@@ -52,6 +54,7 @@ export const constraintsType = type({
   }) => ({
     ...item,
     custom: !!is_custom,
+    expression: expression?.trim() ?? null,
     foreignColumn: foreign_column,
     foreignSchema: foreign_schema,
     foreignTable: foreign_table,
@@ -66,6 +69,7 @@ const resourceConstraintsQuery = createQuery({
     clickhouse: clickhouseConstraints,
     mssql: mssqlConstraints,
     mysql: mysqlConstraints,
+    oracle: oracleConstraints,
     postgres: postgresConstraints,
     sqlite: sqliteConstraints,
   },

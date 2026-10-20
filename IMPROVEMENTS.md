@@ -219,3 +219,24 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
 - **Link straight to the Support form from emails.** The early-access email can only say "click your avatar and pick Support"; a deep link that opens the Support dialog would turn the feedback ask into one click.
 - **Non-blocking Paper shader compilation.** The library checks WebGL compilation synchronously. Adopt upstream asynchronous initialization when available so cold startup can avoid compilation stalls as well as keeping them out of entrance animations.
+- **SSH tunnels for Oracle.** node-oracledb opens its own socket and takes no stream, so an Oracle connection cannot use the SSH channel the other engines plug in; a driver hook (or a contribution upstream) would let it.
+- **Oracle wallets and TNS aliases.** Only `host:port/service` strings connect; Autonomous Database's wallet (`cwallet.sso`) and a `tnsnames.ora` alias would cover managed Oracle.
+- **Group an Oracle transaction in the runner.** Oracle has no `BEGIN` statement (it starts PL/SQL), so a runner script commits each statement as it runs; reading `SET TRANSACTION` as the opener on Oracle would let a script hold its changes until `COMMIT`.
+- **List an Oracle container's other PDBs.** A connection opens the one service its string names; a CDB login could list `V$PDBS` as resources.
+- **Microsecond Oracle timestamps.** node-oracledb hands a TIMESTAMP over as a JS `Date`, so the grid shows and writes back milliseconds; a `TIMESTAMP(6)` cell edited elsewhere loses its last three digits.
+- **Accept a `T` in an Oracle date cell.** The date editor takes `2024-01-02T03:04:05`, but Oracle's session format wants a space there and fails with ORA-01861; values the app writes itself never use the `T`.
+- **Batch Oracle seed rows.** Before 23ai Oracle has no multi-row `VALUES`, so seeding inserts one row per statement; `INSERT ALL` would batch the rows that need no `DEFAULT`.
+- **Drop a non-empty Oracle schema.** `DROP USER … CASCADE` is wired, but `cascade` is off for Oracle because its table and view drops would need `CASCADE CONSTRAINTS`; turning both on would let **Drop schema** remove a schema that still holds objects.
+- **Row estimates for Oracle.** MCP approval shows no estimate on Oracle; `EXPLAIN PLAN FOR` and `PLAN_TABLE.CARDINALITY` in a rolled-back transaction could give one, with Oracle's own spelling for the runner's Explain.
+- **Hide New schema without CREATE USER on Oracle.** An Oracle schema is a user, so a login without the privilege sees ORA-01031 only after submitting the dialog.
+- **Upper-case suggested names on Oracle.** Suggested constraint and index names come out mixed case (`ORDERS_user_id_fkey`), so Oracle stores them quoted and every later reference has to quote them too.
+- **Oracle index definitions from `DBMS_METADATA`.** Function-based and descending Oracle indexes list as custom expressions; carrying `GET_DDL` as the definition would let codegen reproduce them exactly.
+- **Mark INVALID Oracle routines and triggers.** A unit created outside Tamery can sit INVALID; a badge from `ALL_OBJECTS.STATUS` in the Schema list would show it before something calls it.
+- **A DETERMINISTIC toggle for Oracle functions.** It saves through the header's extras today, so it can only be typed.
+- **List Oracle package members.** Functions and procedures inside a package are not listed; showing them read-only would cover most Oracle codebases.
+- **Paste Oracle TNS descriptors.** A `(DESCRIPTION=(ADDRESS=…)(CONNECT_DATA=…))` string or a `tnsnames.ora` entry is not read; a JDBC `@host:port:SID` saves the SID as a service name, which connects only where the SID is also a registered service.
+- **Turn on SSL for Oracle Autonomous hosts.** A `.oraclecloud.com` host on port 1522 always speaks TCPS, so the form could add `ssl=true` itself.
+- **Seed `NUMBER(1)` flags as booleans on Oracle.** Before 23ai a flag is a `NUMBER(1)`, which seeds as any digit.
+- **Point Oracle compile errors at the Body line.** `ALL_ERRORS` counts lines from the stored `CREATE … IS` header, so an error in the first Body line reads "Line 2".
+- **Per-engine type hints in the column dialog.** The Type placeholder reads `integer, varchar(255)…` on every engine; Oracle users would recognise `NUMBER, VARCHAR2(255)`.
+- **Drive native menus in desktop QA.** Row and column actions (drop index, rename or drop a column, drop a table) open native macOS menus that agents cannot click, so those Oracle paths were checked only against the database, not through the app.

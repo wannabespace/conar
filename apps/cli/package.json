@@ -8,6 +8,7 @@
     "database",
     "mssql",
     "mysql",
+    "oracle",
     "postgres",
     "sql",
     "sqlite",
@@ -53,6 +54,7 @@
     "mysql2": "catalog:",
     "open": "catalog:",
     "ora": "catalog:",
+    "oracledb": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {

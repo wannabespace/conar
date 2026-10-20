@@ -42,7 +42,16 @@ const IMAGE_USERS: Partial<Record<Dialect, string>> = {
   [Dialect.ClickHouse]: 'default',
   [Dialect.MSSQL]: 'sa',
   [Dialect.MySQL]: 'root',
+  [Dialect.Oracle]: 'system',
   [Dialect.Postgres]: 'postgres',
+}
+
+/** The pluggable database each image creates, by its last path segment; the root container holds no app schemas. */
+const ORACLE_IMAGE_SERVICES: Record<string, string> = {
+  express: 'XEPDB1',
+  free: 'FREEPDB1',
+  'oracle-free': 'FREEPDB1',
+  'oracle-xe': 'XEPDB1',
 }
 
 const containersSchema = type({
@@ -104,14 +113,11 @@ export const docker: Finder = {
           )
         ) ?? {}
       const name = Names[0]?.replace(/^\//u, '') ?? ''
-      const named = [
-        getConnectionType(
-          Image.replace(/[:@][^/]*$/u, '')
-            .split('/')
-            .at(-1) ?? ''
-        ),
-        env.type,
-      ]
+      const image =
+        Image.replace(/[:@][^/]*$/u, '')
+          .split('/')
+          .at(-1) ?? ''
+      const named = [getConnectionType(image), env.type]
       return published.map(({ connectionType, ...server }) => {
         const dialect = getDialect(connectionType)
         const parts = mergeParts(
@@ -127,13 +133,16 @@ export const docker: Finder = {
           env,
           { user: IMAGE_USERS[dialect] }
         )
-        return {
-          name,
-          parts:
-            connectionType === ConnectionType.Postgres
-              ? { database: parts.user, ...parts }
-              : parts,
+        if (connectionType === ConnectionType.Postgres) {
+          return { name, parts: { database: parts.user, ...parts } }
         }
+        if (connectionType === ConnectionType.Oracle) {
+          return {
+            name,
+            parts: { database: ORACLE_IMAGE_SERVICES[image], ...parts },
+          }
+        }
+        return { name, parts }
       })
     })
   },

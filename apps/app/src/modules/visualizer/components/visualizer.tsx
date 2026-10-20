@@ -5,7 +5,7 @@ import { useReactFlow } from '@xyflow/react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { getDefaultSchema } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/default-schema'
 import type { TableType } from '~/core/catalog/table-type'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import type { constraintsType } from '~/core/queries/constraints/list'
@@ -55,7 +55,7 @@ export const Visualizer = ({
   const edit = diagramDrafts(draftsStore)
   const can = getGates(dialect)
 
-  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
+  const defaultSchema = getDefaultSchema(dialect, connectionResource)
   const schemas = [
     ...new Set([
       ...tables.map(({ schema }) => schema),

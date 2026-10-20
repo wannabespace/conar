@@ -7,6 +7,7 @@ import type { ConstraintShape } from '~/core/queries/constraints/shape'
 import {
   addConstraint,
   constraintClause,
+  oracleAddConstraint,
 } from '~/core/queries/constraints/shape'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
 import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
@@ -175,6 +176,21 @@ export const editColumnQuery = (target: EditColumnTarget) =>
         ].filter(Boolean)
         if (actions.length > 0) {
           await sql`ALTER TABLE ${sql.id(schema, table)} ${sql.join(actions)}`.execute(
+            db
+          )
+        }
+      },
+      oracle: async (db) => {
+        const { comment, newName, reference, schema, table } = target
+        await editInSteps(Dialect.Oracle, db, {
+          ...target,
+          reference: undefined,
+        })
+        if (reference) {
+          await oracleAddConstraint(db, target, reference).execute()
+        }
+        if (commented(target)) {
+          await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${sql.lit(comment ?? '')}`.execute(
             db
           )
         }

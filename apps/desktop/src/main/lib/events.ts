@@ -138,6 +138,9 @@ export const electron = {
     mysql: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/mysql')
     ),
+    oracle: lazyQueryExecutor(
+      () => import('@tamery/connection/queries/dialects/oracle')
+    ),
     postgres: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/pg')
     ),

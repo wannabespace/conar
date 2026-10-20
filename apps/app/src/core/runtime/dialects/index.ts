@@ -10,6 +10,8 @@ import { mssqlColdDialect, mssqlDialect } from './mssql'
 import type { Database as MssqlDatabase } from './mssql/schema'
 import { mysqlColdDialect, mysqlDialect } from './mysql'
 import type { Database as MysqlDatabase } from './mysql/schema'
+import { oracleColdDialect, oracleDialect } from './oracle'
+import type { Database as OracleDatabase } from './oracle/schema'
 import { postgresColdDialect, postgresDialect } from './postgres'
 import type { Database as PostgresDatabase } from './postgres/schema'
 import { sqliteColdDialect, sqliteDialect } from './sqlite'
@@ -31,6 +33,11 @@ export const dialects = {
       new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }),
     { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
+  oracle: memoize(
+    (options: DialectOptions) =>
+      new Kysely<OracleDatabase>({ dialect: oracleDialect(options) }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
+  ),
   postgres: memoize(
     (options: DialectOptions) =>
       new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }),
@@ -47,6 +54,7 @@ export const coldDialects = {
   clickhouse: memoize(() => new Kysely({ dialect: clickhouseColdDialect() })),
   mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
   mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
+  oracle: memoize(() => new Kysely({ dialect: oracleColdDialect() })),
   postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
   sqlite: memoize(() => new Kysely({ dialect: sqliteColdDialect() })),
 } satisfies Record<Dialect, AnyFunction>

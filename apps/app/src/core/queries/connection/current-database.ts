@@ -20,6 +20,12 @@ const connectionCurrentDatabaseQuery = createQuery({
       db
         .selectNoFrom(sql<string | null>`DATABASE()`.as('name'))
         .executeTakeFirstOrThrow(),
+    oracle: (db) =>
+      db
+        .selectNoFrom(
+          sql<string>`SYS_CONTEXT('USERENV', 'SERVICE_NAME')`.as('name')
+        )
+        .executeTakeFirstOrThrow(),
     postgres: (db) =>
       db
         .selectNoFrom(sql<string>`current_database()`.as('name'))

@@ -2,14 +2,19 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import { COMMON_FUNCTIONS, COMMON_KEYWORDS, COMMON_TYPES } from './vocabulary'
 
+export type NameCase = 'lower' | 'upper'
+
 export interface DialectSpec {
   identifierQuotes: readonly string[]
   dollarQuotes: boolean
   backslashEscapes: boolean
   hashComments: boolean
-  foldsNames: boolean
+  /** The case an unquoted name folds to; `null` where the engine compares names without case. */
+  nameCase: NameCase | null
   atVariables: boolean
   goBatches: boolean
+  /** Oracle: `DECLARE`, `BEGIN` and `CREATE FUNCTION`/`PROCEDURE`/`PACKAGE`/`TRIGGER`/`TYPE` run to a `/` line, and a `/` line also ends any other statement. */
+  plsqlUnits: boolean
   separatorFreeStatements: boolean
   /** `BEGIN … COMMIT` really runs as a transaction; ClickHouse's driver only fakes commit and rollback. */
   transactions: boolean
@@ -28,10 +33,11 @@ const spec = (
   atVariables: false,
   backslashEscapes: false,
   dollarQuotes: false,
-  foldsNames: false,
+  nameCase: null,
   goBatches: false,
   hashComments: false,
   identifierQuotes: ['"'],
+  plsqlUnits: false,
   separatorFreeStatements: false,
   transactions: true,
   ...overrides,
@@ -184,9 +190,77 @@ export const dialects: Record<Dialect, DialectSpec> = {
     ],
     types: ['DATETIME', 'ENUM', 'LONGTEXT', 'MEDIUMINT', 'TINYINT'],
   }),
+  [Dialect.Oracle]: spec({
+    functions: [
+      'ADD_MONTHS',
+      'CEIL',
+      'DECODE',
+      'INSTR',
+      'LENGTH',
+      'LISTAGG',
+      'MONTHS_BETWEEN',
+      'NVL',
+      'NVL2',
+      'REGEXP_LIKE',
+      'REGEXP_REPLACE',
+      'REGEXP_SUBSTR',
+      'SUBSTR',
+      'SYS_GUID',
+      'SYSDATE',
+      'SYSTIMESTAMP',
+      'TO_CHAR',
+      'TO_DATE',
+      'TO_NUMBER',
+      'TO_TIMESTAMP',
+      'TRUNC',
+    ],
+    keywords: [
+      'CONNECT',
+      'DECLARE',
+      'DUAL',
+      'EXCEPTION',
+      'FUNCTION',
+      'GRANT',
+      'IDENTITY',
+      'LOOP',
+      'MERGE',
+      'MINUS',
+      'MODIFY',
+      'NOCOPY',
+      'PACKAGE',
+      'PRIOR',
+      'PROCEDURE',
+      'PURGE',
+      'RENAME',
+      'RETURN',
+      'REVOKE',
+      'ROWNUM',
+      'SEQUENCE',
+      'START',
+      'SYNONYM',
+      'TRIGGER',
+      'TRUNCATE',
+      'WHILE',
+    ],
+    nameCase: 'upper',
+    plsqlUnits: true,
+    types: [
+      'BINARY_DOUBLE',
+      'BINARY_FLOAT',
+      'BLOB',
+      'CLOB',
+      'NCLOB',
+      'NUMBER',
+      'NVARCHAR2',
+      'RAW',
+      'ROWID',
+      'VARCHAR2',
+      'XMLTYPE',
+    ],
+  }),
   [Dialect.Postgres]: spec({
     dollarQuotes: true,
-    foldsNames: true,
+    nameCase: 'lower',
     functions: [
       'ARRAY_AGG',
       'CEIL',

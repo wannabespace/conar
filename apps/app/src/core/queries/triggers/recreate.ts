@@ -1,6 +1,7 @@
 import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
+import { plsqlUnit } from '~/core/queries/shared/plsql'
 import { createQuery } from '~/core/runtime/query'
 
 import type { TriggerShape, TriggerTarget } from './shape'
@@ -75,6 +76,66 @@ export const recreateTriggerQuery = ({
           }
           throw error
         }
+      },
+      oracle: async (db) => {
+        const renamed = name !== shape.name
+        const original = await plsqlUnit.definition(db, {
+          name,
+          schema,
+          type: 'TRIGGER',
+        })
+        // Oracle commits the drop at once, and CREATE OR REPLACE stores a trigger that fails to
+        // compile over the old one, so only the saved source brings the old trigger back.
+        const restoreOriginal = async () => {
+          if (!original) {
+            return
+          }
+          await sql.raw(original).execute(db)
+          if (enabled === false) {
+            await setTriggerEnabledStatements({
+              enabled,
+              mode,
+              name,
+              schema,
+              table,
+            }).oracle.execute(db)
+          }
+        }
+
+        if (renamed) {
+          await drop.oracle.execute(db)
+        }
+        try {
+          await createTriggerStatements({
+            replace: !renamed,
+            schema,
+            shape,
+            table,
+          }).oracle.execute(db)
+        } catch (error) {
+          if (renamed) {
+            await restoreOriginal()
+          }
+          throw error
+        }
+        const errors = await plsqlUnit.errors(db, {
+          name: shape.name,
+          schema,
+          type: 'TRIGGER',
+        })
+
+        if (errors) {
+          if (renamed) {
+            await dropTriggerStatements({
+              name: shape.name,
+              schema,
+              table,
+            }).oracle.execute(db)
+          }
+          await restoreOriginal()
+          throw new Error(errors)
+        }
+        await restore?.oracle.execute(db)
       },
       postgres: (db) =>
         db.transaction().execute(async (tx) => {

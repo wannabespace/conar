@@ -26,4 +26,4 @@ The available actions depend on your database engine. Views are read-only in the
 
 Changes stay as drafts until you click **Apply**. Use the review button to inspect the exact SQL and discard individual changes. Dropping an object opens the review before applying.
 
-PostgreSQL, SQL Server, and SQLite apply the changes in one transaction. MySQL and ClickHouse apply schema changes separately, so an error can leave some changes already applied. Review the remaining drafts before retrying.
+PostgreSQL, SQL Server, and SQLite apply the changes in one transaction. MySQL, Oracle, and ClickHouse apply schema changes separately, so an error can leave some changes already applied. Review the remaining drafts before retrying.

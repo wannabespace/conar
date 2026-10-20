@@ -37,7 +37,7 @@ const messages = (sql: string, withCatalog = false) =>
   )
 
 const exact = (sql: string) =>
-  diagnose(sql, pg, { ...catalog, exactNames: true }).map(
+  diagnose(sql, pg, { ...catalog, nameCase: 'lower' }).map(
     ({ message }) => message
   )
 

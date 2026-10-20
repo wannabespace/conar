@@ -36,28 +36,70 @@ const ISOLATION_LEVELS = [
 ] as const
 
 const GO_REPEAT_COUNT = /^\s*\d*\s*$/u
+const BLANK = /^\s*$/u
 
-export const goSeparatorLineEnd = (
+const lineSeparatorEnd = (
   text: string,
   tokens: Token[],
-  index: number
+  index: number,
+  { rest, separator }: { rest: RegExp; separator: (token: Token) => boolean }
 ) => {
   const token = tokens[index]
   const previous = tokens[index - 1]
-  if (!(token && isKeyword(token, 'GO'))) {
+  if (!(token && separator(token))) {
     return null
   }
   const lineEnd = text.indexOf('\n', token.end) + 1 || text.length
   const startsLine =
     previous === undefined ||
     text.slice(previous.end, token.start).includes('\n')
-  return startsLine && GO_REPEAT_COUNT.test(text.slice(token.end, lineEnd))
+  return startsLine && rest.test(text.slice(token.end, lineEnd))
     ? lineEnd
     : null
 }
 
+export const goSeparatorLineEnd = (
+  text: string,
+  tokens: Token[],
+  index: number
+) =>
+  lineSeparatorEnd(text, tokens, index, {
+    rest: GO_REPEAT_COUNT,
+    separator: (token) => isKeyword(token, 'GO'),
+  })
+
+const slashSeparatorLineEnd = (text: string, tokens: Token[], index: number) =>
+  lineSeparatorEnd(text, tokens, index, {
+    rest: BLANK,
+    separator: (token) => token.text === '/',
+  })
+
 const upperTexts = (tokens: Token[]) =>
   tokens.map((token) => token.text.toUpperCase())
+
+const PLSQL_UNITS = new Set([
+  'FUNCTION',
+  'PACKAGE',
+  'PROCEDURE',
+  'TRIGGER',
+  'TYPE',
+])
+const CREATE_MODIFIERS = new Set([
+  'OR',
+  'REPLACE',
+  'EDITIONABLE',
+  'NONEDITIONABLE',
+])
+
+/** A PL/SQL unit carries semicolons of its own, so only a `/` line or the end of the text closes it. */
+const startsPlsqlUnit = (tokens: Token[], index: number) => {
+  const [word, ...rest] = upperTexts(tokens.slice(index, index + 5))
+  if (word === 'DECLARE' || word === 'BEGIN') {
+    return true
+  }
+  const unit = rest.find((next) => !CREATE_MODIFIERS.has(next))
+  return word === 'CREATE' && unit !== undefined && PLSQL_UNITS.has(unit)
+}
 
 const opensTransactionAt = (tokens: Token[], index: number) => {
   const [word, next, after] = upperTexts(tokens.slice(index, index + 3))
@@ -107,6 +149,31 @@ export const endsTransaction = (text: string, dialect: DialectSpec) =>
     tokenize(text, dialect).tokens.filter((token) => token.kind !== 'comment')
   )
 
+const batchSeparatorEnd = (
+  text: string,
+  tokens: Token[],
+  index: number,
+  dialect: DialectSpec
+) =>
+  (dialect.goBatches && goSeparatorLineEnd(text, tokens, index)) ||
+  (dialect.plsqlUnits && slashSeparatorLineEnd(text, tokens, index))
+
+/** `END CASE` closes the CASE its END already counted. */
+const blockDepthChange = (tokens: Token[], index: number) => {
+  const token = tokens[index]
+  const previous = tokens[index - 1]
+  if (
+    (isKeyword(token, 'CASE') && !isKeyword(previous, 'END')) ||
+    (isKeyword(token, 'BEGIN') && !isColumnPosition(previous))
+  ) {
+    return 1
+  }
+  return isKeyword(token, 'END') &&
+    !isKeyword(tokens[index + 1], ...END_QUALIFIERS)
+    ? -1
+    : 0
+}
+
 export const statementsFromTokens = (
   text: string,
   tokens: Token[],
@@ -120,6 +187,7 @@ export const statementsFromTokens = (
   let innerStart = 0
   let depth = 0
   let inTransaction = false
+  let inPlsqlUnit = false
 
   const flush = (terminator?: Token) => {
     const [first] = current
@@ -143,36 +211,35 @@ export const statementsFromTokens = (
     innerStart = 0
     depth = 0
     inTransaction = false
+    inPlsqlUnit = false
   }
 
   let separatorLineEnd = 0
 
   for (const [index, token] of significant.entries()) {
-    const next = significant[index + 1]
-
     if (token.start < separatorLineEnd) {
       continue
     }
-    const separatorEnd =
-      dialect.goBatches && goSeparatorLineEnd(text, significant, index)
+    const separatorEnd = batchSeparatorEnd(text, significant, index, dialect)
     if (separatorEnd) {
       separatorLineEnd = separatorEnd
       flush()
       continue
     }
 
-    if (opensTransactionAt(significant, index)) {
-      inTransaction = groups
-    } else if (
-      isKeyword(token, 'CASE') ||
-      (isKeyword(token, 'BEGIN') && !isColumnPosition(significant[index - 1]))
+    if (
+      dialect.plsqlUnits &&
+      current.length === 0 &&
+      startsPlsqlUnit(significant, index)
     ) {
-      depth += 1
-    } else if (isKeyword(token, 'END') && !isKeyword(next, ...END_QUALIFIERS)) {
-      depth = Math.max(0, depth - 1)
+      inPlsqlUnit = true
+    } else if (opensTransactionAt(significant, index)) {
+      inTransaction = groups
+    } else {
+      depth = Math.max(0, depth + blockDepthChange(significant, index))
     }
 
-    if (isPunctuation(token, ';') && depth === 0) {
+    if (isPunctuation(token, ';') && depth === 0 && !inPlsqlUnit) {
       if (!inTransaction || transactionCloser(current.slice(innerStart))) {
         flush(token)
         continue

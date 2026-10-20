@@ -1,6 +1,7 @@
 import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
+import { plsqlUnit } from '~/core/queries/shared/plsql'
 import { createQuery } from '~/core/runtime/query'
 
 import type { FunctionShape, RoutineTarget } from './shape'
@@ -8,6 +9,7 @@ import {
   createFunctionStatements,
   dropRoutineStatements,
   routineKeyword,
+  routineType,
 } from './shape'
 
 // replacesObject marks a signature the engine cannot replace in place.
@@ -71,6 +73,51 @@ export const recreateFunctionQuery = ({
             await sql.raw(statement).execute(db)
           }
           throw error
+        }
+      },
+      oracle: async (db) => {
+        const original = await plsqlUnit.definition(db, {
+          name: target.name,
+          schema: target.schema,
+          type: routineType(target.kind),
+        })
+        // Oracle commits the drop at once, and CREATE OR REPLACE stores a routine that fails to
+        // compile over the old one, so only the saved source brings the old routine back.
+        const restoreOriginal = () =>
+          original ? sql.raw(original).execute(db) : null
+
+        if (replacesObject) {
+          await drop.oracle.execute(db)
+        }
+        try {
+          await createFunctionStatements({
+            replace: !replacesObject,
+            schema: target.schema,
+            shape,
+          }).oracle.execute(db)
+        } catch (error) {
+          if (replacesObject) {
+            await restoreOriginal()
+          }
+          throw error
+        }
+        const errors = await plsqlUnit.errors(db, {
+          name: shape.name,
+          schema: target.schema,
+          type: routineType(shape.kind),
+        })
+
+        if (errors) {
+          if (replacesObject) {
+            await dropRoutineStatements({
+              identity: undefined,
+              kind: shape.kind,
+              name: shape.name,
+              schema: target.schema,
+            }).oracle.execute(db)
+          }
+          await restoreOriginal()
+          throw new Error(errors)
         }
       },
       postgres: (db) =>

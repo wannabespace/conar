@@ -19,6 +19,8 @@ export const dropConstraintQuery = (
         db.executeQuery(dropConstraintStatement(Dialect.MSSQL, db, target)),
       mysql: (db) =>
         db.executeQuery(dropConstraintStatement(Dialect.MySQL, db, target)),
+      oracle: (db) =>
+        db.executeQuery(dropConstraintStatement(Dialect.Oracle, db, target)),
       postgres: (db) =>
         db.executeQuery(dropConstraintStatement(Dialect.Postgres, db, target)),
       sqlite: unsupported('Dropping constraints'),

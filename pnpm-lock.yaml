@@ -362,6 +362,9 @@ catalogs:
     '@types/mssql':
       specifier: ^12.3.0
       version: 12.3.0
+    '@types/oracledb':
+      specifier: ^7.0.3
+      version: 7.0.3
     '@types/pg':
       specifier: ^8.23.1
       version: 8.23.1
@@ -515,6 +518,9 @@ catalogs:
     ora:
       specifier: ^9.4.1
       version: 9.4.1
+    oracledb:
+      specifier: ^7.0.1
+      version: 7.0.1
     oxfmt:
       specifier: ^0.73.0
       version: 0.73.0
@@ -1083,6 +1089,9 @@ importers:
       ora:
         specifier: 'catalog:'
         version: 9.4.1
+      oracledb:
+        specifier: 'catalog:'
+        version: 7.0.1
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1162,6 +1171,9 @@ importers:
       mysql2:
         specifier: 'catalog:'
         version: 3.24.6(@types/node@26.1.1)
+      oracledb:
+        specifier: 'catalog:'
+        version: 7.0.1
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1193,6 +1205,9 @@ importers:
       '@types/mssql':
         specifier: 'catalog:'
         version: 12.3.0(supports-color@7.2.0)
+      '@types/oracledb':
+        specifier: 'catalog:'
+        version: 7.0.3
       '@types/pg':
         specifier: 'catalog:'
         version: 8.23.1
@@ -1529,6 +1544,9 @@ importers:
       '@types/mssql':
         specifier: 'catalog:'
         version: 12.3.0(supports-color@7.2.0)
+      '@types/oracledb':
+        specifier: 'catalog:'
+        version: 7.0.3
       '@types/pg':
         specifier: 'catalog:'
         version: 8.23.1
@@ -1541,6 +1559,9 @@ importers:
       mysql2:
         specifier: 'catalog:'
         version: 3.24.6(@types/node@26.1.1)
+      oracledb:
+        specifier: 'catalog:'
+        version: 7.0.1
       ssh-config:
         specifier: 'catalog:'
         version: 5.3.0
@@ -5678,6 +5699,9 @@ packages:
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
 
+  '@types/oracledb@7.0.3':
+    resolution: {integrity: sha512-dH4zGmD0b5k62O3BqWRM/qRD41pSKNeQOuPu4FDzvbn8d4DAkLWeLYkPObjvuMJsZNPL4ceSuMiPcOpKyjvhCg==}
+
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
 
@@ -9116,6 +9140,10 @@ packages:
   ora@9.4.1:
     resolution: {integrity: sha512-6VlU9MLXbjVQD04AZCMX28hVtA5bUoadvUqO76MUCVA0ilwJbMiHsITRPfyVm6p/BC0Av/BXMujx39WCe1LEqw==}
     engines: {node: '>=20'}
+
+  oracledb@7.0.1:
+    resolution: {integrity: sha512-xlM0Ceh6A5stQLAdEfKf3pgCSkbOjQLo2ZPEi3+kXklz+KbZD3fLi/nsTSbQeZZNFBSFDNxdn1Ek3+bxG40M8w==}
+    engines: {node: '>=14.17'}
 
   oxc-parser@0.148.0:
     resolution: {integrity: sha512-syxUKHeUll89RIABQADcI7sikYrwyssvA6gj4phSSIPezKVM8yMaLAiLLSc7fmzVvrwybfFGFbW5zme9sX87rg==}
@@ -15022,6 +15050,10 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/oracledb@7.0.3':
+    dependencies:
+      '@types/node': 26.1.1
+
   '@types/pg@8.23.1':
     dependencies:
       '@types/node': 26.1.1
@@ -18586,6 +18618,8 @@ snapshots:
       log-symbols: 7.0.1
       stdin-discarder: 0.3.2
       string-width: 8.3.0
+
+  oracledb@7.0.1: {}
 
   oxc-parser@0.148.0:
     dependencies:

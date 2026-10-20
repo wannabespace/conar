@@ -33,7 +33,7 @@ Run a `BEGIN … COMMIT` block with **Run all**, or run `BEGIN` on its own to wo
 
 Closing the tab or leaving the transaction idle for 15 minutes rolls it back. Open transactions use a separate database connection and can hold locks until you end them.
 
-ClickHouse has no transactions. Turso and D1 require the whole block in one run. MySQL schema changes may commit immediately, even inside a transaction.
+ClickHouse has no transactions. Turso and D1 require the whole block in one run. MySQL schema changes may commit immediately, even inside a transaction. On Oracle, `BEGIN` starts a PL/SQL block, so each statement commits as it runs; put statements in one `BEGIN … END;` block to run them together.
 
 ## Get AI help
 

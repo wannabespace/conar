@@ -30,6 +30,7 @@ export const DEFAULT_PORTS: Record<ConnectionType, number | null> = {
   [ConnectionType.MariaDB]: 3306,
   [ConnectionType.MSSQL]: 1433,
   [ConnectionType.MySQL]: 3306,
+  [ConnectionType.Oracle]: 1521,
   [ConnectionType.Postgres]: 5432,
   [ConnectionType.SQLite]: null,
 }
@@ -77,6 +78,8 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
   mssql: ConnectionType.MSSQL,
   mysql: ConnectionType.MySQL,
   mysql2: ConnectionType.MySQL,
+  oracle: ConnectionType.Oracle,
+  oracledb: ConnectionType.Oracle,
   pg: ConnectionType.Postgres,
   pgsql: ConnectionType.Postgres,
   postgres: ConnectionType.Postgres,

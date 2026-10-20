@@ -2,7 +2,8 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 
-import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/default-schema'
 import { createTableQuery } from '~/core/queries/tables/create'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
@@ -76,7 +77,7 @@ export const CreateTableDialog = () => {
       setRequest({
         schema:
           schema ??
-          getDefaultSchema(dialect, connectionResource.name) ??
+          getDefaultSchema(dialect, connectionResource) ??
           schemas[0]?.name ??
           '',
         table: null,

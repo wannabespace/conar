@@ -28,6 +28,7 @@
     "mariadb",
     "mssql",
     "mysql",
+    "oracle",
     "postgres",
     "postgresql",
     "sqlserver"

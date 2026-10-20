@@ -46,6 +46,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: true,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     materializedViews: true,
+    onUpdate: true,
     policies: {
       alterInPlace: true,
       commands: ['SELECT'],
@@ -93,6 +94,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: false,
+    onUpdate: true,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
@@ -146,6 +148,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: false,
+    onUpdate: true,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -179,6 +182,59 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       toggle: false,
     },
   },
+  [Dialect.Oracle]: {
+    alterColumns: true,
+    cascade: false,
+    columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.Oracle],
+    comments: true,
+    constraintKinds: CONSTRAINT_KINDS,
+    ddlRollback: false,
+    defaultSchema: null,
+    explain: false,
+    fixedConstraintNames: {},
+    functions: {
+      argumentPlaceholder: 'p_id IN NUMBER, p_label OUT VARCHAR2',
+      behaviors: [],
+      languages: [],
+      schemaBinding: false,
+      securityDefiner: false,
+    },
+    ilike: false,
+    indexes: btreeIndexes,
+    materializedViews: true,
+    onUpdate: false,
+    policies: noPolicies,
+    // Oracle has ON DELETE CASCADE and SET NULL, and no ON UPDATE at all.
+    referentialActions: ['NO ACTION', 'CASCADE', 'SET NULL'],
+    renameColumns: true,
+    renameConstraints: true,
+    renameSchema: false,
+    // RENAME reaches only the session's own schema, and ALTER VIEW cannot rename.
+    renameViews: false,
+    retypeKeyColumns: true,
+    rowLevelSecurity: false,
+    schemas: true,
+    sections: {
+      constraints: full,
+      enums: false,
+      functions: full,
+      indexes: full,
+      policies: false,
+      privileges: false,
+      triggers: full,
+    },
+    setDefault: true,
+    systemSchemas: [],
+    triggers: {
+      body: true,
+      events: ROW_EVENTS,
+      insteadOfTargets: ['view'],
+      multipleEvents: true,
+      orientations: TRIGGER_ORIENTATIONS,
+      timings: TRIGGER_TIMINGS,
+      toggle: true,
+    },
+  },
   [Dialect.Postgres]: {
     alterColumns: true,
     cascade: true,
@@ -199,6 +255,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: true,
     indexes: btreeIndexes,
     materializedViews: true,
+    onUpdate: true,
     policies: {
       alterInPlace: false,
       commands: POLICY_COMMANDS,
@@ -248,6 +305,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: { rename: false, skipTypes: [] },
     materializedViews: false,
+    onUpdate: true,
     policies: noPolicies,
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
@@ -281,6 +339,3 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
 }
 
 export const getCapabilities = (dialect: Dialect) => capabilities[dialect]
-
-export const getDefaultSchema = (dialect: Dialect, database: string | null) =>
-  capabilities[dialect].defaultSchema ?? database

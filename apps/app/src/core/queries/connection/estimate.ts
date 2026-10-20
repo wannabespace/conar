@@ -68,6 +68,7 @@ export const estimateQuery = (text: string, dialect: Dialect) => {
           (rows * Number(target?.[at('filtered')] ?? 100)) / 100
         )
       },
+      oracle: unsupported('Row estimates'),
       postgres: async (db) => {
         const [set] = await runInTransaction(
           db,
