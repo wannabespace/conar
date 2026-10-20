@@ -19,7 +19,7 @@ import { MotionConfig } from 'motion/react'
 
 import { ErrorPage } from '~/error-page'
 
-import appCss from '@tamery/ui/globals.css?url'
+import appCss from '~/styles.css?url'
 
 const RootComponent = () => (
   <html lang="en" suppressHydrationWarning>

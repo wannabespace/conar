@@ -1,5 +1,11 @@
-import { Search01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import {
+  ArrowDown02Icon,
+  ArrowUp02Icon,
+  Search01Icon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import {
   Dialog,
   DialogContent,
@@ -8,6 +14,7 @@ import {
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { InputGroup, InputGroupAddon } from '@tamery/ui/components/input-group'
+import { Kbd } from '@tamery/ui/components/kbd'
 import { cn } from '@tamery/ui/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 import * as React from 'react'
@@ -112,6 +119,73 @@ export const CommandInput = ({
         />
       </InputGroupAddon>
     </InputGroup>
+  </div>
+)
+
+export const CommandPaletteInput = ({
+  className,
+  end,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Input> & {
+  end?: React.ReactNode
+}) => (
+  <div className="flex shrink-0 items-center gap-3 border-b px-4">
+    <HugeiconsIcon
+      icon={Search01Icon}
+      strokeWidth={2}
+      className="text-muted-foreground size-4 shrink-0"
+    />
+    <CommandPrimitive.Input
+      data-slot="command-input"
+      className={cn(
+        'placeholder:text-muted-foreground/60 h-12 min-w-0 flex-1 bg-transparent text-base outline-hidden',
+        className
+      )}
+      {...props}
+    />
+    {end}
+  </div>
+)
+
+const CommandPaletteHint = ({
+  children,
+  label,
+}: {
+  children: React.ReactNode
+  label: string
+}) => (
+  <span className="flex items-center gap-1">
+    {children}
+    {label}
+  </span>
+)
+
+export const CommandPaletteFooter = () => (
+  <div className="text-2xs text-muted-foreground/70 flex shrink-0 items-center gap-3 border-t px-4 py-2">
+    <CommandPaletteHint label="navigate">
+      <Kbd>
+        <HugeiconsIcon
+          icon={ArrowUp02Icon}
+          strokeWidth={2}
+          className="size-3"
+        />
+      </Kbd>
+      <Kbd>
+        <HugeiconsIcon
+          icon={ArrowDown02Icon}
+          strokeWidth={2}
+          className="size-3"
+        />
+      </Kbd>
+    </CommandPaletteHint>
+    <CommandPaletteHint label="open">
+      <Kbd>
+        <EnterIcon />
+      </Kbd>
+    </CommandPaletteHint>
+    <CommandPaletteHint label="close">
+      <Kbd>esc</Kbd>
+    </CommandPaletteHint>
   </div>
 )
 

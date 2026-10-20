@@ -10,38 +10,46 @@ const getNavPage = (path: string) => {
   }
 }
 
-const tabs = docsConfig.navigation.tabs.map((tab) => ({
-  groups: tab.groups
+const tabs = docsConfig.navigation.tabs.map((tab) => {
+  const groups = tab.groups
     ? tab.groups.map((group) => ({
         pages: group.pages.map(getNavPage),
         title: group.group,
       }))
-    : [{ pages: tab.pages.map(getNavPage), title: tab.tab }],
-  label: tab.tab,
-}))
+    : [{ pages: tab.pages.map(getNavPage), title: tab.tab }]
 
-const pages = tabs.flatMap((tab) => tab.groups.flatMap((group) => group.pages))
+  return {
+    groups,
+    label: tab.tab,
+    pages: groups.flatMap((group) => group.pages),
+  }
+})
+
+const groups = tabs.flatMap((tab) => tab.groups)
+const pages = tabs.flatMap((tab) => tab.pages)
+
+const findTab = (href: string) =>
+  tabs.find((tab) => tab.pages.some((page) => page.href === href))
 
 export const nav = {
-  getActiveTab: (pathname: string) =>
-    tabs.find((tab) =>
-      tab.groups.some((group) =>
-        group.pages.some((page) => page.href === pathname)
-      )
-    ) ??
-    tabs[0] ??
+  getActiveTab: (pathname: string) => findTab(pathname) ?? tabs[0] ?? null,
+  getGroup: (href: string) =>
+    groups.find((group) => group.pages.some((page) => page.href === href)) ??
     null,
   getNeighbours: (href: string) => {
-    const index = pages.findIndex((page) => page.href === href)
+    const tabPages = findTab(href)?.pages ?? []
+    const index = tabPages.findIndex((page) => page.href === href)
 
     if (index === -1) {
       return { next: null, previous: null }
     }
 
     return {
-      next: pages[index + 1] ?? null,
-      previous: pages[index - 1] ?? null,
+      next: tabPages[index + 1] ?? null,
+      previous: tabPages[index - 1] ?? null,
     }
   },
+  getPage: (href: string) => pages.find((page) => page.href === href) ?? null,
+  groups,
   tabs,
 }

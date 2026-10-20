@@ -17,7 +17,7 @@ const getDocsPage = (splat: string | undefined) => {
 const DocsRoute = () => {
   const page = getDocsPage(Route.useParams()._splat)
 
-  return <DocsScreen key={page.url} page={page} />
+  return <DocsScreen page={page} />
 }
 
 export const Route = createFileRoute('/$')({

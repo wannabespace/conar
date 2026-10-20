@@ -151,7 +151,8 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Redirect conar.app to tamery.app.** Search Console still lists `conar.app` as a page linking to the home page and gets "conar app" searches; a 301 from every legacy Conar URL to its Tamery counterpart would move that traffic and link weight over instead of splitting it.
 - **`/email-code` without an email answers 500.** Opening the page bare (a crawler or a stale bookmark) throws on search validation instead of sending the visitor back to `/sign-in`.
 - **Track docs search.** `apps/docs` has no PostHog, so nobody sees which questions the docs fail to answer. Counting searches and empty results (no query text) would show the gaps.
-- **Clean docs search snippets.** Results show raw Markdown (`**5432**`, table pipes) from Fumadocs' structured data; stripping it before indexing would make the rows readable.
+- **Shortcuts in the docs as keycaps.** Pages spell shortcuts as bold text (`Cmd+Enter` / `Ctrl+Enter` in two columns); a `<Shortcut keys="Mod+Enter" />` MDX component drawing the kit `KbdHotkey` for the reader's OS would show one shortcut instead of a platform table.
+- **Docs on-page bar names a section before you reach it.** On narrow screens Fumadocs' active-anchor fallback marks the first heading while the reader is still above it, so the bar reads "On this page · SSL" on the intro. Showing the label alone until a heading has scrolled past would be truthful.
 
 ## Keyboard
 

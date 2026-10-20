@@ -19,3 +19,4 @@ Follow domain terms in `.agents/rules/domain.md` (Connection, Workspace, Tab, Na
 - Sentence case headings
 - Bold for UI elements: Click **Settings**
 - Code formatting for file names, commands, paths, code references
+- Link to other pages as cards with `<Cards>` around `<Card href="/path" />`; the title and description come from that page's frontmatter

@@ -1,0 +1,9 @@
+@import '@tamery/ui/globals.css';
+
+html {
+  scroll-padding-top: 6.5rem;
+}
+
+::highlight(fd-search) {
+  color: var(--primary);
+}

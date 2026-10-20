@@ -1,14 +1,41 @@
+import { Button } from '@tamery/ui/components/button'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import { cn } from '@tamery/ui/lib/utils'
-import { useRouterState } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 
 import { nav } from '~/lib/nav'
 
-import { DocsLink } from './docs-link'
+import { DocsLink, docsLinkProps } from './docs-link'
+
+const usePathname = () =>
+  useRouterState({ select: (state) => state.location.pathname })
+
+export const SectionTabs = ({ className }: { className?: string }) => {
+  const activeTab = nav.getActiveTab(usePathname())
+
+  return (
+    <nav
+      aria-label="Documentation sections"
+      className={cn('flex items-center gap-0.5', className)}
+    >
+      {nav.tabs.map((tab) => (
+        <Button
+          key={tab.label}
+          render={
+            <Link {...docsLinkProps(tab.groups[0]?.pages[0]?.href ?? '/')} />
+          }
+          size="sm"
+          variant={tab === activeTab ? 'secondary' : 'ghost-muted'}
+        >
+          {tab.label}
+        </Button>
+      ))}
+    </nav>
+  )
+}
 
 export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  })
+  const pathname = usePathname()
   const tab = nav.getActiveTab(pathname)
 
   if (!tab) {
@@ -16,7 +43,7 @@ export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
   }
 
   return (
-    <nav aria-label={tab.label} className="flex flex-col gap-5 px-3 py-4">
+    <nav aria-label={tab.label} className="flex flex-col gap-5">
       {tab.groups.map((group) => (
         <div key={group.title} className="flex flex-col gap-0.5">
           {group.title !== tab.label && (
@@ -28,20 +55,20 @@ export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
             const current = page.href === pathname
 
             return (
-              <DocsLink
+              <SidebarMenuButton
                 key={page.href}
-                aria-current={current ? 'page' : undefined}
-                className={cn(
-                  'cursor-default rounded-lg px-2 py-1 text-sm',
-                  current
-                    ? 'bg-accent text-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                )}
-                href={page.href}
-                onClick={onNavigate}
+                isActive={current}
+                render={
+                  <DocsLink
+                    aria-current={current ? 'page' : undefined}
+                    href={page.href}
+                    onClick={onNavigate}
+                  />
+                }
+                variant={current ? 'default' : 'muted'}
               >
                 {page.title}
-              </DocsLink>
+              </SidebarMenuButton>
             )
           })}
         </div>
