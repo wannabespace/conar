@@ -69,7 +69,7 @@ export const formatColumnTime = (
 const ZONED_TIME_TEXT =
   /^(?:(?<day>\d{4}-\d{2}-\d{2})[ T])?(?<minutes>\d{2}:\d{2})(?<seconds>:\d{2}(?:\.\d+)?)?\s?(?:Z|(?<zoneHours>[+-]\d{2}):?(?<zoneMinutes>\d{2})?)$/iu
 
-/** The viewer's wall-clock text for a time stored with an offset other than theirs. */
+/** The viewer's wall-clock text for a time stored with an offset other than theirs, dated only when the day differs. */
 export const getLocalTime = (value: unknown) => {
   const groups =
     typeof value === 'string' && ZONED_TIME_TEXT.exec(value.trim())?.groups
@@ -90,7 +90,8 @@ export const getLocalTime = (value: unknown) => {
   if (!isValid(date) || format(date, 'xxx') === offset) {
     return
   }
-  return `${format(date, day ? 'yyyy-MM-dd HH:mm' : 'HH:mm')}${seconds}`
+  const sameDay = !day || format(date, 'yyyy-MM-dd') === day
+  return `${format(date, sameDay ? 'HH:mm' : 'yyyy-MM-dd HH:mm')}${seconds}`
 }
 
 const SELECT_COLUMN_ID = '!__(selection_column)__!'

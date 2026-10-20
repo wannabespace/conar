@@ -1,6 +1,13 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
+import { Clock01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Checkbox } from '@tamery/ui/components/checkbox'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type { CSSProperties, ReactNode } from 'react'
 import { useRef } from 'react'
@@ -17,6 +24,29 @@ import { Tag } from './cell-select'
 import { JsonPeek, JsonTree } from './json-tree'
 import type { Column } from './utils'
 import { getLocalTime, hasTabularFigures } from './utils'
+
+const TIME_ZONE = new Intl.DateTimeFormat().resolvedOptions().timeZone
+
+const ZonedTime = ({ local, stored }: { local: string; stored: string }) => (
+  <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
+    <span className="max-w-full shrink-0 truncate tabular-nums">{stored}</span>
+    <span className="text-muted-foreground min-w-0 truncate tabular-nums">
+      <Tooltip>
+        <TooltipTrigger
+          render={<span className="mr-1 inline-flex align-middle" />}
+        >
+          <HugeiconsIcon
+            icon={Clock01Icon}
+            strokeWidth={2}
+            className="size-3!"
+          />
+        </TooltipTrigger>
+        <TooltipContent>Your time ({TIME_ZONE})</TooltipContent>
+      </Tooltip>
+      {local}
+    </span>
+  </span>
+)
 
 const CellValue = ({
   column,
@@ -84,13 +114,20 @@ const CellValue = ({
     if (label !== undefined) {
       return (
         <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
-          <span className="max-w-2/3 shrink-0 truncate tabular-nums">
-            {label}
-          </span>
+          <span className="max-w-2/3 shrink-0 truncate">{label}</span>
           <span className="text-muted-foreground min-w-0 truncate tabular-nums">
             {transformer.toDisplay(value, size)}
           </span>
         </span>
+      )
+    }
+    const localTime = getLocalTime(value)
+    if (localTime) {
+      return (
+        <ZonedTime
+          local={localTime}
+          stored={transformer.toDisplay(value, size)}
+        />
       )
     }
     if (layout === 'documents' && isNested(value)) {
@@ -201,7 +238,7 @@ export const TableCell = ({
       )}
       <CellValue
         column={column}
-        label={label ?? getLocalTime(value)}
+        label={label}
         layout={layout}
         size={size}
         transformer={transformer}
