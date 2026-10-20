@@ -1,6 +1,4 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
-import { Clock01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import {
@@ -30,21 +28,16 @@ const TIME_ZONE = new Intl.DateTimeFormat().resolvedOptions().timeZone
 const ZonedTime = ({ local, stored }: { local: string; stored: string }) => (
   <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
     <span className="max-w-full shrink-0 truncate tabular-nums">{stored}</span>
-    <span className="text-muted-foreground min-w-0 truncate tabular-nums">
-      <Tooltip>
-        <TooltipTrigger
-          render={<span className="mr-1 inline-flex align-middle" />}
-        >
-          <HugeiconsIcon
-            icon={Clock01Icon}
-            strokeWidth={2}
-            className="size-3!"
-          />
-        </TooltipTrigger>
-        <TooltipContent>Your time ({TIME_ZONE})</TooltipContent>
-      </Tooltip>
-      {local}
-    </span>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <span className="text-muted-foreground min-w-0 truncate tabular-nums" />
+        }
+      >
+        {local}
+      </TooltipTrigger>
+      <TooltipContent>Your time ({TIME_ZONE})</TooltipContent>
+    </Tooltip>
   </span>
 )
 
