@@ -216,6 +216,7 @@ export const ConnectionCard = ({
           connection={connection}
           databaseKnown={!needsDetails}
           displayUrl={connectionString?.displayUrl}
+          openResourceId={openResourceId}
           resources={resources}
           selectedResourceName={selectedResourceName}
         />
@@ -224,7 +225,7 @@ export const ConnectionCard = ({
           items={items}
           contentProps={{ className: 'min-w-44' }}
           render={<Button variant="ghost-faint" size="icon-xs" />}
-          className="relative z-10"
+          className="relative z-10 -ml-2"
         />
       </AppContextMenu>
     </div>

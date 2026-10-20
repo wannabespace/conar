@@ -27,7 +27,7 @@ export default defineConfig({
   plugins: [
     electron({
       main: {
-        entry: 'src/main/main.ts',
+        entry: ['src/main/main.ts', 'src/main/query.ts'],
         vite: {
           build: {
             minify: false,

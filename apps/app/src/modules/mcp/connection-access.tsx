@@ -68,6 +68,11 @@ export const ConnectionAccess = () => {
                   className="size-4"
                 />
                 <span data-mask>{connection.name}</span>
+                {connection.label && (
+                  <span data-mask className="text-muted-foreground">
+                    {connection.label}
+                  </span>
+                )}
               </>
             }
           >

@@ -1,10 +1,9 @@
 ---
-title: 'Browse and edit data'
-sidebarTitle: 'Table browser'
-description: 'Find rows, follow relationships, and save edits without writing SQL.'
+title: 'Table browser'
+description: 'Filter, sort and edit rows without writing SQL. Edits stay drafts until you save them.'
 ---
 
-Open a connection and choose a table in the Navigator. Single-click to preview it; double-click to keep its tab open.
+Open a connection and choose a table in the Navigator. Click to preview it. Double-click to keep its tab open.
 
 ## Find the rows you need
 
@@ -21,7 +20,7 @@ Filters, sorting, column order, and widths are remembered per table.
 2. Change the value and press **Enter**. The edit stays as a draft.
 3. Use **Review** to check your edits, then **Save** to write them to the database. **Discard** cancels them.
 
-Use the toolbar's **+ → Add row** for a new row, or right-click a cell and choose **Duplicate Row**. Select row checkboxes and choose **Delete** to remove rows; deletion asks for confirmation.
+Use the toolbar's **+ → Add row** for a new row, or right-click a cell and choose **Duplicate Row**. A new row shows **Discard row** where the checkbox would be, and the same action is **Discard Row** on the cell menu. Select row checkboxes and choose **Delete** to remove saved rows; deletion asks for confirmation.
 
 You can paste a block from a spreadsheet, copy selected cells back to it, and undo draft edits with **Cmd/Ctrl+Z**. A primary key is required to add or edit rows; generated columns are read-only.
 
@@ -32,6 +31,8 @@ Changing filters or sorting clears staged cell edits. Save them first; undo can 
 Switch to **Documents** view to read one record at a time, with expandable JSON. In the grid, resize or reorder columns by dragging, or use a column's menu to hide or pin it.
 
 The column menu also offers **Distinct Values** to inspect common values, and **Show Labels** to display a related name beside a foreign key.
+
+A time stored with a time zone other than yours shows the stored value, then your local time.
 
 ## Change the structure
 

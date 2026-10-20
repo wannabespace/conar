@@ -1,93 +1,45 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "theme": "almond",
-  "name": "Tamery",
-  "description": "Documentation for Tamery, the AI database client for PostgreSQL, MySQL, MariaDB, SQL Server, ClickHouse and SQLite: connections, SQL editor, AI assistant, CLI and MCP.",
-  "colors": {
-    "primary": "#497def",
-    "light": "#a4c4f8",
-    "dark": "#040404"
-  },
-  "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "App",
-        "groups": [
-          {
-            "group": "Get started",
-            "pages": ["introduction", "quickstart", "installation"]
-          },
-          {
-            "group": "Connections",
-            "pages": [
-              "connections/overview",
-              "connections/postgresql",
-              "connections/mysql",
-              "connections/mssql",
-              "connections/clickhouse",
-              "connections/sqlite",
-              "connections/security"
-            ]
-          },
-          {
-            "group": "Features",
-            "pages": [
-              "features/table-browser",
-              "features/sql-editor",
-              "features/ai-assistant",
-              "features/schema-visualizer",
-              "features/definitions",
-              "features/workspaces"
-            ]
-          },
-          {
-            "group": "Account and billing",
-            "pages": ["account/plans", "account/ai-usage", "account/settings"]
-          }
+        "group": "Get started",
+        "pages": ["introduction", "quickstart", "installation"]
+      },
+      {
+        "group": "Connections",
+        "pages": [
+          "connections/overview",
+          "connections/postgresql",
+          "connections/mysql",
+          "connections/mssql",
+          "connections/clickhouse",
+          "connections/sqlite",
+          "connections/security"
         ]
       },
       {
-        "tab": "CLI",
-        "groups": [
-          {
-            "group": "CLI",
-            "pages": ["cli/overview", "cli/commands"]
-          }
+        "group": "Features",
+        "pages": [
+          "features/table-browser",
+          "features/sql-editor",
+          "features/ai-assistant",
+          "features/schema-visualizer",
+          "features/definitions",
+          "features/workspaces"
         ]
       },
       {
-        "tab": "MCP",
+        "group": "MCP",
         "pages": ["mcp/overview"]
+      },
+      {
+        "group": "CLI",
+        "pages": ["cli/overview", "cli/commands"]
+      },
+      {
+        "group": "Account and billing",
+        "pages": ["account/plans", "account/ai-usage", "account/settings"]
       }
     ]
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Website",
-        "href": "https://tamery.app"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Download",
-      "href": "https://tamery.app/download"
-    }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/tamery_app",
-      "github": "https://github.com/wannabespace/tamery"
-    }
-  },
-  "seo": {
-    "metatags": {
-      "msvalidate.01": "1475164F19E362EBC46DEE1D9813275A",
-      "twitter:site": "@tamery_app"
-    }
-  },
-  "fonts": {
-    "family": "Geist"
   }
 }

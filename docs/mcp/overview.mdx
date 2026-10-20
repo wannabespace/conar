@@ -1,7 +1,7 @@
 ---
-title: 'Connect your AI agent'
+title: 'MCP server'
 sidebarTitle: 'Overview'
-description: 'Use Tamery connections from Claude Code, Codex, Cursor, and other MCP clients.'
+description: 'Let Claude Code, Codex, Cursor and other agents query your connections. Writes wait for your approval by default.'
 ---
 
 Tamery's desktop app includes an MCP server. Your coding agent can inspect tables and run SQL through your saved connections, without putting connection strings in its config.
@@ -34,7 +34,7 @@ Access settings apply on this device. For database-enforced read-only access, us
 
 With **Ask before writing**, Tamery shows the SQL before it runs. Choose **Run** to apply it or **Decline** to refuse. A notification tells you when an agent is waiting.
 
-Check the statement carefully, especially its `WHERE` clause. Any row-count estimate is approximate.
+Check the `WHERE` clause. Row-count estimates are approximate.
 
 ## Available tools
 

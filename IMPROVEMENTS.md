@@ -125,6 +125,12 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Secrets from a password manager.** Accept `op://vault/item/password` (1Password) and Keychain references in the password field, resolved at connect time, so a synced connection string never holds the secret itself.
 - **A bare host pasted on a SQLite engine moves to a server.** With SQLite, Turso or D1 chosen, a paste that names only a host with no telling port (`db.example.com`) names no engine, so it stays on that engine and fills nothing visible. A host with no scheme is almost never a SQLite location, so the form could switch to a server engine.
 
+## Desktop app
+
+- **Find local databases off the main thread.** The first `localDatabases.find` loads the finders and the keyring addon in main and stalls every window for up to 1.5 s on a cold start. Running the finders in the database utility process would fix it, but Keychain reads must stay in a process whose prompt names Tamery (`architecture.md` → Device key), so `unlock` stays in main.
+- **Attach the SSH host-key dialog to the window that asked.** With no focused window it opens app-modal, which pauses main's event loop until it is answered.
+- **Record a trace from the Help menu.** Diagnosing a freeze took a shell script that relaunches the app with Chromium's startup tracing. A Help → Record performance trace item on Electron's `contentTracing` would let anyone send one.
+
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
@@ -151,6 +157,12 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **The deep-link status is a hand-built `Empty`.** `deep-link/open-status.tsx` stacks logo, title, description and action by hand; the kit `Empty` the error page uses covers it, at the cost of a small visual change.
 - **Redirect conar.app to tamery.app.** Search Console still lists `conar.app` as a page linking to the home page and gets "conar app" searches; a 301 from every legacy Conar URL to its Tamery counterpart would move that traffic and link weight over instead of splitting it.
 - **`/email-code` without an email answers 500.** Opening the page bare (a crawler or a stale bookmark) throws on search validation instead of sending the visitor back to `/sign-in`.
+- **Track docs search.** `apps/docs` has no PostHog, so nobody sees which questions the docs fail to answer. Counting searches and empty results (no query text) would show the gaps.
+- **Shortcuts in the docs as keycaps.** Pages spell shortcuts as bold text (`Cmd+Enter` / `Ctrl+Enter` in two columns); a `<Shortcut keys="Mod+Enter" />` MDX component drawing the kit `KbdHotkey` for the reader's OS would show one shortcut instead of a platform table.
+- **Docs on-page bar names a section before you reach it.** On narrow screens Fumadocs' active-anchor fallback marks the first heading while the reader is still above it, so the bar reads "On this page · SSL" on the intro. Showing the label alone until a heading has scrolled past would be truthful.
+- **Docs sitemap with `lastmod`.** `apps/docs` lists URLs only; Bing leans on `lastmod` to decide what to recrawl. Fumadocs can read each page's git date, but the build needs the git history to do it.
+- **Docs descriptions sized for search results.** Many page descriptions are under 80 characters, so Google often writes its own snippet. Descriptions near 120 to 155 characters would control what searchers read; they also print under each page title, so the copy has to work there too.
+- **A docs social image.** Docs pages share the site's `og-image.png`; a per-page image with the page title would make shared links recognisable.
 
 ## Keyboard
 
@@ -218,3 +230,5 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
 - **Link straight to the Support form from emails.** The early-access email can only say "click your avatar and pick Support"; a deep link that opens the Support dialog would turn the feedback ask into one click.
 - **Non-blocking Paper shader compilation.** The library checks WebGL compilation synchronously. Adopt upstream asynchronous initialization when available so cold startup can avoid compilation stalls as well as keeping them out of entrance animations.
+- **One unknown connection type should not empty the whole list.** A synced row whose `type` or `provider` this build does not know (a newer engine, or another branch on the shared dev database) fails validation for the whole batch: the list shows no connections and an error toast repeats. Skipping the rows it cannot read, with one quiet "update Tamery to see N more" hint, would keep the rest usable on an older desktop build.
+- **Copy the address from the connection row.** The row's address tooltip shows the full host, but copying it still means the ⋯ menu's full string; the address itself could copy on ⌘C while the row has focus.

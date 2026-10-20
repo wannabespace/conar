@@ -1,17 +1,5 @@
 catalogMode: prefer
 cleanupUnusedCatalogs: true
-minimumReleaseAgeExclude:
-  - motion-panels
-  - '@orpc/client@2.0.0-beta.44'
-  - '@orpc/contract@2.0.0-beta.44'
-  - '@orpc/json-schema@2.0.0-beta.44'
-  - '@orpc/openapi@2.0.0-beta.44'
-  - '@orpc/publisher@2.0.0-beta.44'
-  - '@orpc/ratelimit@2.0.0-beta.44'
-  - '@orpc/server@2.0.0-beta.44'
-  - '@orpc/shared@2.0.0-beta.44'
-  - '@orpc/tanstack-query@2.0.0-beta.44'
-  - permix@4.4.0
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -120,7 +108,6 @@ catalog:
   mysql2: ^3.24.6
   nanoid: ^6.0.2
   nitro: 3.0.260903-beta
-  node-modules-inspector: ^2.7.0
   npm-run-all2: ^9.0.3
   open: ^11.0.4
   ora: ^9.4.1
@@ -170,7 +157,10 @@ catalog:
   '@tanstack/react-router-ssr-query': 1.167.3
   ini: ^7.0.0
   fast-xml-parser: ^5.11.2
+  fumadocs-core: ^16.17.5
+  fumadocs-mdx: ^15.4.7
   '@types/ini': ^4.1.1
+  '@types/mdx': ^2.0.13
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false

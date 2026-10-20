@@ -107,7 +107,7 @@ export const createMcpServer = (
     {
       annotations: { readOnlyHint: true },
       description:
-        'List the database connections saved in Tamery: id, name, engine, the resources (databases) opened in it, and the access the user gave agents: "read" (query only), "ask" (each execute waits for the user to approve it) or "write" (execute runs at once).',
+        'List the database connections saved in Tamery: id, name, the label the user groups it under (e.g. prod, staging; several connections can share a name and differ only by label), engine, the resources (databases) opened in it, and the access the user gave agents: "read" (query only), "ask" (each execute waits for the user to approve it) or "write" (execute runs at once).',
     },
     ({ signal }) =>
       runLogged('list_connections', {}, async () => {
