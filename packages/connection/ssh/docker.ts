@@ -11,28 +11,24 @@ const UNRESOLVED = /resol|not known|no address/iu
 
 const LOOKUP_TIMEOUT = 5000
 
-const SERVICE_LABEL = 'com.docker.compose.service'
-
 // Single quotes and a pipe are the only shell syntax used, so a fish or csh login shell runs it too, and the host never enters the command.
-const LIST_CONTAINERS = `docker ps -q | xargs docker inspect -f '{{.Name}} {{index .Config.Labels "${SERVICE_LABEL}"}}{{range .NetworkSettings.Networks}} {{.IPAddress}}{{end}}'`
+const LIST_CONTAINERS = `docker ps -q | xargs docker inspect -f '{{.Name}} {{index .Config.Labels "com.docker.compose.service"}}{{range .NetworkSettings.Networks}} {{.IPAddress}}{{end}}'`
 
-const lookups = new WeakMap<Client, Map<string, Promise<string | undefined>>>()
-
-const run = async (client: Client, command: string) => {
-  const channel = await promisify(client.exec.bind(client))(command)
-  const timer = setTimeout(() => {
-    channel.emit('error', new Error(`${command} timed out`))
-    channel.close()
-  }, LOOKUP_TIMEOUT)
-  try {
-    return await Promise.all([text(channel), text(channel.stderr)])
-  } finally {
-    clearTimeout(timer)
-  }
-}
+const lookups = new WeakMap<Client, Map<string, Promise<string | null>>>()
 
 const lookUp = async (client: Client, host: string) => {
-  const listed = await Result.tryPromise(() => run(client, LIST_CONTAINERS))
+  const listed = await Result.tryPromise(async () => {
+    const channel = await promisify(client.exec.bind(client))(LIST_CONTAINERS)
+    const timer = setTimeout(() => {
+      channel.emit('error', new Error('docker ps timed out'))
+      channel.close()
+    }, LOOKUP_TIMEOUT)
+    try {
+      return await Promise.all([text(channel), text(channel.stderr)])
+    } finally {
+      clearTimeout(timer)
+    }
+  })
   const [inspected, errors] = listed.unwrapOr(['', ''])
   if (/permission denied/iu.test(errors)) {
     throw tunnelError(
@@ -53,12 +49,12 @@ const lookUp = async (client: Client, host: string) => {
       `Several containers run the service ${host}: ${ofService.map((container) => container.name).join(', ')}. Use the container name as the host.`
     )
   }
-  return (named ?? ofService[0])?.address
+  return (named ?? ofService[0])?.address ?? null
 }
 
-const containerAddress = async (client: Client, host: string) => {
+const getContainerAddress = async (client: Client, host: string) => {
   const pending =
-    lookups.get(client) ?? new Map<string, Promise<string | undefined>>()
+    lookups.get(client) ?? new Map<string, Promise<string | null>>()
   lookups.set(client, pending)
   const address = pending.get(host) ?? lookUp(client, host)
   pending.set(host, address)
@@ -80,10 +76,10 @@ export const forwardOut = async (
   try {
     return await forward(host)
   } catch (error) {
-    const address =
-      error instanceof Error && UNRESOLVED.test(error.message)
-        ? await containerAddress(client, host)
-        : undefined
+    if (!(error instanceof Error && UNRESOLVED.test(error.message))) {
+      throw error
+    }
+    const address = await getContainerAddress(client, host)
     if (!address) {
       throw error
     }

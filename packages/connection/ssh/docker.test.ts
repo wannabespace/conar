@@ -21,18 +21,17 @@ const sshHost = ({
   const client = {
     exec: (command: string, done: (error?: Error, out?: Readable) => void) => {
       commands.push(command)
-      if (docker === 'hangs') {
-        const channel = Object.assign(new PassThrough(), {
-          close: () => closed.push(command),
-          stderr: new PassThrough(),
-        })
-        done(undefined, channel)
-        return
-      }
-      const channel = Object.assign(Readable.from([docker.stdout]), {
-        stderr: Readable.from([docker.stderr ?? '']),
-      })
-      done(undefined, channel)
+      done(
+        undefined,
+        docker === 'hangs'
+          ? Object.assign(new PassThrough(), {
+              close: () => closed.push(command),
+              stderr: new PassThrough(),
+            })
+          : Object.assign(Readable.from([docker.stdout]), {
+              stderr: Readable.from([docker.stderr ?? '']),
+            })
+      )
     },
     forwardOut: (
       _source: string,
