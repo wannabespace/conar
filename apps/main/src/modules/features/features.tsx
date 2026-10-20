@@ -27,36 +27,23 @@ export const Features = () => (
     </Reveal>
     <div className="mt-10 grid gap-4 md:grid-cols-3">
       <BentoCard
-        className="min-h-128 md:row-span-2"
-        title="Ask in plain English"
-        description="The assistant knows your schema. Ask a question and get the query, the answer and a fix when something fails."
-      >
-        <AskIllustration />
-      </BentoCard>
-      <BentoCard
-        className="md:col-span-2"
-        title="Filters from a sentence"
-        description="Type what you want to see and Tamery turns it into filters you can still edit by hand."
-      >
-        <FilterIllustration />
-      </BentoCard>
-      <BentoCard
         title="One shortcut away"
         description="Press ⌘P to open a table, start a query or chat with AI."
       >
         <KeyboardIllustration />
       </BentoCard>
       <BentoCard
+        className="min-h-128 md:col-start-2 md:row-span-2"
+        title="Ask in plain English"
+        description="The assistant knows your schema. Ask a question and get the query, the answer and a fix when something fails."
+      >
+        <AskIllustration />
+      </BentoCard>
+      <BentoCard
         title="Synced across devices"
         description="Connections follow you everywhere, with or without the password."
       >
         <SyncIllustration />
-      </BentoCard>
-      <BentoCard
-        title="Completion that knows your data"
-        description="The SQL editor suggests tables, columns and the values a column takes, checked against your live schema."
-      >
-        <CompletionIllustration />
       </BentoCard>
       <BentoCard
         title="See your schema"
@@ -69,6 +56,19 @@ export const Features = () => (
         description="Send anyone a read-only link to a table, with your filters and columns. Opening it needs no account."
       >
         <ShareIllustration />
+      </BentoCard>
+      <BentoCard
+        className="md:col-span-2"
+        title="Filters from a sentence"
+        description="Type what you want to see and Tamery turns it into filters you can still edit by hand."
+      >
+        <FilterIllustration />
+      </BentoCard>
+      <BentoCard
+        title="Completion that knows your data"
+        description="The SQL editor suggests tables, columns and the values a column takes, checked against your live schema."
+      >
+        <CompletionIllustration />
       </BentoCard>
     </div>
   </section>
