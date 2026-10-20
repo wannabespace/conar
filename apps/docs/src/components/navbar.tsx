@@ -53,7 +53,7 @@ export const Navbar = () => {
         </a>
         <Link
           className="text-muted-foreground hover:text-foreground cursor-default transition-colors"
-          params={{ _splat: '' }}
+          params={{ _splat: 'introduction' }}
           to="/$"
         >
           Docs
