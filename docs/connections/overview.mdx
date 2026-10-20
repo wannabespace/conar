@@ -44,6 +44,8 @@ The desktop app connects directly. In the web app, run [`tamery proxy`](/cli/com
 
 For a database behind an SSH bastion, turn on **SSH tunnel** in the connection form. Use your SSH agent, a key file, a pasted key, or a password. SSH tunnels work on desktop only.
 
+For a database in Docker on that server, use its container or Compose service name as the host, like `db`, and the port inside the container. When the server can't resolve that name, Tamery finds the container there, so the database needs no published port. Your SSH user needs access to Docker.
+
 ## If the test fails
 
 Tamery names the likely cause and offers a fix when it has one. Usual suspects: the host, the port, the password, SSL settings, or an allowlist of IP addresses on your provider's side.
