@@ -1,5 +1,6 @@
 import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { shareRefreshLabels } from '@tamery/shared/enums/share-refresh'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import {
@@ -47,69 +48,76 @@ const SharePage = () => {
   )
 
   return (
-    <div className="flex h-dvh flex-col p-2">
-      <main className="bg-background ring-foreground/4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring">
-        <header className="flex shrink-0 flex-col gap-2 px-10 pt-12 pb-8">
-          <h1
-            data-mask
-            className="text-3xl font-semibold tracking-tight text-balance"
-          >
-            {first.name}
-          </h1>
-          {first.description && (
-            <p data-mask className="text-muted-foreground max-w-2xl text-sm">
-              {first.description}
-            </p>
-          )}
-          {first.filters.length > 0 && (
-            <div data-mask className="flex flex-wrap gap-1">
-              {first.filters.map(({ column, operator, value }) => (
-                <FilterChip
-                  key={`${column}-${operator}-${value}`}
-                  column={column}
-                  operator={operator}
-                  value={value ?? undefined}
-                />
-              ))}
-            </div>
-          )}
-        </header>
-        <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col border-t">
-          {rows.length === 0 ? (
-            <Empty size="sm">
-              <EmptyHeader>
-                <EmptyMedia variant="muted">
-                  <HugeiconsIcon icon={LayoutTable02Icon} strokeWidth={2} />
-                </EmptyMedia>
-                <EmptyTitle>No rows</EmptyTitle>
-                <EmptyDescription>
-                  Nothing in this table matches.
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          ) : (
-            <ShareGrid
-              columns={first.columns}
-              isFetching={isFetching}
-              onEndReached={() => hasNextPage && fetchNextPage()}
-              rows={rows}
-              search={search}
-            />
-          )}
-        </div>
-      </main>
-      <footer className="flex shrink-0 justify-center pt-3 pb-1">
-        <a
-          href={import.meta.env.VITE_PUBLIC_MAIN_URL}
-          className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs"
+    <div className="mx-auto flex h-dvh w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6">
+      <header className="flex shrink-0 flex-col gap-2 px-4">
+        <h1
+          data-mask
+          className="text-3xl font-semibold tracking-tight text-balance"
         >
-          <AppLogo className="size-3.5" />
-          Made with Tamery
-        </a>
-      </footer>
+          {first.name}
+        </h1>
+        {first.description && (
+          <p data-mask className="text-muted-foreground max-w-2xl text-sm">
+            {first.description}
+          </p>
+        )}
+        <p className="text-muted-foreground text-xs">
+          {`${plural(first.columns.length, 'column')} · ${shareRefreshLabels[first.refresh]}`}
+        </p>
+        {first.filters.length > 0 && (
+          <div data-mask className="flex flex-wrap gap-1 pt-1">
+            {first.filters.map(({ column, operator, value }) => (
+              <FilterChip
+                key={`${column}-${operator}-${value}`}
+                column={column}
+                operator={operator}
+                value={value ?? undefined}
+              />
+            ))}
+          </div>
+        )}
+      </header>
+      <main className="bg-background ring-foreground/4 flex min-h-0 flex-col overflow-hidden rounded-xl ring">
+        {rows.length === 0 ? (
+          <Empty size="sm">
+            <EmptyHeader>
+              <EmptyMedia variant="muted">
+                <HugeiconsIcon icon={LayoutTable02Icon} strokeWidth={2} />
+              </EmptyMedia>
+              <EmptyTitle>No rows</EmptyTitle>
+              <EmptyDescription>
+                Nothing in this table matches.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <ShareGrid
+            columns={first.columns}
+            isFetching={isFetching}
+            onEndReached={() => hasNextPage && fetchNextPage()}
+            rows={rows}
+            search={search}
+          />
+        )}
+        <footer className="text-muted-foreground flex h-9 shrink-0 items-center gap-2 border-t px-4 text-xs">
+          <span className="tabular-nums">
+            {hasNextPage ? `${rows.length}+ rows` : plural(rows.length, 'row')}
+          </span>
+          <a
+            href={import.meta.env.VITE_PUBLIC_MAIN_URL}
+            className="text-muted-foreground hover:text-foreground ml-auto flex items-center gap-1.5"
+          >
+            <AppLogo className="size-3.5" />
+            Made with Tamery
+          </a>
+        </footer>
+      </main>
     </div>
   )
 }
+
+const plural = (count: number, noun: string) =>
+  `${count} ${noun}${count === 1 ? '' : 's'}`
 
 export const Route = createFileRoute('/$shareId')({
   validateSearch: shareSearch,
