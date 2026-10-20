@@ -50,7 +50,7 @@ export const ShareGrid = ({
   const kindOf = (id: string) => kinds.get(id) ?? getColumnKind('')
 
   return (
-    <div className="min-h-0 flex-1 border-t">
+    <div className="min-h-0 flex-1">
       <Grid
         scrollRef={scrollRef}
         isFetching={isFetching}
