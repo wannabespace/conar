@@ -1,8 +1,12 @@
 import { fromWire, toWire } from '@tamery/mongo/values'
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import { likeToRegex, toMongoPipeline } from '@tamery/shared/filters'
-import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
+import {
+  clickhouseDateTime,
+  likeToRegex,
+  toMongoPipeline,
+} from '@tamery/shared/filters'
+import type { ActiveFilter, ColumnTypes } from '@tamery/shared/filters'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
@@ -36,8 +40,6 @@ export const textContains: Record<SqlDialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), 'text'), 'like', pattern),
 }
 
-export type ColumnTypes = { id: string; type?: string }[]
-
 export type BindValue = (columnType: string, value: unknown) => unknown
 
 const bindJsonAsText = (dialect: Dialect): BindValue => {
@@ -56,17 +58,6 @@ const bindJsonAsText = (dialect: Dialect): BindValue => {
 
 const clickhouseJsonColumnType = getCapabilities(Dialect.ClickHouse).columnTypes
   .json
-const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
-
-// Reads come back ISO (`date_time_output_format`), which a DateTime comparison or cast cannot parse.
-const clickhouseDateTime = (columnType: string, value: unknown) => {
-  const dateTime =
-    typeof value === 'string' && clickhouseDateTimeType.exec(columnType)
-  return dateTime
-    ? sql`parseDateTime64BestEffort(${value}, ${Number(dateTime.groups?.precision ?? 0)})`
-    : value
-}
-
 const clickhouseBind =
   (parseJson: (columnType: string, json: string) => unknown): BindValue =>
   (columnType, value) => {
@@ -157,24 +148,6 @@ export const matchesPrimaryKeys = (
     )
   )
 
-export const clickhouseFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
-    clickhouseDateTime(
-      columns.find(({ id }) => id === column)?.type ?? '',
-      value
-    )
-
-const sqliteBooleanType = getCapabilities(Dialect.SQLite).columnTypes.boolean
-
-// SQLite stores a boolean as 1 or 0, so the filter's `true` text never equals it.
-export const sqliteFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
-    (value === 'true' || value === 'false') &&
-    sqliteBooleanType?.test(columns.find(({ id }) => id === column)?.type ?? '')
-      ? Number(value === 'true')
-      : value
 const definedFields = (values: Record<string, unknown>) =>
   Object.fromEntries(
     Object.entries(values).filter(([, value]) => value !== undefined)

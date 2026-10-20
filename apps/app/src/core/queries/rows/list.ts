@@ -1,8 +1,12 @@
-import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
-import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
+import { selectPage } from '@tamery/connection/queries/select-page'
+import type { ActiveFilter, ColumnTypes } from '@tamery/shared/filters'
+import {
+  clickhouseFilterValues,
+  EQUAL_FILTER,
+  sqliteFilterValues,
+} from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import type { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -12,13 +16,7 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import type { ColumnTypes } from './shape'
-import {
-  clickhouseFilterValues,
-  fromMongodbDocument,
-  mongodbMatch,
-  sqliteFilterValues,
-} from './shape'
+import { fromMongodbDocument, mongodbMatch } from './shape'
 
 const rowType = type('Record<string, unknown>')
 
@@ -40,72 +38,39 @@ export interface RowsQueryProps {
   }
 }
 
-const orderEntries = (orderBy: Record<string, 'ASC' | 'DESC'> | undefined) =>
-  Object.entries(orderBy ?? {}) as [string, 'ASC' | 'DESC'][]
-
-const selectPage = (
-  // oxlint-disable-next-line ts/no-explicit-any
-  db: Kysely<any>,
-  {
-    limit = DEFAULT_PAGE_LIMIT,
-    select,
-    offset,
-    table,
-    schema,
-    query: { orderBy, filters, filtersConcatOperator },
-  }: RowsQueryProps & { offset: number },
-  bind?: FilterValueBinding
-) => {
-  let query = db
-    .withSchema(schema)
-    .$extendTables<{ [table]: Record<string, unknown> }>()
-    .selectFrom(table)
-
-  query = select === undefined ? query.selectAll() : query.select(select)
-
-  if (filters !== undefined) {
-    query = query.where((eb) =>
-      toKyselyFilter(eb, filters, filtersConcatOperator, bind)
-    )
-  }
-
-  for (const [column, direction] of orderEntries(orderBy)) {
-    query = query.orderBy(
-      column,
-      direction.toLowerCase() as Lowercase<typeof direction>
-    )
-  }
-
-  return query.limit(limit).offset(offset).execute()
-}
-
 export const resourceRowsQuery = memoize(
-  (props: RowsQueryProps & { offset: number }) =>
-    createQuery({
+  ({
+    columns,
+    limit = DEFAULT_PAGE_LIMIT,
+    query,
+    ...props
+  }: RowsQueryProps & { offset: number }) => {
+    const page = { ...props, ...query, limit }
+    return createQuery({
       query: {
         clickhouse: (db) =>
-          selectPage(db, props, clickhouseFilterValues(props.columns)),
+          selectPage(db, page, clickhouseFilterValues(columns)).execute(),
         mongodb: async (db) => {
-          const { orderBy, filters, filtersConcatOperator } = props.query
+          const { orderBy = {}, filters, filtersConcatOperator, offset } = page
           // `_id` last keeps rows that tie on the sort in one order across pages.
-          const sort = { ...orderBy, _id: orderBy?._id ?? 'ASC' }
-          const documents = await db.collection(props.table).aggregate([
-            ...mongodbMatch(props.columns, filters, filtersConcatOperator),
+          const sort = { ...orderBy, _id: orderBy._id ?? 'ASC' }
+          const documents = await db.collection(page.table).aggregate([
+            ...mongodbMatch(columns, filters, filtersConcatOperator),
             {
               $sort: Object.fromEntries(
-                orderEntries(sort).map(([column, direction]) => [
+                Object.entries(sort).map(([column, direction]) => [
                   column,
                   direction === 'ASC' ? 1 : -1,
                 ])
               ),
             },
-            { $skip: props.offset },
-            { $limit: props.limit ?? DEFAULT_PAGE_LIMIT },
-            ...(props.select
+            { $skip: offset },
+            { $limit: limit },
+            ...(page.select
               ? [
                   {
                     $project: Object.fromEntries(
-                      props.select.map((column) => [column, 1])
+                      page.select.map((column) => [column, 1])
                     ),
                   },
                 ]
@@ -113,15 +78,16 @@ export const resourceRowsQuery = memoize(
           ])
           return documents.map(fromMongodbDocument)
         },
-        mssql: (db) => selectPage(db, props),
-        mysql: (db) => selectPage(db, props),
-        oracle: (db) => selectPage(db, props),
-        postgres: (db) => selectPage(db, props),
+        mssql: (db) => selectPage(db, page).execute(),
+        mysql: (db) => selectPage(db, page).execute(),
+        oracle: (db) => selectPage(db, page).execute(),
+        postgres: (db) => selectPage(db, page).execute(),
         sqlite: (db) =>
-          selectPage(db, props, sqliteFilterValues(props.columns)),
+          selectPage(db, page, sqliteFilterValues(columns)).execute(),
       },
       type: rowType.array(),
     })
+  }
 )
 
 export const resourceRowsQueryKey = ({

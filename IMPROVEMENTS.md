@@ -265,3 +265,12 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **AI ghost text and Explain for mongosh.** Inline completion and Explain are SQL-only; `cursor.explain()` and a mongosh FIM prompt would give MongoDB the same.
 - **Run `use <db>` in a MongoDB Query tab.** Only `db.getSiblingDB('x')` reaches another database; reading `use` as switching the tab's resource would match the shell.
 - **Number alignment for MongoDB longs.** A `long` field reads as text, since the shared numeric type pattern cannot learn `long` without catching Oracle's text `LONG`; a per-engine numeric pattern would right-align it.
+
+## Sharing
+
+- **Values rendered by type on the share page.** Cells are plain text today apart from booleans; enums, dates and JSON could reuse the grid's renderers once they live outside `apps/app`.
+- **Viewer filters.** Viewers can only sort and page; a search over the shown columns, narrowing on top of the owner's filters, would cover most "find my row" visits.
+- **A share cache shared across proxy instances.** Each proxy keeps its own bounded page cache and rate limit in memory; Redis would let a second instance reuse the first one's pages and count one limit.
+- **CSV download for viewers.** Left out of the first version; the proxy would need an export read capped well past a page, and the share site a server route turning it into CSV.
+- **Share a MongoDB collection.** Shares compile one Kysely `SELECT`, so Share is hidden for MongoDB; the proxy reading a page through the mongodb executor's `find` would cover collections too.
+- **Share a saved query.** A share is one table; a share of a saved runner query would cover joins and aggregates, with the same read-only and public-host checks.

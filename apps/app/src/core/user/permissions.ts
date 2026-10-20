@@ -25,6 +25,7 @@ const SIGN_IN_HINTS: Partial<Record<keyof Permissions, string>> = {
   ai: 'AI features need an account.',
   connection: GUEST_CONNECTIONS_MESSAGE,
   mcp: 'Unlimited agent queries need an account and Tamery Pro.',
+  share: 'Sharing tables needs an account.',
 }
 
 export const checkOrUpgrade = (...args: Parameters<typeof permix.check>) => {

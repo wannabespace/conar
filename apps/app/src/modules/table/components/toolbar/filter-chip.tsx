@@ -5,6 +5,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter, FilterVia } from '@tamery/shared/filters'
+import { Chip, ChipDivider } from '@tamery/ui/components/custom/filter-chip'
 import {
   Popover,
   PopoverContent,
@@ -29,17 +30,6 @@ export const filterLabel = ({
   column: string
   via?: FilterVia
 }) => (via ? `${via.table}.${via.target}` : column)
-
-export const Chip = (props: React.ComponentProps<'div'>) => (
-  <div
-    {...props}
-    className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring"
-  />
-)
-
-export const ChipDivider = () => (
-  <span aria-hidden className="bg-border w-px shrink-0" />
-)
 
 const ChipSegment = ({
   className,

@@ -1,3 +1,4 @@
+import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect, isSqlDialect } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { unsupported } from '@tamery/shared/unsupported'
@@ -11,7 +12,6 @@ import {
   quoteIdentifier,
 } from '~/core/codegen/utils'
 import { referentialActionClauses } from '~/core/queries/constraints/shape'
-import { coldDialects } from '~/core/runtime/dialects'
 import type { Column } from '~/core/table/cell/utils'
 import { formatSql } from '~/utils/formatter'
 
@@ -59,7 +59,7 @@ export const generateQuerySQL = ({
   if (!isSqlDialect(dialect)) {
     return unsupported('SQL code')()
   }
-  const db = coldDialects[dialect]()
+  const db = coldDialect(dialect)
   const base = db
     .withSchema(schema)
     .$extendTables<{ [table]: Record<string, unknown> }>()

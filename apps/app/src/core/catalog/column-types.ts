@@ -1,4 +1,5 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
+import { SQLITE_BOOLEAN_TYPE } from '@tamery/shared/filters'
 
 import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 
@@ -219,7 +220,7 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
     },
     [Dialect.SQLite]: {
       array: null,
-      boolean: /^boolean$/iu,
+      boolean: SQLITE_BOOLEAN_TYPE,
       bytes: /^blob$/iu,
       dateKeywords: null,
       datesWithTime: null,

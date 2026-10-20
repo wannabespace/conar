@@ -2,6 +2,9 @@ import type { MotionValue } from 'motion/react'
 import { motion, useMotionValue, useTransform } from 'motion/react'
 import { useRef } from 'react'
 
+import { ProductCrop } from './product-crop'
+import { EASE } from './variants'
+
 const CARD_WIDTH = 112
 const HEADER_HEIGHT = 24
 const ROW_HEIGHT = 20
@@ -60,6 +63,13 @@ const Edge = ({
       d={d}
       fill="none"
       strokeWidth={1.5}
+      variants={{
+        hidden: { pathLength: 0 },
+        shown: {
+          pathLength: 1,
+          transition: { delay: 0.5, duration: 0.6, ease: EASE },
+        },
+      }}
       className="stroke-primary"
     />
   )
@@ -68,15 +78,25 @@ const Edge = ({
 const TableCard = ({
   card,
   constraints,
+  delay,
 }: {
   card: Card
   constraints: React.RefObject<HTMLDivElement | null>
+  delay: number
 }) => (
   <motion.div
     drag
     dragConstraints={constraints}
     dragMomentum={false}
     whileDrag={{ scale: 1.04 }}
+    variants={{
+      hidden: { opacity: 0, scale: 0.94 },
+      shown: {
+        opacity: 1,
+        scale: 1,
+        transition: { delay, duration: 0.3, ease: EASE },
+      },
+    }}
     // oxlint-disable-next-line shadcn/no-inline-styles -- each card's start and drag offset are per-card numbers
     style={{ left: card.left, top: card.top, x: card.x, y: card.y }}
     className="bg-popover ring-foreground/4 text-2xs absolute w-28 overflow-hidden rounded-lg shadow-md ring"
@@ -107,28 +127,32 @@ export const SchemaIllustration = () => {
   const items = useCard('order_items', ['order_id', 'product_id'], 36, 132)
 
   return (
-    <div
-      ref={ref}
-      className="absolute inset-x-4 top-2 bottom-4 overflow-hidden"
-    >
-      <svg className="absolute inset-0 size-full">
-        <defs>
-          <pattern
-            id="schema-dots"
-            width="12"
-            height="12"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="1" cy="1" r="1" className="fill-secondary" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#schema-dots)" />
-        <Edge from={users} fromColumn="id" to={orders} toColumn="user_id" />
-        <Edge from={items} fromColumn="order_id" to={orders} toColumn="id" />
-      </svg>
-      {[users, orders, items].map((card) => (
-        <TableCard key={card.name} card={card} constraints={ref} />
-      ))}
-    </div>
+    <ProductCrop>
+      <div ref={ref} className="relative size-full">
+        <svg className="absolute inset-0 size-full">
+          <defs>
+            <pattern
+              id="schema-dots"
+              width="12"
+              height="12"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="1" cy="1" r="1" className="fill-secondary" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#schema-dots)" />
+          <Edge from={users} fromColumn="id" to={orders} toColumn="user_id" />
+          <Edge from={items} fromColumn="order_id" to={orders} toColumn="id" />
+        </svg>
+        {[users, orders, items].map((card, index) => (
+          <TableCard
+            key={card.name}
+            card={card}
+            constraints={ref}
+            delay={(index + 1) / 10}
+          />
+        ))}
+      </div>
+    </ProductCrop>
   )
 }

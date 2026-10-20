@@ -1,6 +1,14 @@
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
 
-import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
+import { prepareQuery } from '@tamery/connection/queries/dialects/clickhouse/prepare-query'
+import { coldDialect } from '@tamery/connection/queries/kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import {
+  clickhouseFilterValues,
+  EQUAL_FILTER,
+  sqliteFilterValues,
+  toKyselyFilter,
+} from '@tamery/shared/filters'
 import {
   Kysely,
   PostgresAdapter,
@@ -12,22 +20,13 @@ import {
 import {
   bindRow,
   bindValue,
-  clickhouseFilterValues,
   clickhouseWrite,
   matchesPrimaryKeys,
-  sqliteFilterValues,
 } from './shape'
 
-mock.module('~/core/runtime/dialects/driver', () => ({
-  createKyselyDriver: mock(),
-}))
-
-const { clickhouseColdDialect, prepareQuery } =
-  await import('~/core/runtime/dialects/clickhouse')
-
-const clickhouse = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: clickhouseColdDialect(),
-})
+const clickhouse = coldDialect(Dialect.ClickHouse).withTables<
+  Record<string, Record<string, unknown>>
+>()
 
 const postgres = new Kysely<Record<string, Record<string, unknown>>>({
   dialect: {

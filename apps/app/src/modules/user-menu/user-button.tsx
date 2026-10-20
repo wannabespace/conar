@@ -9,6 +9,7 @@ import {
   Message01Icon,
   NewTwitterIcon,
   Settings02Icon,
+  Share08Icon,
   UserIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -135,6 +136,20 @@ export const UserButton = ({
             <ShortcutKbd shortcut="settings" />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
+        {!data?.user.isAnonymous && (
+          <DropdownMenuItem
+            render={
+              <Link
+                to="/settings/$section"
+                params={{ section: 'shares' }}
+                activateOn="click"
+              />
+            }
+          >
+            <HugeiconsIcon icon={Share08Icon} strokeWidth={2} />
+            Shares
+          </DropdownMenuItem>
+        )}
         {window.electron && (
           <DropdownMenuItem
             onClick={() =>

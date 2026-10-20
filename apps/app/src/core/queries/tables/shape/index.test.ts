@@ -1,5 +1,6 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 
+import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { DialectAdapter, QueryCompiler } from 'kysely'
 import {
@@ -56,13 +57,7 @@ const postgres = cold(
   () => new PostgresQueryCompiler()
 )
 
-mock.module('~/core/runtime/dialects/driver', () => ({
-  createKyselyDriver: mock(),
-}))
-
-const { oracleColdDialect } = await import('~/core/runtime/dialects/oracle')
-
-const oracle = new Kysely<never>({ dialect: oracleColdDialect() })
+const oracle = coldDialect(Dialect.Oracle)
 
 const target = { schema: 's', table: 't' }
 const id = { name: 'id', nullable: false, primaryKey: true, type: 'integer' }

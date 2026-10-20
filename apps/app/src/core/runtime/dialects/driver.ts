@@ -1,5 +1,6 @@
 import type { QueryExecuteResult } from '@tamery/connection/queries'
 import { rowObjects } from '@tamery/connection/queries'
+import { toQueryPayload } from '@tamery/connection/queries/kysely'
 import { describeConnectionString } from '@tamery/connection/utils'
 import type { Dialect, SqlDialect } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
@@ -206,11 +207,7 @@ export const createStatementRunner = (
 
 export const createKyselyDriver = (
   dialect: SqlDialect,
-  options: DialectOptions,
-  transformQuery = (compiledQuery: CompiledQuery): QueryPayload => ({
-    query: compiledQuery.sql,
-    values: compiledQuery.parameters as unknown[],
-  })
+  options: DialectOptions
 ) => {
   const { provider, run } = createStatementRunner(dialect, options)
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
@@ -221,7 +218,7 @@ export const createKyselyDriver = (
   ) => {
     const { result } = await run(
       {
-        ...transformQuery(compiledQuery),
+        ...toQueryPayload(dialect, compiledQuery),
         queryId: compiledQuery.queryId.queryId,
       },
       txId,
