@@ -3,7 +3,8 @@ import type { FilterOperator } from '@tamery/shared/filters'
 import { camelCase } from 'change-case'
 
 import { drizzleType } from '~/core/codegen/column-types'
-import type { DrizzleDialect } from '~/core/codegen/column-types'
+import { isDrizzleDialect } from '~/core/codegen/compatibility'
+import type { DrizzleDialect } from '~/core/codegen/compatibility'
 import { explicitIndexes } from '~/core/codegen/indexes'
 import type {
   QueryParams,
@@ -242,7 +243,7 @@ export const generateSchemaDrizzle = ({
   dialect,
   indexes,
 }: SchemaParams) => {
-  if (dialect === Dialect.ClickHouse || dialect === Dialect.Oracle) {
+  if (!isDrizzleDialect(dialect)) {
     return ''
   }
   const { anyColumn, dialectImportPath, enumFunc, schemaFunc } =

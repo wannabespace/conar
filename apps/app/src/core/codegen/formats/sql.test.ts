@@ -155,6 +155,28 @@ describe('generators (postgres)', () => {
     expect(sql).not.toContain('"a" INT PRIMARY KEY')
   })
 
+  it('drizzle spells a SQLite table with sqlite-core builders', () => {
+    const code = generateSchemaDrizzle({
+      columns: [
+        { id: 'done', isNullable: false, type: 'boolean', uiType: 'raw' },
+        {
+          defaultValue: 'CURRENT_TIMESTAMP',
+          id: 'created',
+          isNullable: false,
+          type: 'text',
+          uiType: 'raw',
+        },
+      ],
+      defaultSchema: 'main',
+      dialect: Dialect.SQLite,
+      schema: 'main',
+      table: 'tasks',
+    })
+    expect(code).toContain("from 'drizzle-orm/sqlite-core'")
+    expect(code).toContain("integer({ mode: 'boolean' })")
+    expect(code).not.toContain('defaultNow')
+  })
+
   it('drizzle omits the drizzle-orm import when nothing needs it', () => {
     const code = generateSchemaDrizzle({
       columns: [{ id: 'a', isNullable: false, type: 'int', uiType: 'raw' }],
