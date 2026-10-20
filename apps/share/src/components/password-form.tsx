@@ -3,6 +3,14 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { PasswordInput } from '@tamery/ui/components/custom/password-input'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useActionState } from 'react'
@@ -36,34 +44,37 @@ export const PasswordForm = ({
   )
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-3 p-4 text-center">
-      <HugeiconsIcon
-        icon={SquareLock02Icon}
-        strokeWidth={2}
-        className="text-muted-foreground size-8"
-      />
-      <h1 className="text-2xl font-semibold tracking-tight text-balance">
-        This table needs a password
-      </h1>
-      <p className="text-muted-foreground max-w-sm text-sm text-balance">
-        Ask the person who shared the link for it.
-      </p>
-      <form action={submit} className="flex w-full max-w-xs flex-col gap-2">
-        <div className="flex gap-2">
-          <PasswordInput
-            name="password"
-            aria-label="Password"
-            aria-invalid={!!error}
-            autoComplete="current-password"
-            autoFocus
-            required
-          />
-          <Button type="submit" disabled={pending}>
-            <LoadingContent loading={pending}>Open</LoadingContent>
-          </Button>
-        </div>
-        {error && <p className="text-destructive text-left text-xs">{error}</p>}
-      </form>
+    <main className="flex min-h-dvh items-center justify-center p-4">
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="muted">
+            <HugeiconsIcon icon={SquareLock02Icon} strokeWidth={2} />
+          </EmptyMedia>
+          <EmptyTitle>This table needs a password</EmptyTitle>
+          <EmptyDescription>
+            {error ? (
+              <span className="text-destructive">{error}</span>
+            ) : (
+              'Ask the person who shared the link for it.'
+            )}
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <form action={submit} className="flex w-full max-w-xs gap-2">
+            <PasswordInput
+              name="password"
+              aria-label="Password"
+              aria-invalid={!!error}
+              autoComplete="current-password"
+              autoFocus
+              required
+            />
+            <Button type="submit" disabled={pending}>
+              <LoadingContent loading={pending}>Open</LoadingContent>
+            </Button>
+          </form>
+        </EmptyContent>
+      </Empty>
     </main>
   )
 }

@@ -1,6 +1,14 @@
 import { Alert02Icon, LinkSquare02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
 import { useRouter } from '@tanstack/react-router'
 
 const STATUSES = {
@@ -22,23 +30,23 @@ export const StatusPage = ({ status }: { status: keyof typeof STATUSES }) => {
   const { description, icon, title } = STATUSES[status]
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-3 p-4 text-center">
-      <HugeiconsIcon
-        icon={icon}
-        strokeWidth={2}
-        className="text-muted-foreground size-8"
-      />
-      <h1 className="text-2xl font-semibold tracking-tight text-balance">
-        {title}
-      </h1>
-      <p className="text-muted-foreground max-w-sm text-sm text-balance">
-        {description}
-      </p>
-      {status === 'unavailable' && (
-        <Button variant="outline" onClick={() => router.invalidate()}>
-          Try again
-        </Button>
-      )}
+    <main className="flex min-h-dvh items-center justify-center p-4">
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="muted">
+            <HugeiconsIcon icon={icon} strokeWidth={2} />
+          </EmptyMedia>
+          <EmptyTitle>{title}</EmptyTitle>
+          <EmptyDescription>{description}</EmptyDescription>
+        </EmptyHeader>
+        {status === 'unavailable' && (
+          <EmptyContent>
+            <Button variant="outline" onClick={() => router.invalidate()}>
+              Try again
+            </Button>
+          </EmptyContent>
+        )}
+      </Empty>
     </main>
   )
 }
