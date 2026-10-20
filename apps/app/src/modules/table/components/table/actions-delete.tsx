@@ -23,7 +23,7 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { useState } from 'react'
+import { createRef, useImperativeHandle, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
@@ -52,7 +52,11 @@ const rowLabel = (primaryKeys: PrimaryKeys) =>
     .map(([column, value]) => `${column} ${display(value)}`)
     .join(' · ')
 
-export const ActionsDelete = ({
+export const deleteRowsDialogRef = createRef<{
+  open: (rows: PrimaryKeys[]) => void
+}>()
+
+export const DeleteRowsDialog = ({
   table,
   schema,
 }: {
@@ -61,22 +65,27 @@ export const ActionsDelete = ({
 }) => {
   const { connectionResource } = useRouteContext()
   const [open, setOpen] = useState(false)
+  const [rows, setRows] = useState<PrimaryKeys[]>([])
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const { columns } = useTableColumnsContext()
-  const selected = useSubscription(sessionStore, {
-    selector: (state) => state.selected,
-  })
 
-  const only = selected.length === 1 ? selected[0] : undefined
-  const noun = only ? 'row' : `${selected.length} rows`
+  useImperativeHandle(deleteRowsDialogRef, () => ({
+    open: (next) => {
+      setRows(next)
+      setOpen(true)
+    },
+  }))
+
+  const only = rows.length === 1 ? rows[0] : undefined
+  const noun = only ? 'row' : `${rows.length} rows`
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     meta: { event: 'rows_deleted' },
     mutationFn: async () => {
       await deleteRowsQuery({
         columns,
-        primaryKeys: selected,
+        primaryKeys: rows,
         schema,
         table,
       }).run(await connectionResourceToQueryParams(connectionResource))
@@ -86,7 +95,7 @@ export const ActionsDelete = ({
     },
     onSuccess: () => {
       const { filters, orderBy } = store.get()
-      toast.success(`${plural(selected.length, 'row')} successfully deleted`)
+      toast.success(`${plural(rows.length, 'row')} successfully deleted`)
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
@@ -102,89 +111,95 @@ export const ActionsDelete = ({
           table,
         }),
       })
-      sessionStore.set((state) => ({ ...state, selected: [] }))
+      const deleted = new Set(rows.map(primaryKeysKey))
+      sessionStore.set((state) => ({
+        ...state,
+        selected: state.selected.filter(
+          (row) => !deleted.has(primaryKeysKey(row))
+        ),
+      }))
     },
   })
 
-  useShortcut('deleteRows', () => setOpen(true), { ignoreInputs: true })
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {only ? (
+              <>
+                The row with{' '}
+                <span data-mask className="text-foreground font-medium">
+                  {rowLabel(only)}
+                </span>
+              </>
+            ) : (
+              'These rows'
+            )}{' '}
+            will be removed from{' '}
+            <span data-mask className="text-foreground font-medium">
+              {table}
+            </span>
+            . This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {!only && (
+          <div className={cn(cardClass, 'overflow-hidden')}>
+            <ScrollArea className="scroll-fade max-h-40">
+              <ul>
+                {rows.map((primaryKeys) => (
+                  <li
+                    key={primaryKeysKey(primaryKeys)}
+                    data-mask
+                    className="border-foreground/6 truncate border-b px-3 py-1.5 text-xs tabular-nums last:border-0"
+                  >
+                    {rowLabel(primaryKeys)}
+                  </li>
+                ))}
+              </ul>
+            </ScrollArea>
+          </div>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="destructive" onClick={() => deleteRows()}>
+            <LoadingContent loading={isDeleting}>Delete {noun}</LoadingContent>
+          </AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+export const ActionsDelete = () => {
+  const sessionStore = useTableSessionStore()
+  const selected = useSubscription(sessionStore, {
+    selector: (state) => state.selected,
+  })
+  const openDialog = () => deleteRowsDialogRef.current?.open(selected)
+
+  useShortcut('deleteRows', openDialog, { ignoreInputs: true })
 
   return (
-    <>
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {only ? (
-                <>
-                  The row with{' '}
-                  <span data-mask className="text-foreground font-medium">
-                    {rowLabel(only)}
-                  </span>
-                </>
-              ) : (
-                'These rows'
-              )}{' '}
-              will be removed from{' '}
-              <span data-mask className="text-foreground font-medium">
-                {table}
-              </span>
-              . This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {!only && (
-            <div className={cn(cardClass, 'overflow-hidden')}>
-              <ScrollArea className="scroll-fade max-h-40">
-                <ul>
-                  {selected.map((primaryKeys) => (
-                    <li
-                      key={primaryKeysKey(primaryKeys)}
-                      data-mask
-                      className="border-foreground/6 truncate border-b px-3 py-1.5 text-xs tabular-nums last:border-0"
-                    >
-                      {rowLabel(primaryKeys)}
-                    </li>
-                  ))}
-                </ul>
-              </ScrollArea>
-            </div>
-          )}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogCancel
-              variant="destructive"
-              onClick={() => deleteRows()}
-            >
-              <LoadingContent loading={isDeleting}>
-                Delete {noun}
-              </LoadingContent>
-            </AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <Tooltip shortcut={<ShortcutKbd shortcut="deleteRows" />}>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="destructive"
-              size="sm"
-              aria-label={`Delete (${selected.length})`}
-              onClick={() => setOpen(true)}
-            />
-          }
-        >
-          <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
-          <span>
-            Delete (
-            <NumberFlow
-              spinTiming={{ duration: 200 }}
-              value={selected.length}
-            />
-            )
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>Delete selected rows</TooltipContent>
-      </Tooltip>
-    </>
+    <Tooltip shortcut={<ShortcutKbd shortcut="deleteRows" />}>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="destructive"
+            size="sm"
+            aria-label={`Delete (${selected.length})`}
+            onClick={openDialog}
+          />
+        }
+      >
+        <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+        <span>
+          Delete (
+          <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />)
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>Delete selected rows</TooltipContent>
+    </Tooltip>
   )
 }
