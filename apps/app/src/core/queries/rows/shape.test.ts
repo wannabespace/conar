@@ -138,6 +138,6 @@ test('a ClickHouse write without format() runs again with JSONExtract', async ()
   })
 
   expect(sent.at(-1)).toBe(
-    `alter table \`events\` update \`tags\` = JSONExtract('{"v":{"a":1}}', 'v', 'Map(String, UInt8)') where \`id\` = 1 settings mutations_sync = 1`
+    `alter table \`events\` update \`tags\` = CAST(JSONExtractKeysAndValues('{"v":{"a":1}}', 'v', 'UInt8'), 'Map(String, UInt8)') where \`id\` = 1 settings mutations_sync = 1`
   )
 })

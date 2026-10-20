@@ -105,10 +105,15 @@ export const bindValue: Record<Dialect, BindValue> = {
 
 const NO_FORMAT_FUNCTION = /Unknown table function format\b/u
 
-// ClickHouse 21.12 has no `format()`. There only `JSONExtract` parses a value, and it writes the type's default for a misfit where `format(JSONEachRow)` rejects it.
-const bindClickhouseWithoutFormat = clickhouseBind(
-  (columnType, json) => sql`JSONExtract(${json}, 'v', ${columnType})`
-)
+const CLICKHOUSE_MAP_TYPE = /^Map\([^,(]+(?:\([^)]*\))?,\s*(?<value>.+)\)$/u
+
+// ClickHouse 21.12 has no `format()`. There only `JSONExtract` parses a value, and it writes the type's default for a misfit where `format(JSONEachRow)` rejects it. It cannot return a Map, so a Map is cast from its key-value pairs; a Map nested in another type stays unwritable there.
+const bindClickhouseWithoutFormat = clickhouseBind((columnType, json) => {
+  const map = CLICKHOUSE_MAP_TYPE.exec(columnType)?.groups
+  return map
+    ? sql`CAST(JSONExtractKeysAndValues(${json}, 'v', ${map.value}), ${columnType})`
+    : sql`JSONExtract(${json}, 'v', ${columnType})`
+})
 
 /** Retries once with the `JSONExtract` binder, so `write` must be a single statement or fail before its first one runs. */
 export const clickhouseWrite = async <T>(
