@@ -1,11 +1,10 @@
 import type { Duplex } from 'node:stream'
-import { promisify } from 'node:util'
 
 import { Result } from 'better-result'
 import type { Client } from 'ssh2'
 
 import { connectionParts } from '../connection-parts'
-import { dockerAddress } from './docker'
+import { forwardOut } from './docker'
 import type { Forwarding } from './forwarding'
 import type { ConfirmHostKey } from './host-key'
 import type { SshTunnel } from './params'
@@ -67,12 +66,7 @@ const openSession = (
       }
       try {
         const connected = await client
-        const channel = await promisify(connected.forwardOut.bind(connected))(
-          '127.0.0.1',
-          0,
-          await dockerAddress(connected, target.host),
-          target.port
-        )
+        const channel = await forwardOut(connected, target.host, target.port)
         channel.once('close', release)
         return channel
       } catch (error) {

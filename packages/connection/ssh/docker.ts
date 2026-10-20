@@ -6,49 +6,46 @@ import type { Client } from 'ssh2'
 
 import { tunnelError } from './params'
 
-// A lookup runs commands on the SSH host, so a dotted host (real DNS) or localhost never triggers one.
-const BARE_NAME = /^(?!localhost$)[a-z0-9][\w-]*$/iu
+// Only a name the SSH host could not resolve falls back to Docker, so a working host or a refused port is never redirected. Covers glibc, musl and BSD getaddrinfo wording.
+const UNRESOLVED = /resol|not known|no address/iu
+
+const LOOKUP_TIMEOUT = 5000
 
 const SERVICE_LABEL = 'com.docker.compose.service'
 
-// Single quotes are the only shell syntax used, so a fish or csh login shell runs it too, and the host never enters the command.
-const INSPECT_FORMAT = `'{{.Name}} {{index .Config.Labels "${SERVICE_LABEL}"}}{{range .NetworkSettings.Networks}} {{.IPAddress}}{{end}}'`
+// Single quotes and a pipe are the only shell syntax used, so a fish or csh login shell runs it too, and the host never enters the command.
+const LIST_CONTAINERS = `docker ps -q | xargs docker inspect -f '{{.Name}} {{index .Config.Labels "${SERVICE_LABEL}"}}{{range .NetworkSettings.Networks}} {{.IPAddress}}{{end}}'`
+
+const lookups = new WeakMap<Client, Map<string, Promise<string | undefined>>>()
 
 const run = async (client: Client, command: string) => {
   const channel = await promisify(client.exec.bind(client))(command)
-  return text(channel)
+  const timer = setTimeout(() => {
+    channel.emit('error', new Error(`${command} timed out`))
+    channel.close()
+  }, LOOKUP_TIMEOUT)
+  try {
+    return await Promise.all([text(channel), text(channel.stderr)])
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
-const listContainers = async (client: Client) => {
-  const running = await run(client, 'docker ps -q')
-  const ids = running.split(/\s+/u).filter(Boolean)
-  if (ids.length === 0) {
-    return []
+const lookUp = async (client: Client, host: string) => {
+  const listed = await Result.tryPromise(() => run(client, LIST_CONTAINERS))
+  const [inspected, errors] = listed.unwrapOr(['', ''])
+  if (/permission denied/iu.test(errors)) {
+    throw tunnelError(
+      `The SSH host can't resolve ${host}, and your SSH user can't run docker there to look for a container of that name. Add the user to the docker group.`
+    )
   }
-  const inspected = await run(
-    client,
-    `docker inspect -f ${INSPECT_FORMAT} ${ids.join(' ')}`
-  )
-  return inspected
+  const containers = inspected
     .split('\n')
     .filter(Boolean)
     .map((line) => {
       const [name = '', service = '', ...addresses] = line.split(' ')
-      return {
-        address: addresses.find(Boolean),
-        name: name.slice(1),
-        service,
-      }
+      return { address: addresses.find(Boolean), name: name.slice(1), service }
     })
-}
-
-/** A bare host names a running container or Compose service on the SSH host; a lookup that finds nothing keeps the host as written. */
-export const dockerAddress = async (client: Client, host: string) => {
-  if (!BARE_NAME.test(host)) {
-    return host
-  }
-  const listed = await Result.tryPromise(() => listContainers(client))
-  const containers = listed.unwrapOr([])
   const named = containers.find((container) => container.name === host)
   const ofService = containers.filter((container) => container.service === host)
   if (!named && ofService.length > 1) {
@@ -56,5 +53,40 @@ export const dockerAddress = async (client: Client, host: string) => {
       `Several containers run the service ${host}: ${ofService.map((container) => container.name).join(', ')}. Use the container name as the host.`
     )
   }
-  return (named ?? ofService[0])?.address ?? host
+  return (named ?? ofService[0])?.address
+}
+
+const containerAddress = async (client: Client, host: string) => {
+  const pending =
+    lookups.get(client) ?? new Map<string, Promise<string | undefined>>()
+  lookups.set(client, pending)
+  const address = pending.get(host) ?? lookUp(client, host)
+  pending.set(host, address)
+  try {
+    return await address
+  } finally {
+    pending.delete(host)
+  }
+}
+
+/** Forwards to the host as the SSH host resolves it; a name it can't resolve goes to the running container or Compose service of that name. */
+export const forwardOut = async (
+  client: Client,
+  host: string,
+  port: number
+) => {
+  const forward = (address: string) =>
+    promisify(client.forwardOut.bind(client))('127.0.0.1', 0, address, port)
+  try {
+    return await forward(host)
+  } catch (error) {
+    const address =
+      error instanceof Error && UNRESOLVED.test(error.message)
+        ? await containerAddress(client, host)
+        : undefined
+    if (!address) {
+      throw error
+    }
+    return forward(address)
+  }
 }
