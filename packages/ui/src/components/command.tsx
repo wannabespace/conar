@@ -63,10 +63,6 @@ export const CommandDialog = ({
   children: React.ReactNode
 }) => (
   <Dialog {...props}>
-    <DialogHeader className="sr-only">
-      <DialogTitle>{title}</DialogTitle>
-      <DialogDescription>{description}</DialogDescription>
-    </DialogHeader>
     <DialogContent
       animated={false}
       className={cn(
@@ -75,6 +71,10 @@ export const CommandDialog = ({
       )}
       showCloseButton={showCloseButton}
     >
+      <DialogHeader className="sr-only">
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
       {children}
     </DialogContent>
   </Dialog>

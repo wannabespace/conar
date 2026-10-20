@@ -153,6 +153,9 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Track docs search.** `apps/docs` has no PostHog, so nobody sees which questions the docs fail to answer. Counting searches and empty results (no query text) would show the gaps.
 - **Shortcuts in the docs as keycaps.** Pages spell shortcuts as bold text (`Cmd+Enter` / `Ctrl+Enter` in two columns); a `<Shortcut keys="Mod+Enter" />` MDX component drawing the kit `KbdHotkey` for the reader's OS would show one shortcut instead of a platform table.
 - **Docs on-page bar names a section before you reach it.** On narrow screens Fumadocs' active-anchor fallback marks the first heading while the reader is still above it, so the bar reads "On this page · SSL" on the intro. Showing the label alone until a heading has scrolled past would be truthful.
+- **Docs sitemap with `lastmod`.** `apps/docs` lists URLs only; Bing leans on `lastmod` to decide what to recrawl. Fumadocs can read each page's git date, but the build needs the git history to do it.
+- **Docs descriptions sized for search results.** Most page descriptions run 45 to 80 characters, so Google often writes its own snippet. Descriptions near 120 to 155 characters would control what searchers read; they also print under each page title, so the copy has to work there too.
+- **A docs social image.** Docs pages share the site's `og-image.png`; a per-page image with the page title would make shared links recognisable.
 
 ## Keyboard
 
