@@ -14,6 +14,7 @@ import { createFileRoute, useRouterState } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
 
 import { PasswordForm } from '~/components/password-form'
+import type { RowsEnd } from '~/components/share-grid'
 import { ShareGrid, shareSearch } from '~/components/share-grid'
 import { StatusPage } from '~/components/status-page'
 import { TopBar } from '~/components/top-bar'
@@ -24,6 +25,13 @@ const toSort = ({ order, sort }: typeof shareSearch.infer) =>
     ? ({ column: sort, direction: order === 'desc' ? 'DESC' : 'ASC' } as const)
     : null
 
+const rowsEnd = (hasNextPage: boolean, lastHasMore: boolean): RowsEnd => {
+  if (hasNextPage) {
+    return 'more'
+  }
+  return lastHasMore ? 'capped' : 'last'
+}
+
 const SharePage = () => {
   const { shareId } = Route.useParams()
   const search = Route.useSearch()
@@ -32,6 +40,7 @@ const SharePage = () => {
       shareRowsQueryOptions({ id: shareId, sort: toSort(search) })
     )
   const [first] = data.pages
+  const last = data.pages.at(-1)
   const sorting = useRouterState({
     select: (state) => state.status === 'pending',
   })
@@ -98,6 +107,7 @@ const SharePage = () => {
         ) : (
           <ShareGrid
             columns={first.columns}
+            end={rowsEnd(hasNextPage, last?.status === 'ready' && last.hasMore)}
             isFetching={isFetching}
             onEndReached={() => hasNextPage && fetchNextPage()}
             orderBy={first.orderBy}

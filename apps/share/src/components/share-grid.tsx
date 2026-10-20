@@ -1,11 +1,24 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- the app's virtualized flex grid cannot be built from table elements */
-import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
+import {
+  ArrowDown02Icon,
+  ArrowUp02Icon,
+  MoreHorizontalIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ColumnKind } from '@tamery/shared/column-kind'
+import { SHARE_MAX_PAGES, SHARE_PAGE_SIZE } from '@tamery/shared/share'
 import type { GridRow } from '@tamery/table'
 import { getColumnSize, Grid } from '@tamery/table'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
+import { Spinner } from '@tamery/ui/components/spinner'
 import { cn } from '@tamery/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -17,6 +30,37 @@ export const shareSearch = type({
 })
 
 type ShareSearch = typeof shareSearch.infer
+
+const ROWS_END = {
+  capped: {
+    description: `A shared link shows the first ${(SHARE_MAX_PAGES * SHARE_PAGE_SIZE).toLocaleString('en-US')} rows.`,
+    title: 'No more rows here',
+  },
+  last: {
+    description: 'You’ve reached the end of this table.',
+    title: 'No more rows',
+  },
+}
+
+export type RowsEnd = keyof typeof ROWS_END | 'more'
+
+const EndOfRows = ({ end }: { end: RowsEnd }) => (
+  <div className="pointer-events-none sticky left-0 flex h-80 w-[100cqw] items-center justify-center">
+    {end === 'more' ? (
+      <Spinner />
+    ) : (
+      <Empty size="sm">
+        <EmptyHeader>
+          <EmptyMedia variant="muted">
+            <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
+          </EmptyMedia>
+          <EmptyTitle>{ROWS_END[end].title}</EmptyTitle>
+          <EmptyDescription>{ROWS_END[end].description}</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )}
+  </div>
+)
 
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const
 
@@ -44,6 +88,7 @@ const nextSort = (
 
 export const ShareGrid = ({
   columns,
+  end,
   isFetching,
   onEndReached,
   orderBy,
@@ -51,6 +96,7 @@ export const ShareGrid = ({
   search,
 }: {
   columns: { id: string; kind: ColumnKind; type: string | null }[]
+  end: RowsEnd
   isFetching: boolean
   onEndReached: () => void
   orderBy: Record<string, 'ASC' | 'DESC'>
@@ -78,6 +124,7 @@ export const ShareGrid = ({
     <div className="min-h-0 flex-1">
       <Grid
         scrollRef={scrollRef}
+        footer={<EndOfRows end={end} />}
         isFetching={isFetching}
         onEndReached={onEndReached}
         renderBody={(body) => body}
