@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { useTableSessionStore } from '~/core/table/session'
 import { posthog } from '~/lib/posthog'
 
@@ -27,6 +28,7 @@ import { columnView, useTablePageStore } from '../../../lib/store'
 export const ActionsAdd = ({ onAddColumn }: { onAddColumn?: () => void }) => {
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
+  const names = useObjectNames()
   const { columns } = useTableColumnsContext()
   const canAddRow = columns.some((column) => column.primaryKey)
 
@@ -58,7 +60,7 @@ export const ActionsAdd = ({ onAddColumn }: { onAddColumn?: () => void }) => {
       <DropdownMenuContent align="end" className="min-w-36">
         <DropdownMenuItem disabled={!canAddRow} onClick={addRow}>
           <HugeiconsIcon icon={LayoutThreeRowIcon} strokeWidth={2} />
-          Add row
+          Add {names.row}
         </DropdownMenuItem>
         {onAddColumn && (
           <DropdownMenuItem onClick={onAddColumn}>

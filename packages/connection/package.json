@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@libsql/client": "catalog:",
+    "@mongodb-js/socksv5": "catalog:",
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
@@ -31,6 +32,7 @@
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "oracledb": "catalog:",
+    "socks": "catalog:",
     "ssh-config": "catalog:",
     "ssh2": "catalog:",
     "typescript": "catalog:"
@@ -38,11 +40,13 @@
   "peerDependencies": {
     "@clickhouse/client": "catalog:",
     "@libsql/client": "catalog:",
+    "@mongodb-js/socksv5": "catalog:",
     "mongodb": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "oracledb": "catalog:",
     "pg": "catalog:",
+    "socks": "catalog:",
     "ssh-config": "catalog:",
     "ssh2": "catalog:"
   }

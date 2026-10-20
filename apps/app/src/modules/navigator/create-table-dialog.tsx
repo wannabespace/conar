@@ -83,6 +83,7 @@ export const CreateTableDialog = () => {
 
   return (
     <TableDialog
+      noun={getCapabilities(dialect).names.table}
       error={error}
       request={request}
       schemas={schemas.map(({ name }) => name)}

@@ -4,7 +4,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { TableType } from '~/core/catalog/table-type'
-import { tableTypeLabel } from '~/core/catalog/table-type'
+import { getTableTypeLabel } from '~/core/catalog/table-type'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { renameTableQuery } from '~/core/queries/tables/rename'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
@@ -24,7 +24,7 @@ interface RenameTableDialogProps {
 }
 
 export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
   const [request, setRequest] = useState<TableDialogRequest | null>(null)
@@ -33,7 +33,7 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const schemas = tablesAndSchemas?.schemas ?? []
-  const label = tableTypeLabel[type]
+  const label = getTableTypeLabel(dialect, type)
   const noun = label.toLowerCase()
 
   const {

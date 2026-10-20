@@ -6,6 +6,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import type { ComponentRef, RefObject } from 'react'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { useObjectNames } from '~/core/catalog/names'
 
 import { createSchemaDialogRef } from './create-schema-dialog'
 import { createViewDialogRef } from './create-view-dialog'
@@ -40,6 +41,7 @@ export const TreeRowContent = ({
   search?: string
 }) => {
   const { dialect } = useRouteContext()
+  const names = useObjectNames()
 
   if (row.kind === 'schema') {
     return (
@@ -64,7 +66,7 @@ export const TreeRowContent = ({
   if (row.kind === 'empty') {
     return (
       <p className="text-muted-foreground flex h-full items-center pb-0.5 pl-2 text-xs">
-        No tables
+        No {names.table}s
       </p>
     )
   }

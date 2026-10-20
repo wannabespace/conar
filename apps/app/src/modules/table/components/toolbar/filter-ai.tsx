@@ -115,8 +115,8 @@ export const useFilterAi = ({
       if (filters.length === 0 && Object.keys(orderBy).length === 0) {
         toast.info(
           data.ignored.length > 0
-            ? `Couldn't filter this table by ${data.ignored.join(', ')}`
-            : "Couldn't turn that into filters for this table",
+            ? `Couldn't filter this ${getCapabilities(dialect).names.table} by ${data.ignored.join(', ')}`
+            : `Couldn't turn that into filters for this ${getCapabilities(dialect).names.table}`,
           { id: 'no-filters-or-ordering' }
         )
         return

@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
@@ -64,6 +65,7 @@ export const SeedPanel = ({
   schema: string
   onOpenChange: (open: boolean) => void
 }) => {
+  const names = useObjectNames()
   const { columns } = useTableColumnsContext()
   const { connectionResource, dialect } = useRouteContext()
   const generators = getGenerators(dialect)
@@ -157,7 +159,7 @@ export const SeedPanel = ({
         incrementSeedUsage()
       }
       toast.success(
-        `Seeded ${plural(seedsCount, 'row')} into ${schema}.${table}`
+        `Seeded ${plural(seedsCount, names.row)} into ${schema}.${table}`
       )
       queryClient.invalidateQueries({
         queryKey: resourceRowsQueryKey({ connectionResource, schema, table }),
@@ -280,7 +282,7 @@ export const SeedPanel = ({
               )}
             </LoadingContent>
           </TooltipTrigger>
-          <TooltipContent>Seed rows</TooltipContent>
+          <TooltipContent>Seed {names.row}s</TooltipContent>
         </Tooltip>
       </DrawerFooter>
     </div>

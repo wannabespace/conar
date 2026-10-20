@@ -8,6 +8,7 @@ import {
   Link01Icon,
 } from '@hugeicons/core-free-icons'
 import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
+import { uppercaseFirst } from '@tamery/shared/utils'
 
 import type { AppMenuNode } from '~/components/app-menu'
 import type { CellMenuExtra } from '~/core/table/cell/cell-menu'
@@ -49,6 +50,7 @@ export const tableCellMenu = ({
   store: TablePageStore
 }): CellMenuExtra => {
   const { column } = cell
+  const Row = uppercaseFirst(actions.names.row)
   const entry = staged.rowAt(cell.rowIndex)
   const value = staged.getValue(cell)
   // Filters match saved rows, so Filter by Value takes the stored value, never a pending draft.
@@ -66,8 +68,8 @@ export const tableCellMenu = ({
           {
             icon: CheckmarkSquare02Icon,
             label: rowSelection.has(sessionStore.get(), entry.keys)
-              ? 'Deselect Row'
-              : 'Select Row',
+              ? `Deselect ${Row}`
+              : `Select ${Row}`,
             onSelect: () =>
               sessionStore.set((state) =>
                 rowSelection.toggle(state, [entry.keys])
@@ -80,7 +82,7 @@ export const tableCellMenu = ({
       ? [
           {
             icon: Copy02Icon,
-            label: 'Duplicate Row',
+            label: `Duplicate ${Row}`,
             onSelect: () => {
               posthog.capture('row_duplicated')
               staged.duplicate(cell)
@@ -92,7 +94,7 @@ export const tableCellMenu = ({
       ? [
           {
             icon: ArrowTurnBackwardIcon,
-            label: 'Discard Row',
+            label: `Discard ${Row}`,
             onSelect: () =>
               newRowsActions(sessionStore).discard(entry.newRow.id),
           },
@@ -102,7 +104,7 @@ export const tableCellMenu = ({
       ? ([
           {
             icon: Delete02Icon,
-            label: 'Delete Row',
+            label: `Delete ${Row}`,
             onSelect: () => deleteRowsDialogRef.current?.open([entry.keys]),
             variant: 'destructive',
           },
@@ -173,7 +175,7 @@ export const tableCellMenu = ({
             store,
           }),
         ],
-        label: 'Column',
+        label: uppercaseFirst(actions.names.column),
         type: 'group',
       },
     ],

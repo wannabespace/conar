@@ -27,6 +27,7 @@ import { createRef, useImperativeHandle, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
@@ -63,6 +64,7 @@ export const DeleteRowsDialog = ({
   table: string
   schema: string
 }) => {
+  const names = useObjectNames()
   const { connectionResource } = useRouteContext()
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState<PrimaryKeys[]>([])
@@ -78,7 +80,7 @@ export const DeleteRowsDialog = ({
   }))
 
   const only = rows.length === 1 ? rows[0] : undefined
-  const noun = only ? 'row' : `${rows.length} rows`
+  const noun = only ? names.row : plural(rows.length, names.row)
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     meta: { event: 'rows_deleted' },
@@ -91,11 +93,13 @@ export const DeleteRowsDialog = ({
       }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onError: (error) => {
-      toast.error('Failed to delete rows', { description: error.message })
+      toast.error(`Failed to delete ${names.row}s`, {
+        description: error.message,
+      })
     },
     onSuccess: () => {
       const { filters, orderBy } = store.get()
-      toast.success(`${plural(rows.length, 'row')} successfully deleted`)
+      toast.success(`${plural(rows.length, names.row)} successfully deleted`)
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
@@ -129,13 +133,13 @@ export const DeleteRowsDialog = ({
           <AlertDialogDescription>
             {only ? (
               <>
-                The row with{' '}
+                The {names.row} with{' '}
                 <span data-mask className="text-foreground font-medium">
                   {rowLabel(only)}
                 </span>
               </>
             ) : (
-              'These rows'
+              `These ${names.row}s`
             )}{' '}
             will be removed from{' '}
             <span data-mask className="text-foreground font-medium">
@@ -173,6 +177,7 @@ export const DeleteRowsDialog = ({
 }
 
 export const ActionsDelete = () => {
+  const names = useObjectNames()
   const sessionStore = useTableSessionStore()
   const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
@@ -199,7 +204,7 @@ export const ActionsDelete = () => {
           <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />)
         </span>
       </TooltipTrigger>
-      <TooltipContent>Delete selected rows</TooltipContent>
+      <TooltipContent>Delete selected {names.row}s</TooltipContent>
     </Tooltip>
   )
 }

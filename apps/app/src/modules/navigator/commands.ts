@@ -26,9 +26,9 @@ export const navigatorCommands = ({
           action: () => createTableDialogRef.current?.create(),
           group: 'Database',
           icon: PlusSignIcon,
-          keywords: ['create', 'add', 'table'],
+          keywords: ['create', 'add', 'table', 'collection'],
           order: 10,
-          value: 'New table…',
+          value: `New ${getCapabilities(getDialect(current.connection.type)).names.table}…`,
         },
         ...(isSqlDialect(getDialect(current.connection.type))
           ? [

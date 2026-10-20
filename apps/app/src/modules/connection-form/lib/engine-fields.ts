@@ -83,8 +83,6 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
   [ConnectionType.MongoDB]: serverFields({
     database: 'test',
     options: 'e.g. authSource=admin&tls=true',
-    // The driver dials every replica set member itself and takes no stream, so the executor refuses a tunnel.
-    sshTunnel: false,
     user: 'e.g. admin',
   }),
   [ConnectionType.MSSQL]: serverFields({
@@ -168,6 +166,7 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
         placeholder: 'e.g. appName=Cluster0',
       },
     ],
+    sshTunnel: true,
   },
   [Provider.Turso]: {
     field: 'host',

@@ -26,6 +26,7 @@ import {
   noTriggers,
   readOnly,
   ROW_EVENTS,
+  SQL_NAMES,
 } from './capability-presets'
 import { COLUMN_TYPE_CAPABILITIES } from './column-types'
 
@@ -58,6 +59,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: true,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     materializedViews: true,
+    names: SQL_NAMES,
     policies: {
       alterInPlace: true,
       commands: ['SELECT'],
@@ -102,6 +104,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: true,
     indexes: { rename: false, skipTypes: [] },
     materializedViews: false,
+    names: { column: 'field', row: 'document', table: 'collection' },
     policies: noPolicies,
     referentialActions: [],
     renameColumns: false,
@@ -147,6 +150,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: false,
+    names: SQL_NAMES,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
@@ -203,6 +207,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: false,
+    names: SQL_NAMES,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -256,6 +261,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: true,
+    names: SQL_NAMES,
     policies: noPolicies,
     referentialActions: ['NO ACTION', 'CASCADE', 'SET NULL'],
     renameColumns: true,
@@ -310,6 +316,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: true,
     indexes: btreeIndexes,
     materializedViews: true,
+    names: SQL_NAMES,
     policies: {
       alterInPlace: false,
       commands: POLICY_COMMANDS,
@@ -362,6 +369,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: { rename: false, skipTypes: [] },
     materializedViews: false,
+    names: SQL_NAMES,
     policies: noPolicies,
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,

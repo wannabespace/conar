@@ -22,6 +22,7 @@
     "@libsql/client": "catalog:",
     "@modelcontextprotocol/sdk": "catalog:",
     "@mongodb-js/shell-bson-parser": "catalog:",
+    "@mongodb-js/socksv5": "catalog:",
     "@napi-rs/keyring": "catalog:",
     "@todesktop/runtime": "catalog:",
     "arktype": "catalog:",
@@ -34,6 +35,7 @@
     "mysql2": "catalog:",
     "oracledb": "catalog:",
     "pg": "catalog:",
+    "socks": "catalog:",
     "ssh-config": "catalog:",
     "ssh2": "catalog:",
     "zod": "catalog:"

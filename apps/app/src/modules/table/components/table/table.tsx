@@ -1,6 +1,6 @@
 import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
 import { enabledFilters } from '@tamery/shared/filters'
-import { pick } from '@tamery/shared/utils'
+import { uppercaseFirst, pick } from '@tamery/shared/utils'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -8,6 +8,7 @@ import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { PaneEmpty } from '~/components/pane-empty'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { DataGrid } from '~/core/table/data-grid'
@@ -53,6 +54,7 @@ export const Table = ({
   table: string
 }) => {
   const { connectionResource, dialect } = useRouteContext()
+  const { names } = getCapabilities(dialect)
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -169,8 +171,8 @@ export const Table = ({
     return (
       <PaneEmpty
         icon={LayoutThreeColumnIcon}
-        title="No columns to show"
-        description="Every column is hidden. Show some from the Columns menu."
+        title={`No ${names.column}s to show`}
+        description={`Every ${names.column} is hidden. Show some from the ${uppercaseFirst(names.column)}s menu.`}
       />
     )
   }

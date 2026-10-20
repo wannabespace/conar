@@ -1,11 +1,15 @@
 import { createRequire } from 'node:module'
 
 import type * as ShellParser from '@mongodb-js/shell-bson-parser'
+import { SafeURL } from '@tamery/shared/safe-url'
+import { Result } from 'better-result'
 import { memoize } from 'memoza'
 import type * as Mongo from 'mongodb'
 import type { MongoClientOptions } from 'mongodb'
 
-import { describeConnectionString } from '../../../utils'
+import { sshForwarding } from '../../../ssh/forwarding'
+import { deleteSshParams } from '../../../ssh/params'
+import { socksProxy } from '../../../ssh/socks'
 
 const require = createRequire(import.meta.url)
 
@@ -30,15 +34,21 @@ export const mongodbLookup = {
 }
 
 export const getClient = memoize(async (connectionString: string) => {
-  // The driver opens a socket per server it discovers and takes no stream, so an SSH channel has nothing to plug into.
-  if (describeConnectionString(connectionString).usesSsh) {
-    throw new Error('MongoDB connections cannot use an SSH tunnel yet.')
-  }
-  const client = new mongodb.MongoClient(connectionString, {
+  const forwarding = await sshForwarding.of(connectionString)
+  const url = new SafeURL(connectionString)
+  deleteSshParams(url.searchParams)
+  // The driver takes no stream and dials every replica set member itself, so a tunnel reaches it as a SOCKS proxy.
+  const proxy = forwarding && (await socksProxy(forwarding))
+  const client = new mongodb.MongoClient(url.toString(), {
     appName: 'Tamery',
     ...(lookup && { lookup }),
+    ...proxy?.options,
   })
-  await client.connect()
+  const connected = await Result.tryPromise(() => client.connect())
+  if (connected.isErr()) {
+    proxy?.close()
+    throw connected.error.cause
+  }
   return client
 })
 

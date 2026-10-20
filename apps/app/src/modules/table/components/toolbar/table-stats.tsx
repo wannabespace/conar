@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { resourceTableTotalQueryOptions } from '~/core/queries/rows/total'
 
 import { useTableColumnsContext } from '../../lib/columns'
@@ -36,17 +37,19 @@ const CountDetails = ({
   total: { count: number; isEstimated: boolean } | undefined
   updatedAt: number
 }) => {
+  const names = useObjectNames()
   if (failed) {
-    return "Couldn't count the rows."
+    return `Couldn't count the ${names.row}s.`
   }
   if (!total) {
-    return 'Counting rows…'
+    return `Counting ${names.row}s…`
   }
   return (
     <div className="flex flex-col gap-0.5">
       <span>
         {total.isEstimated ? '~' : ''}
-        {total.count.toLocaleString()} row{total.count === 1 ? '' : 's'}
+        {total.count.toLocaleString()} {names.row}
+        {total.count === 1 ? '' : 's'}
         {canRequestExact && '. Click to get the exact count.'}
       </span>
       <span className="opacity-70">

@@ -236,6 +236,9 @@ catalogs:
     '@mongodb-js/shell-bson-parser':
       specifier: ^1.6.3
       version: 1.6.3
+    '@mongodb-js/socksv5':
+      specifier: ^0.0.11
+      version: 0.0.11
     '@napi-rs/keyring':
       specifier: 2.1.1
       version: 2.1.1
@@ -587,6 +590,9 @@ catalogs:
     shell-quote:
       specifier: ^1.12.0
       version: 1.12.0
+    socks:
+      specifier: ^2.8.10
+      version: 2.8.10
     sonner:
       specifier: ^2.0.8
       version: 2.0.8
@@ -1162,6 +1168,9 @@ importers:
       '@mongodb-js/shell-bson-parser':
         specifier: 'catalog:'
         version: 1.6.3(bson@7.3.3)
+      '@mongodb-js/socksv5':
+        specifier: 'catalog:'
+        version: 0.0.11
       '@napi-rs/keyring':
         specifier: 'catalog:'
         version: 2.1.1
@@ -1185,7 +1194,7 @@ importers:
         version: 7.0.0
       mongodb:
         specifier: 'catalog:'
-        version: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.9)
+        version: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10)
       mssql:
         specifier: 'catalog:'
         version: 12.7.9(supports-color@7.2.0)
@@ -1198,6 +1207,9 @@ importers:
       pg:
         specifier: 'catalog:'
         version: 8.23.1
+      socks:
+        specifier: 'catalog:'
+        version: 2.8.10
       ssh-config:
         specifier: 'catalog:'
         version: 5.3.0
@@ -1571,6 +1583,9 @@ importers:
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.18.0
+      '@mongodb-js/socksv5':
+        specifier: 'catalog:'
+        version: 0.0.11
       '@tamery/configs':
         specifier: workspace:*
         version: link:../configs
@@ -1591,7 +1606,7 @@ importers:
         version: 1.15.6
       mongodb:
         specifier: 'catalog:'
-        version: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.9)
+        version: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10)
       mssql:
         specifier: 'catalog:'
         version: 12.7.9(supports-color@7.2.0)
@@ -1601,6 +1616,9 @@ importers:
       oracledb:
         specifier: 'catalog:'
         version: 7.0.1
+      socks:
+        specifier: 'catalog:'
+        version: 2.8.10
       ssh-config:
         specifier: 'catalog:'
         version: 5.3.0
@@ -3433,6 +3451,10 @@ packages:
     resolution: {integrity: sha512-pRUbMY/ME9LjvdLJOAkpEVDjjTPBt3ebFQK7jxCErFym/6H9+MaaU8h1NvELGoWa0Qxn3vGyQOFxWfOKSEQRSQ==}
     peerDependencies:
       bson: ^4.6.3 || ^5 || ^6.10.3 || ^7.0.0
+
+  '@mongodb-js/socksv5@0.0.11':
+    resolution: {integrity: sha512-vA4OvtpE/A4dWBlnrkVN1HqwQSJeTdC16AyJ2Gd0jmUbqYDUkEogjkXDRZM0flM6ZD8PErlD4QHhXKC1c2uPNw==}
+    engines: {node: '>=0.10.0'}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     resolution: {integrity: sha512-LCkGo6JDfaBhgST7UpPWgNgLINpcpabaHfyz5OBx75nUYxBsaEPxjnyNjWpeb/xBup/682QnBfRBy2/LvPutZQ==}
@@ -10115,6 +10137,10 @@ packages:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
     engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
 
+  socks@2.8.10:
+    resolution: {integrity: sha512-e0VyvkVTwVYViNovRkZ9aodhxVlyoMn7eJhVUPxZ+eK9P/7CBkxvvsBOHqFPEH416726W8tLXXXjKwqgTErrCQ==}
+    engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
+
   socks@2.8.9:
     resolution: {integrity: sha512-LJhUYUvItdQ0LkJTmPeaEObWXAqFyfmP85x0tch/ez9cahmhlBBLbIqDFnvBnUJGagb0JbIQrkBs1wJ+yRYpEw==}
     engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
@@ -12809,6 +12835,10 @@ snapshots:
       acorn: 8.19.0
       bson: 7.3.3
       javascript-stringify: 2.1.0
+
+  '@mongodb-js/socksv5@0.0.11':
+    dependencies:
+      ip-address: 10.4.0
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     optional: true
@@ -18227,6 +18257,15 @@ snapshots:
       '@types/whatwg-url': 13.0.0
       whatwg-url: 14.2.0
 
+  mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10):
+    dependencies:
+      '@mongodb-js/saslprep': 1.6.1
+      bson: 7.3.3
+      mongodb-connection-string-url: 7.0.2
+    optionalDependencies:
+      '@aws-sdk/credential-providers': 3.993.0
+      socks: 2.8.10
+
   mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.9):
     dependencies:
       '@mongodb-js/saslprep': 1.6.1
@@ -19578,6 +19617,11 @@ snapshots:
       is-fullwidth-code-point: 5.1.0
 
   smart-buffer@4.2.0: {}
+
+  socks@2.8.10:
+    dependencies:
+      ip-address: 10.4.0
+      smart-buffer: 4.2.0
 
   socks@2.8.9:
     dependencies:

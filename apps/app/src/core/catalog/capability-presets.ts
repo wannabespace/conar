@@ -79,6 +79,19 @@ export interface ColumnTypeCapabilities {
   zoned: RegExp | null
 }
 
+/** What the UI calls a table, a column and a row: MongoDB's collections, fields and documents. */
+export interface ObjectNames {
+  column: string
+  row: string
+  table: string
+}
+
+export const SQL_NAMES: ObjectNames = {
+  column: 'column',
+  row: 'row',
+  table: 'table',
+}
+
 export interface ConnectionCapabilities {
   alterColumns: boolean
   cascade: boolean
@@ -97,6 +110,7 @@ export interface ConnectionCapabilities {
   ilike: boolean
   indexes: IndexCapabilities
   materializedViews: boolean
+  names: ObjectNames
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
