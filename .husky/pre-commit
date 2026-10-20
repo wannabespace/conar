@@ -1,1 +1,2 @@
+bun scripts/sync-aur-version.ts && git add aur/PKGBUILD
 run-p check check-types test

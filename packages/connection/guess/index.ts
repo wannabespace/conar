@@ -10,6 +10,7 @@ import { fixParts } from './fixes'
 import { guessHost, guessPgpass } from './host'
 import { guessJson } from './json'
 import { guessKeyValue } from './key-value'
+import { guessOracle } from './oracle'
 import { mergeParts } from './parts'
 import { guessRemoteSqlite } from './remote-sqlite'
 import { guessSqlite } from './sqlite'
@@ -25,6 +26,7 @@ const getDetectors = (isConnection: boolean) => [
   guessJson,
   guessUrl,
   guessGoDsn,
+  guessOracle,
   guessAdo,
   guessKeyValue,
   guessRemoteSqlite,

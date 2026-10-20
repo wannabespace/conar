@@ -179,6 +179,15 @@ export const editColumnQuery = (target: EditColumnTarget) =>
           )
         }
       },
+      oracle: async (db) => {
+        const { comment, newName, schema, table } = target
+        await editInSteps(Dialect.Oracle, db, target)
+        if (commented(target)) {
+          await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${sql.lit(comment ?? '')}`.execute(
+            db
+          )
+        }
+      },
       postgres: async (db) => {
         const { comment, newName, schema, table } = target
         await editInSteps(Dialect.Postgres, db, target)

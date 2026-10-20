@@ -30,6 +30,12 @@ const connectionVersionQuery = createQuery({
     clickhouse: readVersion(sql`version()`),
     mssql: readVersion(sql`SERVERPROPERTY('ProductVersion')`),
     mysql: readVersion(sql`VERSION()`),
+    oracle: (db) =>
+      db
+        .selectFrom('PRODUCT_COMPONENT_VERSION')
+        .select('VERSION as version')
+        .where('PRODUCT', 'like', 'Oracle%')
+        .executeTakeFirstOrThrow(),
     postgres: readVersion(sql`current_setting('server_version')`),
     sqlite: readVersion(sql`sqlite_version()`),
   },

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
-import { dialects } from './dialect'
+import { dialects } from './dialects'
 import {
   endsTransaction,
   leavesTransactionOpen,
@@ -16,6 +16,7 @@ const mssql = dialects[Dialect.MSSQL]
 const mysql = dialects[Dialect.MySQL]
 const clickhouse = dialects[Dialect.ClickHouse]
 const sqlite = dialects[Dialect.SQLite]
+const oracle = dialects[Dialect.Oracle]
 const texts = (sql: string, dialect = pg) =>
   splitStatements(sql, dialect).map((statement) => statement.text)
 
@@ -223,6 +224,45 @@ COMMIT`
     ])
     expect(texts('SELECT 1\nGO 2\nSELECT 2', mssql)).toEqual([
       'SELECT 1',
+      'SELECT 2',
+    ])
+  })
+
+  it('runs an Oracle PL/SQL unit to its slash line', () => {
+    const procedure = `CREATE OR REPLACE PROCEDURE p AS
+  total NUMBER;
+BEGIN
+  CASE WHEN total > 0 THEN total := 1; END CASE;
+END;`
+    expect(texts(`${procedure}\n/\nSELECT 1 FROM dual;`, oracle)).toEqual([
+      procedure,
+      'SELECT 1 FROM dual',
+    ])
+    expect(texts('DECLARE n NUMBER; BEGIN n := 1; END;', oracle)).toEqual([
+      'DECLARE n NUMBER; BEGIN n := 1; END;',
+    ])
+    expect(
+      texts('SELECT 4 / 2 FROM dual\n/\nSELECT 2 FROM dual', oracle)
+    ).toEqual(['SELECT 4 / 2 FROM dual', 'SELECT 2 FROM dual'])
+  })
+
+  it('closes a MySQL CASE statement at END CASE', () => {
+    const procedure =
+      'CREATE PROCEDURE p() BEGIN CASE x WHEN 1 THEN SELECT 1; END CASE; END'
+    expect(texts(`${procedure}; SELECT 2`, mysql)).toEqual([
+      procedure,
+      'SELECT 2',
+    ])
+  })
+
+  it('keeps semicolons inside Oracle q-quoted strings', () => {
+    for (const literal of ["q'[it's; fine]'", "Q'{a; b}'", "nq'!x; y!'"]) {
+      expect(
+        texts(`SELECT ${literal} FROM dual; SELECT 2 FROM dual`, oracle)
+      ).toEqual([`SELECT ${literal} FROM dual`, 'SELECT 2 FROM dual'])
+    }
+    expect(texts("SELECT q'[a]' FROM t; SELECT 2", pg)).toEqual([
+      "SELECT q'[a]' FROM t",
       'SELECT 2',
     ])
   })

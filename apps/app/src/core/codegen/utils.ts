@@ -1,7 +1,6 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { camelCase } from 'change-case'
 
-import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import type { TypedColumn } from './types'
@@ -30,6 +29,11 @@ const BACKSLASH_ESCAPING_DIALECTS = new Set<Dialect>([
   Dialect.MySQL,
 ])
 
+const NUMERIC_BOOLEAN_DIALECTS = new Set<Dialect>([
+  Dialect.MSSQL,
+  Dialect.Oracle,
+])
+
 export const formatValue = (value: unknown, dialect: Dialect) => {
   if (value === null) {
     return 'NULL'
@@ -43,7 +47,7 @@ export const formatValue = (value: unknown, dialect: Dialect) => {
   if (typeof value === 'number') {
     return String(value)
   }
-  if (typeof value === 'boolean' && dialect === Dialect.MSSQL) {
+  if (typeof value === 'boolean' && NUMERIC_BOOLEAN_DIALECTS.has(dialect)) {
     return value ? '1' : '0'
   }
   if (typeof value === 'boolean') {
@@ -57,12 +61,16 @@ export const formatValue = (value: unknown, dialect: Dialect) => {
 
 const quoteWithBackticks = (name: string) => `\`${name.replaceAll('`', '``')}\``
 
+const quoteWithDoubleQuotes = (name: string) =>
+  `"${name.replaceAll('"', '""')}"`
+
 const QUOTE_IDENTIFIER_MAP: Record<Dialect, (name: string) => string> = {
   clickhouse: quoteWithBackticks,
   mssql: (name) => `[${name.replaceAll(']', ']]')}]`,
   mysql: quoteWithBackticks,
-  postgres: (name) => `"${name.replaceAll('"', '""')}"`,
-  sqlite: (name) => `"${name.replaceAll('"', '""')}"`,
+  oracle: quoteWithDoubleQuotes,
+  postgres: quoteWithDoubleQuotes,
+  sqlite: quoteWithDoubleQuotes,
 }
 
 export const quoteIdentifier = (name: string, dialect: Dialect) =>
@@ -75,11 +83,6 @@ export const isSingleColumnConstraint = (
 ) =>
   !!column[constraint] &&
   columns.filter((c) => c[constraint] === column[constraint]).length === 1
-
-export const explicitSchema = (schema: string, dialect: Dialect) => {
-  const { defaultSchema } = getCapabilities(dialect)
-  return defaultSchema && schema !== defaultSchema ? schema : null
-}
 
 export const claimRelationName = (
   usedNames: Set<string>,

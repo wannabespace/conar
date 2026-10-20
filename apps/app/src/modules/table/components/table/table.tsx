@@ -123,7 +123,7 @@ export const Table = ({
   )
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const isEditable = primaryColumns.length > 0
-  const canInsert = isEditable && !!isBaseTable
+  const canWriteRows = isEditable && !!isBaseTable
   const staged = useStagedEdits({
     columns,
     dialect,
@@ -252,7 +252,7 @@ export const Table = ({
         menuItems={(cell, element) =>
           tableCellMenu({
             actions: getActions(cell.column),
-            canInsert,
+            canWriteRows,
             cell,
             element,
             isEditable,

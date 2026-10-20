@@ -8,6 +8,7 @@ import {
   mssqlObjectDefinition,
   readDefinition,
 } from '~/core/queries/shared/definition'
+import { plsqlUnit } from '~/core/queries/shared/plsql'
 import {
   connectionResourceToQueryParams,
   createQuery,
@@ -29,6 +30,13 @@ const triggerDefinitionQuery = ({ name, oid, schema }: TriggerItem) =>
 
         return { definition: rows[0]?.['SQL Original Statement'] ?? null }
       },
+      oracle: async (db) => ({
+        definition: await plsqlUnit.definition(db, {
+          name,
+          schema,
+          type: 'TRIGGER',
+        }),
+      }),
       postgres: (db) => {
         if (oid === undefined) {
           throw new Error(`Trigger "${name}" has no oid`)

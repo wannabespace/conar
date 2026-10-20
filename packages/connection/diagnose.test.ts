@@ -121,6 +121,7 @@ describe('diagnoseConnectionError', () => {
       'ssl=true&sslca=/ca.pem&sslrejectunauthorized=true',
       'ssl=false',
     ],
+    [ConnectionType.Oracle, 'ssl=true', 'ssl=false'],
   ])(
     'turns off SSL on %s without the TLS options the driver refuses beside it',
     (type, options, fixed) => {
@@ -209,6 +210,10 @@ describe('diagnoseConnectionError', () => {
     ],
     ['Tenant or user not found', "Supabase can't find this project"],
     [
+      'ORA-01017: invalid credential or not authorized; logon denied',
+      'Wrong user or password',
+    ],
+    [
       'no pg_hba.conf entry for host "203.0.113.7", user "me", database "app", SSL encryption',
       "The server doesn't accept connections from here",
     ],
@@ -225,6 +230,18 @@ describe('diagnoseConnectionError', () => {
     ],
   ])('names %p', (message, title) => {
     expect(diagnose(message)?.title).toBe(title)
+  })
+
+  it('sends an Oracle service the listener lacks to the service field', () => {
+    expect(
+      diagnose(
+        'NJS-518: cannot connect to Oracle Database. Service "NOPE" is not registered with the listener at host 127.0.0.1 port 1521.',
+        { database: 'NOPE', type: ConnectionType.Oracle }
+      )
+    ).toMatchObject({
+      focus: 'database',
+      title: 'Service "NOPE" isn\'t on this server',
+    })
   })
 
   it('reads a missing SQLite file without asking for a password', () => {

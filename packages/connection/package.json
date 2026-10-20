@@ -21,10 +21,12 @@
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
+    "@types/oracledb": "catalog:",
     "@types/pg": "catalog:",
     "@types/ssh2": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
+    "oracledb": "catalog:",
     "ssh-config": "catalog:",
     "ssh2": "catalog:",
     "typescript": "catalog:"
@@ -34,6 +36,7 @@
     "@libsql/client": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
+    "oracledb": "catalog:",
     "pg": "catalog:",
     "ssh-config": "catalog:",
     "ssh2": "catalog:"

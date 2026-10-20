@@ -16,6 +16,7 @@ export const dropEnumQuery = ({
       clickhouse: unsupported('Editing enums'),
       mssql: unsupported('Editing enums'),
       mysql: unsupported('Editing enums'),
+      oracle: unsupported('Editing enums'),
       postgres: (db) =>
         db
           .withSchema(schema)

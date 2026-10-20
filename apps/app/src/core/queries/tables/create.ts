@@ -18,6 +18,8 @@ export const createTableQuery = (target: {
         db.executeQuery(createTableStatement(Dialect.MSSQL, db, target)),
       mysql: (db) =>
         db.executeQuery(createTableStatement(Dialect.MySQL, db, target)),
+      oracle: (db) =>
+        db.executeQuery(createTableStatement(Dialect.Oracle, db, target)),
       postgres: (db) =>
         db.executeQuery(createTableStatement(Dialect.Postgres, db, target)),
       sqlite: (db) =>

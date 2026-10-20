@@ -5,7 +5,7 @@ import { memoize } from 'memoza'
 import type { RunOptions } from '../..'
 import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
-import { getClient } from './client'
+import { getClient, parseError } from './client'
 
 // `client.query` appends a FORMAT clause, which only a statement that returns rows accepts.
 const ROW_RETURNING_COMMANDS = new Set([
@@ -29,6 +29,14 @@ const OUTPUT_SETTINGS = {
   output_format_json_named_tuples_as_objects: 1,
 }
 const UNKNOWN_SETTING = /Unknown setting (?<name>\w+)/u
+
+// An older server appends an error that stops a started stream as a plain-text row.
+const rowValues = (row: { text: string; json: <T>() => T }) => {
+  if (row.text.startsWith('Code: ')) {
+    throw parseError(row.text)
+  }
+  return row.json<unknown[]>()
+}
 
 const unknownSettingsOf = memoize(
   (_connectionString: string) => new Set<string>()
@@ -140,9 +148,9 @@ export const runQuery = ({
     for await (const batch of response.stream()) {
       for (const row of batch) {
         if (header.length < 2) {
-          header.push(row.json())
+          header.push(rowValues(row))
         } else if (rows.length <= maxRows) {
-          rows.push(row.json())
+          rows.push(rowValues(row))
         }
       }
       if (rows.length > maxRows) {

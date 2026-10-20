@@ -13,7 +13,8 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import { sqliteTriggerParts } from './shape'
+import { sqliteTriggerParts } from '../shape'
+import { oracleTriggers } from './oracle'
 
 export const triggersType = type({
   'body?': 'string | null',
@@ -163,6 +164,7 @@ const resourceTriggersQuery = createQuery({
           getCapabilities(Dialect.MySQL).systemSchemas
         )
         .execute(),
+    oracle: oracleTriggers,
     postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_trigger as t')

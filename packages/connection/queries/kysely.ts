@@ -15,6 +15,7 @@ import { memoize } from 'memoza'
 
 import { prepareQuery } from './dialects/clickhouse/prepare-query'
 import { MssqlQueryCompiler } from './dialects/mssql/query-compiler'
+import { OracleQueryCompiler } from './dialects/oracle/query-compiler'
 
 const createIntrospector = () => {
   throw new Error('Not implemented')
@@ -41,6 +42,17 @@ export const kyselyDialects = {
     createAdapter: () => new MysqlAdapter(),
     createIntrospector,
     createQueryCompiler: () => new MysqlQueryCompiler(),
+  },
+  oracle: {
+    createAdapter: () => ({
+      acquireMigrationLock: () => Promise.resolve(),
+      releaseMigrationLock: () => Promise.resolve(),
+      supportsCreateIfNotExists: false,
+      supportsReturning: false,
+      supportsTransactionalDdl: false,
+    }),
+    createIntrospector,
+    createQueryCompiler: () => new OracleQueryCompiler(),
   },
   postgres: {
     createAdapter: () => new PostgresAdapter(),

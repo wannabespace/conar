@@ -72,6 +72,13 @@ export const deleteRowsQuery = memoize((params: DeleteParams) => {
           rowsPerStatement(Dialect.MySQL, keyWidth),
           params
         ),
+      oracle: (db) =>
+        deleteInBatches(
+          db,
+          bindValue.oracle,
+          rowsPerStatement(Dialect.Oracle, keyWidth),
+          params
+        ),
       postgres: (db) =>
         deleteInBatches(
           db,

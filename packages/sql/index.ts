@@ -3,7 +3,7 @@ export type { CompletionKind } from './completion-items'
 export { completionContext } from './completion-context'
 export { completionItems } from './completion'
 export type { DialectSpec } from './dialect'
-export { dialects } from './dialect'
+export { dialects } from './dialects'
 export { diagnose } from './diagnostics'
 export type { Statement } from './statements'
 export {

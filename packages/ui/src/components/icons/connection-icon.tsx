@@ -4,6 +4,7 @@ import { CloudflareD1Icon } from '@tamery/ui/components/icons/cloudflare-d1'
 import { MariaDBIcon } from '@tamery/ui/components/icons/mariadb'
 import { MSSQLIcon } from '@tamery/ui/components/icons/mssql'
 import { MySQLIcon } from '@tamery/ui/components/icons/mysql'
+import { OracleIcon } from '@tamery/ui/components/icons/oracle'
 import { PostgresIcon } from '@tamery/ui/components/icons/postgres'
 import { SQLiteIcon } from '@tamery/ui/components/icons/sqlite'
 import { TursoIcon } from '@tamery/ui/components/icons/turso'
@@ -20,6 +21,7 @@ const iconMap: Record<
   [ConnectionType.ClickHouse]: ClickHouseIcon,
   [ConnectionType.MSSQL]: MSSQLIcon,
   [ConnectionType.SQLite]: SQLiteIcon,
+  [ConnectionType.Oracle]: OracleIcon,
   [Provider.CloudflareD1]: CloudflareD1Icon,
   [Provider.Turso]: TursoIcon,
 }

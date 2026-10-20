@@ -12,6 +12,7 @@
           "connections/postgresql",
           "connections/mysql",
           "connections/mssql",
+          "connections/oracle",
           "connections/clickhouse",
           "connections/sqlite",
           "connections/security"
@@ -20,13 +21,16 @@
       {
         "group": "Features",
         "pages": [
+          "features/navigator",
           "features/table-browser",
           "features/sql-editor",
+          "features/export",
           "features/ai-assistant",
           "features/schema-visualizer",
           "features/definitions",
           "features/sharing",
-          "features/workspaces"
+          "features/workspaces",
+          "features/command-palette"
         ]
       },
       {

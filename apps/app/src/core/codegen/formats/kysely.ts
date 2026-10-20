@@ -3,29 +3,21 @@ import { pascalCase } from 'change-case'
 
 import { tsColumnType } from '~/core/codegen/column-types'
 import type { QueryParams, SchemaParams } from '~/core/codegen/types'
-import {
-  explicitSchema,
-  hasType,
-  toLiteralKey,
-  toStringLiteral,
-} from '~/core/codegen/utils'
+import { hasType, toLiteralKey, toStringLiteral } from '~/core/codegen/utils'
 
 const qualifiedTable = (
   table: string,
   schema: string,
-  dialect: QueryParams['dialect']
-) => {
-  const tableSchema = explicitSchema(schema, dialect)
-  return tableSchema ? `${tableSchema}.${table}` : table
-}
+  defaultSchema: string | null
+) => (schema === defaultSchema ? table : `${schema}.${table}`)
 
 export const generateQueryKysely = ({
   table,
   schema,
+  defaultSchema,
   filters,
-  dialect,
 }: QueryParams) => {
-  const from = `db.selectFrom(${toStringLiteral(qualifiedTable(table, schema, dialect))})`
+  const from = `db.selectFrom(${toStringLiteral(qualifiedTable(table, schema, defaultSchema))})`
   if (filters.length === 0) {
     return `await ${from}.selectAll().execute()`
   }
@@ -51,6 +43,7 @@ export const generateQueryKysely = ({
 export const generateSchemaKysely = ({
   table,
   schema,
+  defaultSchema,
   columns,
   dialect,
 }: SchemaParams) => {
@@ -64,7 +57,7 @@ export const generateSchemaKysely = ({
     })
     .join('\n')
   const pascalTable = pascalCase(table)
-  const tableKey = toLiteralKey(qualifiedTable(table, schema, dialect))
+  const tableKey = toLiteralKey(qualifiedTable(table, schema, defaultSchema))
 
   return [
     ...(body.includes('Generated<')

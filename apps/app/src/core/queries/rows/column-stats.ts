@@ -65,6 +65,7 @@ export const columnStatsQuery = (params: ColumnStatsParams) =>
         selectStats(db, params, clickhouseFilterValues(params.columns)),
       mssql: (db) => selectStats(db, params),
       mysql: (db) => selectStats(db, params),
+      oracle: (db) => selectStats(db, params),
       postgres: (db) => selectStats(db, params),
       sqlite: (db) =>
         selectStats(db, params, sqliteFilterValues(params.columns)),

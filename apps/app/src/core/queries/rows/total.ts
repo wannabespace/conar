@@ -108,6 +108,22 @@ export const resourceTableTotalQuery = memoize(
 
           return countRows(db, db.fn.countAll(), target)
         },
+        oracle: async (db) => {
+          if (!exact && !filters?.length) {
+            const estimate = await db
+              .selectFrom('ALL_TABLES')
+              .select('NUM_ROWS as count')
+              .where('OWNER', '=', schema)
+              .where('TABLE_NAME', '=', table)
+              .executeTakeFirst()
+
+            if (estimate && estimate.count !== null && estimate.count > 0) {
+              return { count: estimate.count, isEstimated: true }
+            }
+          }
+
+          return countRows(db, db.fn.countAll(), target)
+        },
         postgres: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db

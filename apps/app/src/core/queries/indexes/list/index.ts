@@ -10,6 +10,7 @@ import {
 import { clickhouseIndexes } from './clickhouse'
 import { mssqlIndexes } from './mssql'
 import { mysqlIndexes } from './mysql'
+import { oracleIndexes } from './oracle'
 import { postgresIndexes } from './postgres'
 import { sqliteIndexes } from './sqlite'
 
@@ -59,6 +60,7 @@ const resourceIndexesQuery = createQuery({
     clickhouse: clickhouseIndexes,
     mssql: mssqlIndexes,
     mysql: mysqlIndexes,
+    oracle: oracleIndexes,
     postgres: postgresIndexes,
     sqlite: sqliteIndexes,
   },

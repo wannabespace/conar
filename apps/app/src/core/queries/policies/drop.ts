@@ -15,6 +15,7 @@ export const dropPolicyQuery = (target: PolicyTarget) =>
           db
         ),
       mysql: unsupported('Row policies'),
+      oracle: unsupported('Row policies'),
       postgres: (db) => sql`DROP POLICY ${policyOn(target)}`.execute(db),
       sqlite: unsupported('Row policies'),
     },

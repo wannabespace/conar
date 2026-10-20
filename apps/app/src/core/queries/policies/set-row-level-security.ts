@@ -19,6 +19,7 @@ export const setRowLevelSecurityQuery = ({
           db
         ),
       mysql: unsupported('Row level security'),
+      oracle: unsupported('Row level security'),
       postgres: (db) =>
         sql`ALTER TABLE ${sql.id(schema, table)} ${enabled ? sql`ENABLE` : sql`DISABLE`} ROW LEVEL SECURITY`.execute(
           db

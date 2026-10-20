@@ -19,7 +19,7 @@ import {
 } from 'react'
 
 import { OptionField } from '~/components/option-field'
-import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { createViewQuery } from '~/core/queries/views/create'
@@ -95,7 +95,7 @@ const QueryField = ({
 }
 
 export const CreateViewDialog = () => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connectionResource, defaultSchema, dialect } = useRouteContext()
   const router = useRouter()
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
   const [request, setRequest] = useState<TableDialogRequest | null>(null)
@@ -154,11 +154,7 @@ export const CreateViewDialog = () => {
       setMaterialized(false)
       setQueryRefused(false)
       setRequest({
-        schema:
-          schema ??
-          getDefaultSchema(dialect, connectionResource.name) ??
-          schemas[0]?.name ??
-          '',
+        schema: schema ?? defaultSchema ?? schemas[0]?.name ?? '',
         table: null,
       })
     },

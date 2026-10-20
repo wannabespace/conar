@@ -34,9 +34,15 @@ SSH tunnels run on desktop only. Tamery checks the server's host key and asks be
 
 You can use your SSH agent, a key file, a pasted private key, or a password. `~/.ssh/config` is supported; `ProxyJump` and `ProxyCommand` are not.
 
+## What else we store
+
+Saved queries and AI chats are stored on our servers, so they follow you to every device. They are kept per database and go away when you remove the connection.
+
+Query history and the query logger stay on the device that ran the queries. So do your Navigator, tab, and table layout.
+
 ## AI and your data
 
-AI requests are processed on Tamery's servers using external model providers. Chat sends your messages; editor and filter features also send relevant schema context.
+AI requests go through our servers to external model providers. The chat sends your messages. Editor and filter features also send the schema context they need.
 
 The built-in chat does not execute SQL. Coding agents connected through [MCP](/mcp/overview#connection-access) can read data and make changes according to the access you grant; their results become part of the agent's context.
 

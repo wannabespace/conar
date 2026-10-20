@@ -4,6 +4,7 @@ import type { QueryExecutor } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
+import * as oracle from '@tamery/connection/queries/dialects/oracle'
 import * as pg from '@tamery/connection/queries/dialects/pg'
 import * as sqlite from '@tamery/connection/queries/dialects/sqlite'
 import { coldDialect, toQueryPayload } from '@tamery/connection/queries/kysely'
@@ -26,6 +27,7 @@ const executors: Record<Dialect, QueryExecutor> = {
   clickhouse: clickhouse.query,
   mssql: mssql.query,
   mysql: mysql.query,
+  oracle: oracle.query,
   postgres: pg.query,
   sqlite: sqlite.query,
 }

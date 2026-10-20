@@ -1,3 +1,5 @@
+import type { NameCase } from './dialect'
+
 export interface SqlColumn {
   name: string
   type: string
@@ -27,7 +29,7 @@ interface SqlEnum {
 
 export interface SqlCatalog {
   defaultSchema: string | null
-  exactNames?: boolean
+  nameCase: NameCase | null
   schemas: SqlSchema[]
   enums: SqlEnum[]
 }
@@ -35,7 +37,7 @@ export interface SqlCatalog {
 const collator = new Intl.Collator(undefined, { sensitivity: 'accent' })
 
 const namesMatch = (catalog: SqlCatalog, a: string, b: string) =>
-  catalog.exactNames ? a === b : collator.compare(a, b) === 0
+  catalog.nameCase ? a === b : collator.compare(a, b) === 0
 
 export const findSchema = (catalog: SqlCatalog, name: string) =>
   catalog.schemas.find((schema) => namesMatch(catalog, schema.name, name))

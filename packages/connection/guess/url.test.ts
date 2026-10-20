@@ -80,6 +80,39 @@ describe('guessConnection — URLs', () => {
         user: 'me',
       },
     ],
+    [
+      'oracle://app:pw@db.acme.io:1521/FREEPDB1?ssl=true',
+      {
+        database: 'FREEPDB1',
+        host: 'db.acme.io',
+        options: 'ssl=true',
+        password: 'pw',
+        port: '1521',
+        type: ConnectionType.Oracle,
+        user: 'app',
+      },
+    ],
+    [
+      'sqlplus scott/tiger@//db.acme.io:1521/ORCLPDB1',
+      {
+        database: 'ORCLPDB1',
+        host: 'db.acme.io',
+        password: 'tiger',
+        port: '1521',
+        type: ConnectionType.Oracle,
+        user: 'scott',
+      },
+    ],
+    [
+      'scott/tiger@localhost/FREEPDB1',
+      {
+        database: 'FREEPDB1',
+        host: 'localhost',
+        password: 'tiger',
+        type: ConnectionType.Oracle,
+        user: 'scott',
+      },
+    ],
   ])('reads %s', (text, parts) => {
     const guess = guessConnection(text)
     expect(guess?.format).toBe('url')
@@ -254,6 +287,35 @@ describe('guessConnection — JDBC', () => {
         port: '1433',
         type: ConnectionType.MSSQL,
         user: 'sa',
+      },
+    ],
+    [
+      'jdbc:oracle:thin:@//db.acme.io:1521/ORCLPDB1',
+      {
+        database: 'ORCLPDB1',
+        host: 'db.acme.io',
+        port: '1521',
+        type: ConnectionType.Oracle,
+      },
+    ],
+    [
+      'jdbc:oracle:thin:@db.acme.io:1522:ORCL',
+      {
+        database: 'ORCL',
+        host: 'db.acme.io',
+        port: '1522',
+        type: ConnectionType.Oracle,
+      },
+    ],
+    [
+      'spring.datasource.url=jdbc:oracle:thin:scott/tiger@db.acme.io:1521/FREEPDB1',
+      {
+        database: 'FREEPDB1',
+        host: 'db.acme.io',
+        password: 'tiger',
+        port: '1521',
+        type: ConnectionType.Oracle,
+        user: 'scott',
       },
     ],
   ])('reads %s', (text, parts) => {

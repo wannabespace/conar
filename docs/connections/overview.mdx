@@ -6,47 +6,78 @@ description: 'How to add a database, what syncs to your other devices, and how t
 
 ## Add a connection
 
-Click **Add new**. Paste a connection string, `.env` contents, JDBC URL, database command, or SQLite file path. Tamery fills in the fields; you can also enter them yourself.
+Click **New connection**, or press **Cmd+N** (**Ctrl+N**) on desktop. Then paste whatever you have. **Cmd+V** works anywhere on the page, no need to click into a field first.
 
-Choose an engine, check the details, and give the connection a name. Click **Save connection** or press **Enter** in a text field.
+Tamery reads most things people keep connection details in:
 
-On desktop, you can also:
+- Connection URLs, JDBC, ADO.NET, and ODBC strings
+- `.env` files, Spring or Quarkus properties, JSON and JS config objects
+- A `docker-compose` service, using its published port
+- Commands like `psql`, `pg_dump`, `mysql`, `sqlcmd`, `clickhouse-client`, or `ssh -L`
+- A libpq `host=… dbname=…` string or a `.pgpass` line
 
-- Pick a detected Docker database or a connection from another database client.
-- Drop a config or SQLite file onto the window.
-- Use **Add via MCP** to have your coding agent add a connection from your project.
+You can also drop a config file onto the window. Tamery fills in the fields, and you can always edit them by hand.
+
+When a pasted string has a known problem, Tamery fixes it and tells you what changed. A placeholder password like `[YOUR-PASSWORD]` is cleared so you can type the real one. A pooler address that breaks transactions is swapped for a direct one.
+
+Choose an engine, check the details, and click **Save connection**. **Cmd+Enter** (**Ctrl+Enter**) saves from anywhere in the form. The name is optional.
+
+On desktop you also get:
+
+- A list of databases found on this computer: running Docker containers, and connections saved in DBeaver, TablePlus, DataGrip, pgAdmin, `pg_service.conf`, `.pgpass`, or `my.cnf`. On macOS, Tamery can take a saved password from the Keychain once macOS asks you.
+- **Add via MCP**, where your coding agent finds the database in your project and adds it for you.
+- Dropping a SQLite file onto the window. See [SQLite](/connections/sqlite).
 
 ## Choose what syncs
 
 | Sync type | On another device |
 | --- | --- |
 | **Full** | Open the connection without re-entering its password. The full connection string is stored encrypted in the cloud. |
-| **No password** | Enter the password and any SSH or SSL key secrets on each device. The remaining connection details sync. |
+| **No password** | Enter the password and any SSH or SSL key secrets on each device. The rest of the connection syncs. |
 | **Metadata only** | Enter the server details on each device. Only the connection's name, engine, label, and color sync. |
 
-Choose this when you create the connection. To use a different sync type later, add it as a new connection. See [Security](/connections/security) for details.
+You pick this when you create the connection, and it stays. To switch, add the connection again with the sync type you want. [Security](/connections/security) explains what reaches our servers in each case.
 
 ## Local and private databases
 
 The desktop app connects directly. In the web app, run [`tamery proxy`](/cli/commands#tamery-proxy) on a computer that can reach the database.
 
-For an SSH bastion, turn on **SSH tunnel** in the connection form. Use your SSH agent, a key file, a pasted key, or a password. SSH tunnels work on desktop only.
+For a database behind an SSH bastion, turn on **SSH tunnel** in the connection form. Use your SSH agent, a key file, a pasted key, or a password. SSH tunnels work on desktop only.
+
+For a database in Docker on that server, use its container or Compose service name as the host, like `db`, and the port inside the container. When the server can't resolve that name, Tamery finds the container there, so the database needs no published port. Your SSH user needs access to Docker.
 
 ## If the test fails
 
-Tamery names the likely cause and offers a fix when it has one. Check the host, port, password, SSL settings, and your provider's allowed IP addresses.
+Tamery names the likely cause and offers a fix when it has one. Usual suspects: the host, the port, the password, SSL settings, or an allowlist of IP addresses on your provider's side.
 
-**Explain with AI** can help with an unfamiliar error. **Save anyway** saves a connection you cannot reach yet.
+**Explain with AI** helps with an error you have not seen before. It is free on every plan.
 
-## Keep connections organized
+After a failed test, the save button becomes **Save anyway**. Use it for a server you can't reach from here yet.
 
-Give each connection a label and color, pin the ones you use often, or group them in [workspaces](/features/workspaces).
+## Manage connections
 
-To change a connection, right-click it and choose **Edit**. **Save changes** tests the new details before saving.
+Right-click a connection, or use its **⋯** button:
+
+| Action | What it does |
+| --- | --- |
+| **Edit** | Change the details. **Save changes** tests them before saving. |
+| **Open in New Window** | Desktop only. Work on two connections side by side. |
+| **Refresh** | Check the connection again and reload its list of databases. |
+| **Copy connection string** | Copy it for another client. SSH secrets are left out. |
+| **Clear saved credentials** | For **No password** connections. Forget the password on this device. |
+| **Remove** | Remove the connection from Tamery, with its saved queries and chats, on every device. The database itself is not touched. |
+
+Give connections a label and a color in the form. The list groups by label by default; switch to grouping by engine, or sort by date or name. Connections you opened recently sit at the top.
+
+## Database links
+
+On desktop, `postgres://`, `mysql://`, `mariadb://`, `sqlserver://`, `mssql://`, and `clickhouse://` links open in Tamery. A link to a server you already have opens that connection. Anything else opens a new connection form, filled in from the link.
+
+Turn this off in **Settings → General → Open database links in Tamery**.
 
 ## Offline
 
-On desktop, you can query databases you can still reach without internet. Changes to connections and saved queries sync when you reconnect. Signing in, creating a workspace, and AI features need internet; so do queries in the web app.
+On desktop, you can keep querying any database you can still reach. Changes to connections and saved queries sync when you are back online. Signing in, creating a workspace, and AI need the internet, and so does the web app.
 
 ## Connection examples
 
@@ -54,6 +85,7 @@ On desktop, you can query databases you can still reach without internet. Change
   <Card href="/connections/postgresql" />
   <Card href="/connections/mysql" />
   <Card href="/connections/mssql" />
+  <Card href="/connections/oracle" />
   <Card href="/connections/clickhouse" />
   <Card href="/connections/sqlite" />
 </Cards>

@@ -116,6 +116,7 @@ const resourceEnumsQuery = createQuery({
           }) satisfies typeof enumType.infer
       )
     },
+    oracle: () => Promise.resolve([]),
     postgres: async (db) => {
       const query = await db
         .selectFrom('pg_type')

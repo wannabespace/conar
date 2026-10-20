@@ -28,7 +28,7 @@ const RULES: DiagnosisRule[] = [
       title: "This user can't open that database",
     }),
     match:
-      /access denied for user .+ to database|permission denied for database|does not have connect privilege/iu,
+      /access denied for user .+ to database|permission denied for database|does not have connect privilege|ora-01045/iu,
   },
   {
     diagnose: ({ message, parts }) => {
@@ -77,6 +77,20 @@ const RULES: DiagnosisRule[] = [
     match: /host '[^']*' is not allowed to connect/iu,
   },
   {
+    diagnose: ({ message }) => {
+      const service = /service "(?<name>[^"]+)"/iu.exec(message)?.groups?.name
+      return {
+        focus: 'database',
+        hint: 'Use a service the listener knows. A local Oracle Free usually has FREEPDB1, Oracle XE has XEPDB1.',
+        title: service
+          ? `Service "${service}" isn't on this server`
+          : "That service isn't on this server",
+      }
+    },
+    engine: ConnectionType.Oracle,
+    match: /is not registered with the listener|ora-12514|ora-12505/iu,
+  },
+  {
     diagnose: () => ({
       focus: 'user',
       hint: "Supabase's pooler doesn't know this project: check the project ref in the user (postgres.<project-ref>), and that the project isn't paused.",
@@ -110,7 +124,7 @@ const RULES: DiagnosisRule[] = [
     },
     // `client password must be a` is node-postgres refusing SCRAM without a password, before the server sees one.
     match:
-      /password authentication failed|access denied for user|login failed for user|authentication failed|wrong password|invalid password|password is incorrect|no password supplied|password required|client password must be a/iu,
+      /password authentication failed|access denied for user|login failed for user|authentication failed|wrong password|invalid password|password is incorrect|no password supplied|password required|client password must be a|ora-01017/iu,
   },
   {
     diagnose: ({ parts }) => ({
@@ -150,7 +164,7 @@ const RULES: DiagnosisRule[] = [
             title: "The server doesn't support SSL",
           },
     match:
-      /does not support ssl|ssl is not enabled on the server|wrong[ _]version[ _]number|handshake_ssl_error|ssl3_get_record/iu,
+      /does not support ssl|ssl is not enabled on the server|wrong[ _]version[ _]number|handshake_ssl_error|ssl3_get_record|before secure tls connection was established/iu,
   },
   {
     diagnose: ({ parts }) => ({

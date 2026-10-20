@@ -62,6 +62,18 @@ export const alterColumnStatement = (
       .compile()
   }
 
+  // Oracle refuses to restate a nullability the column already has (ORA-01442, ORA-01451), and a LOB's own type (ORA-22859).
+  if (dialect === Dialect.Oracle) {
+    const newType = retyped ? sql` ${sql.raw(columnType)}` : sql``
+    const nullability =
+      nullable === original.nullable
+        ? sql``
+        : sql.raw(nullable ? ' NULL' : ' NOT NULL')
+    return sql`ALTER TABLE ${sql.id(schema, table)} MODIFY (${sql.id(column)}${newType}${nullability})`.compile(
+      db
+    )
+  }
+
   if (dialect === Dialect.MSSQL) {
     const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${restatedType(target)} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`
     if (!retyped) {

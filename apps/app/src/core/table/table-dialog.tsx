@@ -28,8 +28,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { getRouteApi } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { useRef, useState } from 'react'
+
+import { submittedName } from '~/core/catalog/engine-name'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 interface TableTarget {
   name: string
@@ -69,23 +74,24 @@ const TableForm = ({
   const schemas = knownSchemas.includes(initialSchema)
     ? knownSchemas
     : [initialSchema, ...knownSchemas]
+  const { dialect } = useRouteContext()
   const nameRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState(table?.name ?? '')
   const [schema, setSchema] = useState(initialSchema)
   const [submitted, setSubmitted] = useState(false)
-  const trimmed = name.trim()
-  const taken = trimmed !== table?.name && isTaken(schema, trimmed)
+  const stored = submittedName(dialect, name, table)
+  const taken = stored !== table?.name && isTaken(schema, stored)
   let nameError: string | null = null
   if (taken) {
     nameError = 'A table or view with this name already exists'
-  } else if (submitted && !trimmed) {
+  } else if (submitted && !stored) {
     nameError = `Give the ${noun} a name.`
   }
   const submit = (
     <Button
       type="submit"
       form={FORM_ID}
-      disabled={pending || trimmed === table?.name}
+      disabled={pending || stored === table?.name}
     />
   )
 
@@ -110,8 +116,8 @@ const TableForm = ({
             return
           }
           setSubmitted(true)
-          if (trimmed && !taken) {
-            onSubmit(schema, trimmed)
+          if (stored && !taken) {
+            onSubmit(schema, stored)
           } else {
             nameRef.current?.focus()
           }

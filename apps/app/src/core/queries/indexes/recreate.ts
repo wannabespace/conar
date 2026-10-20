@@ -1,5 +1,6 @@
 import { sql } from 'kysely'
 
+import { replaceWithSavedDdl } from '~/core/queries/shared/definition'
 import { identifiers } from '~/core/queries/shared/sql-fragments'
 import { createQuery } from '~/core/runtime/query'
 
@@ -9,6 +10,7 @@ import {
   createIndexStatement,
   dropSkipIndexStatement,
   materializeIndexStatement,
+  oracleCreateIndexStatement,
   sqliteCreateIndexStatement,
 } from './shape'
 
@@ -41,6 +43,12 @@ export const recreateIndexQuery = ({
           DROP INDEX ${sql.id(name)},
           ADD ${unique ? sql`UNIQUE INDEX` : sql`INDEX`} ${sql.id(newName)} (${identifiers(columns)})
         `.execute(db),
+      oracle: (db) =>
+        replaceWithSavedDdl(db, {
+          create: () => oracleCreateIndexStatement(replacement).execute(db),
+          drop: () => sql`DROP INDEX ${sql.id(schema, name)}`.execute(db),
+          savedDdl: sql<string>`DBMS_METADATA.GET_DDL('INDEX', ${name}, ${schema})`,
+        }),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           await sql`DROP INDEX ${sql.id(schema, name)}`.execute(tx)

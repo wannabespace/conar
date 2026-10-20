@@ -41,6 +41,7 @@ export const setQuery = (params: SetParams) =>
         clickhouseWrite((bind) => updateRow(db, bind, params)),
       mssql: (db) => updateRow(db, bindValue.mssql, params),
       mysql: (db) => updateRow(db, bindValue.mysql, params),
+      oracle: (db) => updateRow(db, bindValue.oracle, params),
       postgres: (db) => updateRow(db, bindValue.postgres, params),
       sqlite: (db) => updateRow(db, bindValue.sqlite, params),
     },

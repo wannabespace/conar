@@ -11,6 +11,7 @@
   "pnpmVersion": "12.13.0",
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
   "appFiles": ["dist-electron/**"],
+  "filesForDistribution": ["!**/node_modules/oracledb/build/**"],
   "fuses": {
     "runAsNode": false,
     "enableNodeOptionsEnvironmentVariable": false,
@@ -28,6 +29,7 @@
     "mariadb",
     "mssql",
     "mysql",
+    "oracle",
     "postgres",
     "postgresql",
     "sqlserver"

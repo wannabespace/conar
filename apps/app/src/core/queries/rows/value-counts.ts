@@ -66,6 +66,7 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
         ),
       mssql: (db) => countValues(db, textContains.mssql, params),
       mysql: (db) => countValues(db, textContains.mysql, params),
+      oracle: (db) => countValues(db, textContains.oracle, params),
       postgres: (db) => countValues(db, textContains.postgres, params),
       sqlite: (db) =>
         countValues(

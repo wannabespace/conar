@@ -84,10 +84,13 @@ export const resolveComparedColumn = (
   return null
 }
 
-const PLAIN_NAME = /^[a-z_][a-z\d_$]*$/u
+const PLAIN_NAMES = {
+  lower: /^[a-z_][a-z\d_$]*$/u,
+  upper: /^[A-Z_][A-Z\d_$#]*$/u,
+}
 
 export const quoteIfNeeded = (catalog: SqlCatalog, name: string) =>
-  catalog.exactNames && !PLAIN_NAME.test(name)
+  catalog.nameCase && !PLAIN_NAMES[catalog.nameCase].test(name)
     ? `"${name.replaceAll('"', '""')}"`
     : name
 

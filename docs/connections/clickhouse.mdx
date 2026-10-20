@@ -4,11 +4,11 @@ sidebarTitle: 'ClickHouse'
 description: 'Connect to ClickHouse Cloud or a self-hosted server over HTTP.'
 ---
 
-Tamery uses ClickHouse's **HTTP interface**. Paste its HTTP or HTTPS connection string into **Add new**.
+Tamery talks to ClickHouse over its **HTTP interface**. Click **New connection** and paste an HTTP or HTTPS connection string. ClickHouse 21.12 or later is supported.
 
 ## ClickHouse Cloud
 
-Copy the HTTPS connection details from your service's **Connect** panel:
+Copy the HTTPS details from your service's **Connect** panel:
 
 ```text
 https://default:password@your-service.clickhouse.cloud:8443/default
@@ -20,14 +20,17 @@ https://default:password@your-service.clickhouse.cloud:8443/default
 http://default:password@localhost:8123/default
 ```
 
-Omit `:password` if the user has no password.
+Leave out `:password` if the user has none.
 
-Use port **8123** for HTTP or **8443** for HTTPS. The native TCP ports, **9000** and **9440**, are not used by Tamery.
+Use port **8123** for HTTP or **8443** for HTTPS. The native ports **9000** and **9440** don't work over HTTP, so Tamery switches a pasted 9000 or 9440 to 8123 or 8443.
 
-When you enter a host manually, Tamery uses HTTPS unless you choose port 8123.
+When you fill in the fields yourself, Tamery uses HTTPS unless the port is 8123 or empty.
 
 ## Differences to know
 
-ClickHouse does not support transactions. Schema changes apply one at a time, and existing sorting-key values cannot be edited in the table browser.
+- ClickHouse has no transactions. Schema changes apply one at a time.
+- Columns can't be renamed.
+- Sorting-key columns, `MATERIALIZED` and `ALIAS` columns can't be edited in the table browser.
+- Row policies show up under [Schema → Policies](/features/definitions).
 
 For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

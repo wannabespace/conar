@@ -1,0 +1,202 @@
+/** Oracle's data dictionary views, reached through their public synonyms and spelled in their stored (upper) case. */
+export interface Database {
+  ALL_COL_COMMENTS: AllColComments
+  ALL_CONS_COLUMNS: AllConsColumns
+  ALL_CONSTRAINTS: AllConstraints
+  ALL_ERRORS: {
+    OWNER: string
+    NAME: string
+    TYPE: string
+    SEQUENCE: number
+    LINE: number
+    TEXT: string
+    ATTRIBUTE: 'ERROR' | 'WARNING'
+  }
+  ALL_IND_COLUMNS: AllIndColumns
+  ALL_IND_EXPRESSIONS: AllIndExpressions
+  ALL_INDEXES: AllIndexes
+  ALL_MVIEW_COMMENTS: {
+    OWNER: string
+    MVIEW_NAME: string
+    COMMENTS: string | null
+  }
+  ALL_MVIEWS: AllMviews
+  ALL_SOURCE: AllSource
+  ALL_TAB_COLS: AllTabCols
+  ALL_TAB_COMMENTS: AllTabComments
+  ALL_TAB_IDENTITY_COLS: {
+    OWNER: string
+    TABLE_NAME: string
+    COLUMN_NAME: string
+    GENERATION_TYPE: 'ALWAYS' | 'BY DEFAULT'
+  }
+  ALL_TABLES: AllTables
+  ALL_TRIGGER_COLS: {
+    TRIGGER_OWNER: string
+    TRIGGER_NAME: string
+    COLUMN_NAME: string
+    /** `YES` for a column named in `UPDATE OF`. */
+    COLUMN_LIST: YesNo
+  }
+  ALL_TRIGGER_ORDERING: {
+    TRIGGER_OWNER: string
+    TRIGGER_NAME: string
+    ORDERING_TYPE: 'FOLLOWS' | 'PRECEDES'
+  }
+  ALL_TRIGGERS: AllTriggers
+  ALL_USERS: AllUsers
+  ALL_VIEWS: AllViews
+  DATABASE_PROPERTIES: { PROPERTY_NAME: string; PROPERTY_VALUE: string }
+  PRODUCT_COMPONENT_VERSION: ProductComponentVersion
+  SESSION_PRIVS: { PRIVILEGE: string }
+}
+
+type YesNo = 'NO' | 'YES'
+type YN = 'N' | 'Y'
+
+interface AllUsers {
+  USERNAME: string
+  /** 12c and up: `Y` for the accounts Oracle ships (SYS, XDB, MDSYS…). */
+  ORACLE_MAINTAINED: YN
+}
+
+interface AllTables {
+  OWNER: string
+  TABLE_NAME: string
+  NUM_ROWS: number | null
+  NESTED: YesNo
+  SECONDARY: YN
+  IOT_TYPE: string | null
+  DROPPED: YesNo
+}
+
+interface AllViews {
+  OWNER: string
+  VIEW_NAME: string
+}
+
+interface AllMviews {
+  OWNER: string
+  MVIEW_NAME: string
+  CONTAINER_NAME: string
+}
+
+interface AllTabCols {
+  OWNER: string
+  TABLE_NAME: string
+  COLUMN_NAME: string
+  DATA_TYPE: string
+  DATA_LENGTH: number
+  DATA_PRECISION: number | null
+  DATA_SCALE: number | null
+  NULLABLE: YN
+  COLUMN_ID: number | null
+  DATA_DEFAULT: string | null
+  CHAR_LENGTH: number
+  CHAR_USED: 'B' | 'C' | null
+  HIDDEN_COLUMN: YesNo
+  VIRTUAL_COLUMN: YesNo
+  IDENTITY_COLUMN: YesNo
+}
+
+interface AllTabComments {
+  OWNER: string
+  TABLE_NAME: string
+  COMMENTS: string | null
+}
+
+interface AllColComments {
+  OWNER: string
+  TABLE_NAME: string
+  COLUMN_NAME: string
+  COMMENTS: string | null
+}
+
+interface AllConstraints {
+  OWNER: string
+  CONSTRAINT_NAME: string
+  /** P primary key, U unique, R foreign key, C check or NOT NULL, V view check option, O read-only view. */
+  CONSTRAINT_TYPE: 'C' | 'O' | 'P' | 'R' | 'U' | 'V'
+  TABLE_NAME: string
+  /** 12c and up; SEARCH_CONDITION is a LONG, which no SQL function takes. */
+  SEARCH_CONDITION_VC: string | null
+  R_OWNER: string | null
+  R_CONSTRAINT_NAME: string | null
+  DELETE_RULE: 'CASCADE' | 'NO ACTION' | 'SET NULL' | null
+  STATUS: 'DISABLED' | 'ENABLED'
+  DEFERRABLE: string | null
+  VALIDATED: string | null
+  GENERATED: 'GENERATED NAME' | 'USER NAME'
+  INDEX_OWNER: string | null
+  INDEX_NAME: string | null
+}
+
+interface AllConsColumns {
+  OWNER: string
+  CONSTRAINT_NAME: string
+  TABLE_NAME: string
+  COLUMN_NAME: string
+  POSITION: number | null
+}
+
+interface AllIndexes {
+  OWNER: string
+  INDEX_NAME: string
+  INDEX_TYPE: string
+  TABLE_OWNER: string
+  TABLE_NAME: string
+  UNIQUENESS: 'NONUNIQUE' | 'UNIQUE'
+  GENERATED: YN
+  PARTITIONED: YesNo
+  VISIBILITY: 'INVISIBLE' | 'VISIBLE'
+  COMPRESSION: string | null
+}
+
+interface AllIndColumns {
+  INDEX_OWNER: string
+  INDEX_NAME: string
+  TABLE_OWNER: string
+  TABLE_NAME: string
+  COLUMN_NAME: string
+  COLUMN_POSITION: number
+}
+
+interface AllIndExpressions {
+  INDEX_OWNER: string
+  INDEX_NAME: string
+  TABLE_OWNER: string
+  TABLE_NAME: string
+  /** A LONG, which no SQL function takes. */
+  COLUMN_EXPRESSION: string | null
+  COLUMN_POSITION: number
+}
+
+interface AllTriggers {
+  OWNER: string
+  TRIGGER_NAME: string
+  TRIGGER_TYPE: string
+  TRIGGERING_EVENT: string
+  TABLE_OWNER: string | null
+  BASE_OBJECT_TYPE: string
+  TABLE_NAME: string | null
+  COLUMN_NAME: string | null
+  REFERENCING_NAMES: string
+  WHEN_CLAUSE: string | null
+  STATUS: 'DISABLED' | 'ENABLED'
+  ACTION_TYPE: string
+  /** A LONG, which no SQL function takes. */
+  TRIGGER_BODY: string | null
+}
+
+interface AllSource {
+  OWNER: string
+  NAME: string
+  TYPE: string
+  LINE: number
+  TEXT: string | null
+}
+
+interface ProductComponentVersion {
+  PRODUCT: string
+  VERSION: string
+}

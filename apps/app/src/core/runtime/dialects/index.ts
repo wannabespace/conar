@@ -9,6 +9,7 @@ import type { DialectOptions } from './driver'
 import { createKyselyDriver } from './driver'
 import type { Database as MssqlDatabase } from './mssql/schema'
 import type { Database as MysqlDatabase } from './mysql/schema'
+import type { Database as OracleDatabase } from './oracle/schema'
 import type { Database as PostgresDatabase } from './postgres/schema'
 import type { Database as SqliteDatabase } from './sqlite/schema'
 
@@ -28,6 +29,7 @@ export const dialects = {
   clickhouse: createDialect<ClickhouseDatabase>(Dialect.ClickHouse),
   mssql: createDialect<MssqlDatabase>(Dialect.MSSQL),
   mysql: createDialect<MysqlDatabase>(Dialect.MySQL),
+  oracle: createDialect<OracleDatabase>(Dialect.Oracle),
   postgres: createDialect<PostgresDatabase>(Dialect.Postgres),
   sqlite: createDialect<SqliteDatabase>(Dialect.SQLite),
 } satisfies Record<Dialect, AnyFunction>

@@ -66,6 +66,7 @@ catalog:
   '@types/bun': ^1.4.3
   '@types/d3-dsv': ^3.0.7
   '@types/mssql': ^12.3.0
+  '@types/oracledb': ^7.0.3
   '@types/pg': ^8.23.1
   '@types/react': ^19.3.0
   '@types/react-dom': ^19.3.0
@@ -111,6 +112,7 @@ catalog:
   nitro: 3.0.260903-beta
   npm-run-all2: ^9.0.3
   open: ^11.0.4
+  oracledb: ^7.0.1
   ora: ^9.4.1
   permix: ^4.4.0
   pg: ^8.23.1
@@ -172,6 +174,7 @@ allowBuilds:
   electron: true
   esbuild: true
   msgpackr-extract: false
+  oracledb: false
   protobufjs: false
   ssh2: false
 # @types/ssh2 pins Node 18 types, which clash with Electron's in any workspace compiling the SSH tunnel.

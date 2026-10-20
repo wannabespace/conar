@@ -22,6 +22,12 @@ export const textContains: Record<Dialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), sql`nvarchar(max)`), 'like', pattern),
   mysql: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'char'), 'like', pattern),
+  oracle: (eb, column, pattern) =>
+    eb(
+      eb.fn('upper', [eb.ref(column)]),
+      'like',
+      eb.fn('upper', [eb.val(pattern)])
+    ),
   postgres: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'text'), 'ilike', pattern),
   sqlite: (eb, column, pattern) =>
@@ -62,6 +68,11 @@ const clickhouseBind =
     return clickhouseDateTime(columnType, value)
   }
 
+const bindOracleJson = bindJsonAsText(Dialect.Oracle)
+const oracleDateTimeType = /^(?:DATE|TIMESTAMP)\b/iu
+// The session's NLS formats put a space between date and time, so ISO's T fails with ORA-01861.
+const ISO_TIME_SEPARATOR = /(?<=^\d{4}-\d{2}-\d{2})T/u
+
 /** `undefined` binds the column's DEFAULT. */
 export const bindValue: Record<Dialect, BindValue> = {
   clickhouse: clickhouseBind(
@@ -70,16 +81,27 @@ export const bindValue: Record<Dialect, BindValue> = {
   ),
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
+  oracle: (columnType, value) => {
+    const bound = bindOracleJson(columnType, value)
+    return typeof bound === 'string' && oracleDateTimeType.test(columnType)
+      ? bound.replace(ISO_TIME_SEPARATOR, ' ')
+      : bound
+  },
   postgres: bindJsonAsText(Dialect.Postgres),
   sqlite: bindJsonAsText(Dialect.SQLite),
 }
 
 const NO_FORMAT_FUNCTION = /Unknown table function format\b/u
 
-// ClickHouse 21.12 has no `format()`. There only `JSONExtract` parses a value, and it writes the type's default for a misfit where `format(JSONEachRow)` rejects it.
-const bindClickhouseWithoutFormat = clickhouseBind(
-  (columnType, json) => sql`JSONExtract(${json}, 'v', ${columnType})`
-)
+const CLICKHOUSE_MAP_TYPE = /^Map\([^,(]+(?:\([^)]*\))?,\s*(?<value>.+)\)$/u
+
+// ClickHouse 21.12 has no `format()`. There only `JSONExtract` parses a value, and it writes the type's default for a misfit where `format(JSONEachRow)` rejects it. It cannot return a Map, so a Map is cast from its key-value pairs; a Map nested in another type stays unwritable there.
+const bindClickhouseWithoutFormat = clickhouseBind((columnType, json) => {
+  const map = CLICKHOUSE_MAP_TYPE.exec(columnType)?.groups
+  return map
+    ? sql`CAST(JSONExtractKeysAndValues(${json}, 'v', ${map.value}), ${columnType})`
+    : sql`JSONExtract(${json}, 'v', ${columnType})`
+})
 
 /** Retries once with the `JSONExtract` binder, so `write` must be a single statement or fail before its first one runs. */
 export const clickhouseWrite = async <T>(

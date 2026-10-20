@@ -1,4 +1,7 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
+import {
+  describeConnectionString,
+  SQLITE_RESOURCE_NAME,
+} from '@tamery/connection/utils'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { queryOptions } from '@tanstack/react-query'
@@ -10,67 +13,72 @@ import { getCollections, mutateOffline } from '~/core/collections'
 import type { Connection } from '~/core/connection/sync'
 import { connectionToQueryParams, createQuery } from '~/core/runtime/query'
 
-const connectionResourcesQuery = createQuery({
-  query: {
-    clickhouse: async (db) => {
-      const rows = await db
-        .selectFrom('system.databases')
-        .select('name')
-        .where('name', 'not in', [
-          'INFORMATION_SCHEMA',
-          'information_schema',
-          'system',
-        ])
-        .orderBy('name')
-        .execute()
-      return rows.map((r) => r.name)
-    },
+const connectionResourcesQuery = (defaultResourceName: string | null) =>
+  createQuery({
+    query: {
+      clickhouse: async (db) => {
+        const rows = await db
+          .selectFrom('system.databases')
+          .select('name')
+          .where('name', 'not in', [
+            'INFORMATION_SCHEMA',
+            'information_schema',
+            'system',
+          ])
+          .orderBy('name')
+          .execute()
+        return rows.map((r) => r.name)
+      },
 
-    mssql: async (db) => {
-      const rows = await db
-        .selectFrom('sys.databases')
-        .select('name')
-        .where('name', 'not in', ['master', 'model', 'msdb', 'tempdb'])
-        .orderBy('name')
-        .execute()
-      return rows.map((r) => r.name)
-    },
+      mssql: async (db) => {
+        const rows = await db
+          .selectFrom('sys.databases')
+          .select('name')
+          .where('name', 'not in', ['master', 'model', 'msdb', 'tempdb'])
+          .orderBy('name')
+          .execute()
+        return rows.map((r) => r.name)
+      },
 
-    mysql: async (db) => {
-      const rows = await db
-        .selectFrom('information_schema.SCHEMATA')
-        .select('SCHEMA_NAME')
-        .where(
-          'SCHEMA_NAME',
-          'not in',
-          getCapabilities(Dialect.MySQL).systemSchemas
-        )
-        .orderBy('SCHEMA_NAME')
-        .execute()
-      return rows.map((r) => r.SCHEMA_NAME)
-    },
+      mysql: async (db) => {
+        const rows = await db
+          .selectFrom('information_schema.SCHEMATA')
+          .select('SCHEMA_NAME')
+          .where(
+            'SCHEMA_NAME',
+            'not in',
+            getCapabilities(Dialect.MySQL).systemSchemas
+          )
+          .orderBy('SCHEMA_NAME')
+          .execute()
+        return rows.map((r) => r.SCHEMA_NAME)
+      },
 
-    postgres: async (db) => {
-      const rows = await db
-        .selectFrom('pg_catalog.pg_database')
-        .select('datname')
-        .where('datistemplate', '=', false)
-        .orderBy('datname')
-        .execute()
-      return rows.map((r) => r.datname)
+      oracle: () =>
+        Promise.resolve(defaultResourceName ? [defaultResourceName] : []),
+
+      postgres: async (db) => {
+        const rows = await db
+          .selectFrom('pg_catalog.pg_database')
+          .select('datname')
+          .where('datistemplate', '=', false)
+          .orderBy('datname')
+          .execute()
+        return rows.map((r) => r.datname)
+      },
+      sqlite: () => Promise.resolve([SQLITE_RESOURCE_NAME]),
     },
-    sqlite: () => Promise.resolve([SQLITE_RESOURCE_NAME]),
-  },
-  type: type('string[]'),
-})
+    type: type('string[]'),
+  })
 
 export const connectionResourcesQueryOptions = (connection: Connection) =>
   queryOptions({
     queryFn: async () => {
       const { connectionsResourcesCollection } = getCollections()
-      const resources = await connectionResourcesQuery.run(
-        await connectionToQueryParams(connection)
-      )
+      const params = await connectionToQueryParams(connection)
+      const resources = await connectionResourcesQuery(
+        describeConnectionString(params.connectionString).defaultResourceName
+      ).run(params)
 
       await connectionsResourcesCollection.utils.whenSynced()
 

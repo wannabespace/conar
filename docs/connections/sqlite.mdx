@@ -6,13 +6,15 @@ description: 'Open a SQLite file or connect to Turso and Cloudflare D1.'
 
 ## SQLite files
 
-On desktop, drop a database file onto Tamery, paste its full path into **Add new**, or choose **SQLite** and pick the file with the folder button.
+On desktop, drop the database file onto Tamery. Or choose **SQLite** under **Engine** and pick the file with the folder button.
+
+Pasting a path works too, as long as the file ends in `.db`, `.db3`, `.sqlite`, or `.sqlite3`. For any other name, paste `sqlite3 /path/to/file` or a URL:
 
 ```text
 sqlite:///Users/me/app.db
 ```
 
-The file must already exist. A `~/` path is relative to the home folder on the computer opening it. Syncing the connection does not copy the file.
+The file must already exist. A `~/` path points to the home folder of whichever computer opens it, so the same connection can work on your laptop and your desktop. Syncing the connection does not copy the file.
 
 In the web app, run [`tamery proxy`](/cli/commands#tamery-proxy) on the computer that holds the file.
 
@@ -25,22 +27,22 @@ TURSO_DATABASE_URL=libsql://your-database.turso.io
 TURSO_AUTH_TOKEN=your-token
 ```
 
-Self-hosted libSQL servers work too.
+Self-hosted libSQL servers work too. If yours has no TLS, add `?tls=0` to the URL.
 
 ## Cloudflare D1
 
-Choose **Cloudflare D1** and enter your account ID, database ID, and API token. Pasting the database's Cloudflare dashboard URL fills in the IDs.
+Choose **Cloudflare D1** and enter your account ID, database ID, and API token. Pasting the database's URL from the Cloudflare dashboard fills in both IDs. A `wrangler` config works as well.
 
-The token needs **Account → D1 → Read** for reading, or **Edit** for making changes, scoped to your account.
+Create the token under **My Profile → API Tokens** with the **Account → D1 → Edit** permission.
 
-Turso and D1 work in both desktop and web. Their tokens follow the same [sync rules](/connections/overview#choose-what-syncs) as passwords.
+Turso and D1 work in both the desktop and web apps. Their tokens follow the same [sync rules](/connections/overview#choose-what-syncs) as passwords.
 
 ## What works
 
 Browse and edit rows, run SQL, explore relationships, and manage indexes and triggers.
 
-- Existing columns can be renamed, but their type and nullability cannot be changed in the form.
+- You can add, rename, and drop columns. Changing an existing column's type or nullability is not supported, since SQLite would need the whole table rebuilt.
 - Existing constraints are read-only.
-- Turso and D1 cannot keep a transaction open between runs. Run the whole `BEGIN … COMMIT` block with **Run all** instead. D1 returns no rows from statements inside that block.
-- **Stop** cannot interrupt a SQLite file query already running.
-- D1 may round integers larger than JavaScript's safe integer range (`2^53 − 1`).
+- Turso and D1 can't keep a transaction open between runs. Run the whole `BEGIN … COMMIT` block with **Run all**. D1 returns no rows from statements inside that block.
+- **Stop** can't interrupt a query that is already running on a SQLite file, Turso, or D1.
+- D1 may round integers larger than JavaScript's safe range (`2^53 − 1`).
