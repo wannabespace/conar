@@ -1,9 +1,12 @@
-import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 import type { ComponentProps, ReactNode } from 'react'
 
-const collapsed = { height: 0, opacity: 0 }
-const expanded = { height: 'auto' as const, opacity: 1 }
+const collapsed = { height: 0, opacity: 0, overflow: 'hidden' }
+const expanded = {
+  height: 'auto' as const,
+  opacity: 1,
+  transitionEnd: { overflow: 'visible' },
+}
 
 const absorbStackGap = (node: HTMLDivElement | null) => {
   const parent = node?.previousElementSibling?.parentElement
@@ -30,7 +33,7 @@ export const MotionCollapse = ({
     animate={expanded}
     exit={collapsed}
     transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-    className={cn('overflow-hidden', className)}
+    className={className}
     {...props}
   >
     <div>{children}</div>
