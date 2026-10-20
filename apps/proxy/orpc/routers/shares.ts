@@ -114,7 +114,6 @@ export const shares = {
         filters: view.filters,
         hasMore: read.value.rows.length > SHARE_PAGE_SIZE,
         name: share.name,
-        refresh: share.refresh,
         rows: read.value.rows.slice(0, SHARE_PAGE_SIZE),
       }
     }),

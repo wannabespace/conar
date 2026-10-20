@@ -1,6 +1,5 @@
 import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { shareRefreshLabels } from '@tamery/shared/enums/share-refresh'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import {
   Empty,
@@ -69,10 +68,12 @@ const SharePage = () => {
           </p>
         )}
         <p className="text-muted-foreground text-xs">
-          {`${plural(first.columns.length, 'column')} · ${hasNextPage ? `${rows.length}+ rows` : plural(rows.length, 'row')} · `}
+          {`${plural(first.columns.length, 'column')} · `}
           <Tooltip>
             <TooltipTrigger render={<span />}>
-              {shareRefreshLabels[first.refresh]}
+              {hasNextPage
+                ? `${rows.length}+ rows`
+                : plural(rows.length, 'row')}
             </TooltipTrigger>
             <TooltipContent side="bottom">
               {`Updated ${formatDistanceToNow(first.fetchedAt, { addSuffix: true })}`}
