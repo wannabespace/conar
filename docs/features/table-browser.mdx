@@ -3,45 +3,73 @@ title: 'Table browser'
 description: 'Filter, sort and edit rows without writing SQL. Edits stay drafts until you save them.'
 ---
 
-Open a connection and choose a table in the Navigator. Click to preview it. Double-click to keep its tab open.
+Open a connection and pick a table in the Navigator. A single click previews it in a reusable tab. Double-click to keep the tab open.
 
 ## Find the rows you need
 
-- **Filter:** use the filter field to pick a column, operator, and value. Or right-click a cell and choose **Filter by value**.
-- **Ask AI:** type something like “unpaid orders from last week” and choose **Ask AI**. Review the filters it creates.
-- **Sort:** click a column header for ascending, descending, then off. Shift-click another column to add a sort level.
-- **Follow relationships:** click the arrow on a related cell to peek at its record or the rows that reference it. **Open in Table** opens those rows in a tab.
+Type in the filter field to pick a column, an operator, and a value. Values are suggested as you go. On a foreign key column you can also filter by the related table's columns, like orders whose customer lives in Berlin.
 
-Filters, sorting, column order, and widths are remembered per table.
+Faster still: right-click a cell and choose **Filter by Value**.
+
+Or describe it. Type “unpaid orders from last week” and pick **Ask AI**. It replaces your filters and may set a sort too, so glance at what it built. Free accounts get 20 of these a week; [Pro](/account/plans) has no limit.
+
+You can switch a filter off without deleting it. Useful when you are hunting for the one that hides everything.
+
+Click a column header to sort ascending, again for descending, a third time to stop. Shift-click another header to sort by it as well.
+
+A related cell has a small arrow. Click it to peek at the record it points to, or at the rows that point back. **Open in Table** opens those rows in their own tab.
+
+The row count may be an estimate on large tables. Click it to get the exact number.
+
+Filters, sorting, and the column layout are remembered per table on this device.
 
 ## Edit rows
 
-1. Double-click a cell or press **Enter** to edit it.
-2. Change the value and press **Enter**. The edit stays as a draft.
-3. Use **Review** to check your edits, then **Save** to write them to the database. **Discard** cancels them.
+1. Double-click a cell, press **Enter**, or just start typing.
+2. Change the value and press **Enter**. The edit becomes a draft.
+3. Click **Save** to write your drafts to the database. **Review** shows them first.
 
-Use the toolbar's **+ → Add row** for a new row, or right-click a cell and choose **Duplicate Row**. A new row shows **Discard row** where the checkbox would be, and the same action is **Discard Row** on the cell menu. Select row checkboxes and choose **Delete** to remove saved rows; deletion asks for confirmation.
+To throw drafts away, open **Review** and choose **Discard all**, or right-click a cell and choose **Discard Change**. **Cmd+Z** (**Ctrl+Z**) undoes the last change and **Cmd+Shift+Z** (**Ctrl+Shift+Z**) brings it back.
 
-You can paste a block from a spreadsheet, copy selected cells back to it, and undo draft edits with **Cmd/Ctrl+Z**. A primary key is required to add or edit rows; generated columns are read-only.
+Use the toolbar's **+ → Add row** for a new row, or right-click a cell and choose **Duplicate Row**. To drop a new row before saving, click **Discard row** where its checkbox would be.
 
-Changing filters or sorting clears staged cell edits. Save them first; undo can restore them.
+To delete saved rows, tick their checkboxes and click **Delete**. Tamery asks before anything goes.
+
+A few more things that save time:
+
+- Paste a block from a spreadsheet, or copy cells back into one.
+- Select several cells, edit one, and press **Cmd+Enter** (**Ctrl+Enter**) to write that value into all of them.
+- **Fill Down** copies the top value of a selection into the cells below it.
+- **Set Null** clears a value to `NULL`.
+
+A table needs a primary key before you can add or edit rows. Generated columns are read-only.
+
+Changing filters or sorting clears drafted cell edits, so save them first. If you forget, undo brings them back. New rows you have not saved yet stay.
 
 ## Choose how data looks
 
-Switch to **Documents** view to read one record at a time, with expandable JSON. In the grid, resize or reorder columns by dragging, or use a column's menu to hide or pin it.
+**Cmd+Shift+E** (**Ctrl+Shift+E**) switches to the documents view, where each row is a card with expandable JSON. Press it again for the grid.
 
-The column menu also offers **Distinct Values** to inspect common values, and **Show Labels** to display a related name beside a foreign key.
+In the grid, drag column edges to resize and headers to reorder. The column menu hides or pins a column and resets widths or order.
 
-A time stored with a time zone other than yours shows the stored value, then your local time.
+**Distinct Values** in the column menu shows the most common values with their counts, plus the minimum and maximum. Click a value to filter by it.
+
+A foreign key column shows a readable name from the related table next to each ID, so you know who customer `42` is without opening another tab. Tamery picks a column like `name` or `email` on its own. **Show Labels** in the column menu picks another one or turns it off.
+
+A time stored with a different time zone than yours shows the stored value, then your local time.
+
+Press **Space** on a cell to peek at its full value.
 
 ## Change the structure
 
-Use **+** to add a column. Right-click a column to edit it, or a table in the Navigator to rename or drop it. Schema menus let you create tables and views. Available actions depend on the database engine.
+Use **+** in the toolbar or the header to add a column. Right-click a column to edit it, or a table in the Navigator to rename or drop it. See [Navigator and tabs](/features/navigator) for creating tables, views, and schemas.
 
-For changes across several tables, use the [schema visualizer](/features/schema-visualizer).
+What you can change depends on the database engine. For changes across several tables, use the [schema visualizer](/features/schema-visualizer).
 
 ## Generate test data
 
-Choose **⋯ → Seed data**, review the generator for each column, choose a row count, and insert. This writes new rows to your database. Free usage is limited; [Pro](/account/plans) removes the limit.
+Choose **⋯ → Seed data**, check the generator Tamery picked for each column, choose how many rows you want, and insert. This writes real rows to your database, so point it at the right one.
 
-For keyboard shortcuts, open **Settings → Keyboard**.
+One run inserts up to 10,000 rows. Free accounts get 10 runs on each device. [Pro](/account/plans) removes the limit.
+
+To get rows out of a table, see [Export and code](/features/export).

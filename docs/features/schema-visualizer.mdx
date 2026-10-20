@@ -5,24 +5,30 @@ description: 'A diagram of your tables and foreign keys. Change the structure th
 
 Open **Schema → Visualizer** in the Navigator.
 
-Each card is a table or view. Lines connect foreign keys to the keys they reference. Click a card to inspect its columns and relationships.
+Each card is a table or view. Lines connect foreign keys to the keys they point at. Click a card to see its columns, relations, indexes, triggers, and policies.
 
 ## Explore
 
-Drag the background to pan, zoom to see more or less detail, and search with **Cmd/Ctrl+F** to find a table or column. Drag tables to arrange them; Tamery remembers their positions.
+Drag the background to pan and zoom to see more or less. **Cmd+F** (**Ctrl+F**) finds a table or column. Pick another schema in the toolbar to see its tables.
+
+Drag tables wherever they make sense to you. Tamery remembers the layout on this device. **Arrange tables automatically** tidies everything up when it gets out of hand.
 
 ## Make changes
 
-- Use **+ Table** to create a table.
-- Right-click a table to rename it, add a column, or drop it.
-- Right-click a column to edit or drop it.
-- Drag a column's edge handle onto a primary or unique key to add a foreign key.
-- Select a relationship and press **Delete** to remove it.
+- **+ Table** creates a table.
+- Right-click a table to rename it, add a column, open it, or drop it. On PostgreSQL, **Drop Table with Dependents** also removes what depends on it.
+- Right-click a column to edit or drop it, or flip **Allow NULL** and **Require a Value**.
+- To add a foreign key, drag a column's edge handle onto a primary or unique key. Or right-click the column and use **Reference**.
+- To remove a foreign key, select the line and press **Delete**, or right-click it and choose **Drop Foreign Key**.
 
-The available actions depend on your database engine. Views are read-only in the diagram.
+Foreign keys can be added on PostgreSQL, MySQL, MariaDB, and SQL Server. Views are read-only in the diagram.
 
 ## Review and apply
 
-Changes stay as drafts until you click **Apply**. Use the review button to inspect the exact SQL and discard individual changes. Dropping an object opens the review before applying.
+Changes stay as drafts until you click **Apply**, or press **Cmd+S** (**Ctrl+S**). The button counts them.
 
-PostgreSQL, SQL Server, and SQLite apply the changes in one transaction. MySQL and ClickHouse apply schema changes separately, so an error can leave some changes already applied. Review the remaining drafts before retrying.
+The eye button next to it shows each change with its exact SQL, and lets you discard any of them. Changed your mind about one table, column, or foreign key? Right-click it and choose **Restore Table**, **Restore Column**, or **Restore Foreign Key**. Dropping anything opens the review first, so nothing disappears by a misclick.
+
+Drafts live in this window only. Reloading throws them away.
+
+PostgreSQL, SQL Server, SQLite, Turso, and D1 apply all changes in one transaction: either everything lands or nothing does. MySQL, MariaDB, and ClickHouse apply schema changes one by one, so an error can leave some of them already applied. Check what is left in the review before you try again.

@@ -4,7 +4,7 @@ sidebarTitle: 'PostgreSQL'
 description: 'Connect to PostgreSQL or TimescaleDB, including Supabase, Neon, Timescale Cloud, and local servers.'
 ---
 
-Paste your provider's connection string into **Add new**, or fill in the fields:
+Click **New connection** and paste your provider's connection string, or fill in the fields:
 
 ```text
 postgresql://user:password@localhost:5432/mydb
@@ -14,25 +14,28 @@ Both `postgresql://` and `postgres://` work. The default port is **5432**.
 
 ## Hosted databases
 
-Copy the connection string from Supabase, Neon, Railway, or your provider. Replace password placeholders before saving.
+Copy the connection string from Supabase, Neon, Railway, or wherever your database lives. If it still says `[YOUR-PASSWORD]` or similar, Tamery clears the placeholder and asks for the real password.
 
-Tamery may switch a pooled address to a session or direct address so transactions work correctly. Review any change shown in the form. For Supabase, use the **Session pooler** if your network cannot reach the direct server over IPv6.
+Pooled addresses break transactions, so Tamery switches them to a session or direct address. Neon's `-pooler` host becomes the direct host, and Supabase's port 6543 becomes 5432. The form shows every change it made.
+
+On Supabase, the direct server is IPv6 only. If your network has no IPv6, use the **Session pooler** string instead.
 
 ## SSL
 
-Keep the SSL settings supplied by your provider.
+Keep whatever SSL settings your provider gives you.
 
 | Option | Behavior |
 | --- | --- |
-| `sslmode=disable` | Unencrypted connection. |
+| `sslmode=disable` | No encryption. |
 | `sslmode=require` | Encrypted, without verifying the certificate. |
+| `sslmode=no-verify` | Same as `require`. |
 | `sslmode=verify-full` | Encrypted, with certificate and hostname verification. |
 
 ```text
 postgresql://user:password@db.example.com:5432/mydb?sslmode=verify-full
 ```
 
-With no SSL option, Tamery tries an encrypted connection without certificate verification. It uses an unencrypted connection only if the server reports that SSL is unavailable.
+With no SSL option, Tamery tries an encrypted connection without certificate verification. It drops to an unencrypted one only if the server itself says it has no SSL.
 
 ## TimescaleDB
 

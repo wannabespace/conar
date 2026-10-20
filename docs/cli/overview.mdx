@@ -6,25 +6,25 @@ description: 'Run SQL from the terminal or connect the web app to local database
 
 ## Install and sign in
 
-Requires **Node.js 22.16 or later**.
+You need **Node.js 22.16 or later**.
 
 ```bash
 npm install -g tamery
 tamery login
 ```
 
-Finish signing in in the browser. Use the same account as the app.
+Finish signing in in the browser, with the same account you use in the app.
 
 ## Run a query
 
-Create a connection in Tamery first, then find its name:
+The CLI uses the connections you saved in Tamery. Find the name of the one you want:
 
 ```bash
 tamery query --list-connections
 tamery query -c my-db "SELECT 1 AS hello"
 ```
 
-You can also run SQL files or request JSON output. See [all commands](/cli/commands).
+It also runs SQL files and prints JSON. See [all commands](/cli/commands).
 
 ## Reach local databases from the web
 
@@ -32,6 +32,6 @@ You can also run SQL files or request JSON output. See [all commands](/cli/comma
 tamery proxy
 ```
 
-Keep this running on the computer that can reach the database. The web app detects it automatically. Stop it with **Ctrl+C**.
+Keep it running on the computer that can reach the database. The web app finds it on its own. **Ctrl+C** stops it.
 
-The proxy also opens SQLite files on that computer. SSH tunnels require the desktop app.
+The proxy also opens SQLite files on that computer. SSH tunnels still need the desktop app.
