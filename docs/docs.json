@@ -1,14 +1,4 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "theme": "almond",
-  "name": "Tamery",
-  "description": "Documentation for Tamery, the AI database client for PostgreSQL, MySQL, MariaDB, SQL Server, ClickHouse and SQLite: connections, SQL editor, AI assistant, CLI and MCP.",
-  "colors": {
-    "primary": "#497def",
-    "light": "#a4c4f8",
-    "dark": "#040404"
-  },
-  "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
@@ -61,33 +51,5 @@
         "pages": ["mcp/overview"]
       }
     ]
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Website",
-        "href": "https://tamery.app"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Download",
-      "href": "https://tamery.app/download"
-    }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/tamery_app",
-      "github": "https://github.com/wannabespace/tamery"
-    }
-  },
-  "seo": {
-    "metatags": {
-      "msvalidate.01": "1475164F19E362EBC46DEE1D9813275A",
-      "twitter:site": "@tamery_app"
-    }
-  },
-  "fonts": {
-    "family": "Geist"
   }
 }

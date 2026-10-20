@@ -1,0 +1,40 @@
+{
+  "name": "@tamery/docs",
+  "type": "module",
+  "scripts": {
+    "dev": "portless run vite dev",
+    "build": "vite build",
+    "start": "bun run .output/server/index.mjs",
+    "check-types": "tsc"
+  },
+  "dependencies": {
+    "@hugeicons/core-free-icons": "catalog:",
+    "@hugeicons/react": "catalog:",
+    "@tanstack/react-hotkeys": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "fumadocs-core": "catalog:",
+    "fumadocs-mdx": "catalog:",
+    "motion": "catalog:",
+    "nitro": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@tamery/configs": "workspace:*",
+    "@tamery/shared": "workspace:*",
+    "@tamery/ui": "workspace:*",
+    "@types/mdx": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  },
+  "portless": "docs.local.tamery"
+}

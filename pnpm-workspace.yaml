@@ -170,7 +170,10 @@ catalog:
   '@tanstack/react-router-ssr-query': 1.167.3
   ini: ^7.0.0
   fast-xml-parser: ^5.11.2
+  fumadocs-core: ^16.17.5
+  fumadocs-mdx: ^15.4.7
   '@types/ini': ^4.1.1
+  '@types/mdx': ^2.0.13
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false
