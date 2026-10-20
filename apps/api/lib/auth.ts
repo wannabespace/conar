@@ -41,7 +41,6 @@ export const auth = betterAuth({
       enabled: true,
     },
     database: {
-      // Not a function: better-auth then mints base64url ids for its deterministic lock rows, which the uuid id column rejects. With 'uuid' on pg the id is left to baseTable's v7 default.
       generateId: 'uuid',
     },
     // x-forwarded-for has extra hops on Railway, and a multi-value chain is discarded into one global rate-limit bucket. The edge overwrites x-real-ip with the connecting client.
