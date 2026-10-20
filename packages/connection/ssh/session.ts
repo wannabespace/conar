@@ -122,7 +122,7 @@ export const connectSsh = async (
     await once(client, 'close')
     throw new Error('the SSH host closed the connection')
   }
-  // `connect` throws synchronously for a key it cannot parse; arming the timer or the race before it leaves an unawaited rejection that crashes the desktop main process.
+  // `connect` throws synchronously for a key it cannot parse; arming the timer or the race before it leaves an unawaited rejection that crashes the desktop database process.
   const connecting = Result.try(() =>
     client.connect({
       ...auth,

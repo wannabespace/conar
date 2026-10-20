@@ -124,6 +124,12 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Secrets from a password manager.** Accept `op://vault/item/password` (1Password) and Keychain references in the password field, resolved at connect time, so a synced connection string never holds the secret itself.
 - **A bare host pasted on a SQLite engine moves to a server.** With SQLite, Turso or D1 chosen, a paste that names only a host with no telling port (`db.example.com`) names no engine, so it stays on that engine and fills nothing visible. A host with no scheme is almost never a SQLite location, so the form could switch to a server engine.
 
+## Desktop app
+
+- **Find local databases off the main thread.** The first `localDatabases.find` loads the finders and the keyring addon in main and stalls every window for up to 1.5 s on a cold start. Running the finders in the database utility process would fix it, but Keychain reads must stay in a process whose prompt names Tamery (`architecture.md` → Device key), so `unlock` stays in main.
+- **Attach the SSH host-key dialog to the window that asked.** With no focused window it opens app-modal, which pauses main's event loop until it is answered.
+- **Record a trace from the Help menu.** Diagnosing a freeze took a shell script that relaunches the app with Chromium's startup tracing. A Help → Record performance trace item on Electron's `contentTracing` would let anyone send one.
+
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.

@@ -2,8 +2,6 @@ import '@tamery/shared/arktype-config'
 import path from 'node:path'
 import process from 'node:process'
 
-import { resetTransactions } from '@tamery/connection/queries/transactions'
-import { isConnectionError } from '@tamery/shared/connections'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import { Result } from 'better-result'
@@ -15,6 +13,7 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
 import { buildMenu } from './lib/menu'
+import { queryProcess } from './lib/query-process'
 import { autoUpdater } from './lib/todesktop'
 
 const DEBUGGING_SWITCHES = ['remote-debugging-port', 'remote-debugging-pipe']
@@ -26,25 +25,6 @@ if (
 }
 
 initElectronEvents()
-
-process.on('uncaughtException', (error) => {
-  if (isConnectionError(error)) {
-    console.error('[Suppressed Connection Error]', error.message)
-    return
-  }
-  throw error
-})
-
-process.on('unhandledRejection', (reason) => {
-  if (isConnectionError(reason)) {
-    console.error(
-      '[Suppressed Connection Rejection]',
-      reason instanceof Error ? reason.message : reason
-    )
-    return
-  }
-  throw reason
-})
 
 export const store = new Store<{
   bounds?: Rectangle
@@ -174,7 +154,7 @@ export const createWindow = (route?: string) => {
 
   win.webContents.on('did-start-navigation', (details) => {
     if (details.isMainFrame && !details.isSameDocument) {
-      void resetTransactions()
+      queryProcess.resetTransactions()
     }
   })
 
