@@ -1,11 +1,9 @@
 import type { QueryExecutor } from '@tamery/connection/queries'
-import { sshForwarding } from '@tamery/connection/ssh/forwarding'
-import { tunnelForwarding } from '@tamery/connection/ssh/tunnel'
 import type {
   MenuPopupRequest,
   MenuPopupResult,
 } from '@tamery/shared/context-menu'
-import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
@@ -14,66 +12,13 @@ import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
+import { queryProcessExecutor } from './query-process'
 import { pickSqliteFile } from './sqlite-file'
-import { confirmHostKey } from './ssh-host-key'
 import { pickSshKeyFile } from './ssh-key-file'
 import { autoUpdater } from './todesktop'
 
 // Stays lazy so the native keyring addon and the finders' parsers don't load at startup.
 const loadLocalDatabases = () => import('./local-databases/find')
-
-const lazyQueryExecutor = (
-  load: () => Promise<{ query: QueryExecutor }>
-): QueryExecutor => {
-  const loadQuery = async () => {
-    const dialect = await load()
-
-    return dialect.query
-  }
-
-  return {
-    beginTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.beginTransaction(args)
-    },
-    cancel: async (args) => {
-      const query = await loadQuery()
-
-      return query.cancel(args)
-    },
-    commitTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.commitTransaction(args)
-    },
-    execute: async (args) => {
-      const query = await loadQuery()
-
-      return query.execute(args)
-    },
-    executeTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.executeTransaction(args)
-    },
-    openSession: async (args) => {
-      const query = await loadQuery()
-
-      return query.openSession(args)
-    },
-    rollbackTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.rollbackTransaction(args)
-    },
-    transactionStatus: async (args) => {
-      const query = await loadQuery()
-
-      return query.transactionStatus(args)
-    },
-  }
-}
 
 const openAtLogin = {
   get: () => {
@@ -129,21 +74,11 @@ export const electron = {
   },
   openAtLogin,
   query: {
-    clickhouse: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/clickhouse')
-    ),
-    mssql: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/mssql')
-    ),
-    mysql: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/mysql')
-    ),
-    postgres: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/pg')
-    ),
-    sqlite: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/sqlite')
-    ),
+    clickhouse: queryProcessExecutor(Dialect.ClickHouse),
+    mssql: queryProcessExecutor(Dialect.MSSQL),
+    mysql: queryProcessExecutor(Dialect.MySQL),
+    postgres: queryProcessExecutor(Dialect.Postgres),
+    sqlite: queryProcessExecutor(Dialect.SQLite),
   } satisfies Record<Dialect, QueryExecutor>,
   sqlite: {
     pickFile: pickSqliteFile,
@@ -169,9 +104,6 @@ const registerHandlers = (prefix: string, value: unknown) => {
 }
 
 export const initElectronEvents = () => {
-  sshForwarding.use((connectionString) =>
-    tunnelForwarding(connectionString, confirmHostKey)
-  )
   for (const [key, value] of Object.entries(electron)) {
     registerHandlers(key, value)
   }

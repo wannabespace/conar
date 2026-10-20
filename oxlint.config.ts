@@ -28,6 +28,11 @@ export default defineConfig({
       rules: { 'promise/prefer-await-to-then': 'off' },
     },
     {
+      files: ['apps/desktop/src/main/**'],
+      // No window here: utility-process and MessagePortMain ports take no target origin.
+      rules: { 'unicorn/require-post-message-target-origin': 'off' },
+    },
+    {
       files: ['packages/ui/src/components/**'],
       rules: {
         'shadcn/no-arbitrary-values': 'off',

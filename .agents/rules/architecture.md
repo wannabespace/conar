@@ -83,6 +83,10 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 - `queryClient` runs queries and mutations with `networkMode: 'always'`: most of them reach the user's database, often a local one (Electron IPC, the web build's local proxy), so the browser's offline state must not pause them. **A query that calls the Tamery API sets `networkMode: 'online'`** — otherwise it fires offline and, under `throwOnError`, fails into the error boundary. `subscriptionQueryClient` holds only API queries and keeps the default.
 - The query client defaults to `placeholderData: keepPreviousData`, so on a connection switch a resource-keyed query paints the previous connection's data. Where that is visible (the navigator tree), `placeholderData` drops the previous data unless the resource id matches, so the skeleton shows instead; the smoothing still applies to same-resource key changes.
 
+## Desktop processes
+
+**Database drivers never run in the main process.** Main owns every window's event loop, so anything a driver does synchronously beachballs the whole app: a socket `close()` waits about a second per socket under a macOS network content filter (VPN clients, endpoint security), and a SQLite file waits out its busy timeout. The `query.*` IPC handlers forward each `QueryExecutor` call to a utility process (`apps/desktop/src/main/query.ts`, through `lib/query-process.ts`), which holds the pools, transactions, sessions and SSH tunnels. Main keeps only what needs it: the host-key dialog the tunnel asks for and the reset of open transactions when a window navigates. A crashed utility process rejects its pending calls and the next call starts a new one. Keep other blocking work (sync file, keychain or process calls) out of main too.
+
 ## MCP server (desktop)
 
 `apps/desktop/src/main/lib/mcp.ts` serves MCP over HTTP on `127.0.0.1:PORTS.MCP`, on by default unless turned off in Settings.
