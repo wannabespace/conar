@@ -1,5 +1,6 @@
 import {
   ArrowUpDownIcon,
+  Cancel01Icon,
   CommandIcon,
   HashtagIcon,
   MoreHorizontalIcon,
@@ -8,9 +9,8 @@ import {
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
+import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import { Kbd } from '@tamery/ui/components/kbd'
-
-import { FilterChip } from '~/components/filter-chip'
 
 const FILTERS = [
   { column: 'total', operator: 'over', value: '200' },
@@ -39,7 +39,13 @@ export const Toolbar = () => (
       />
       <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
         {FILTERS.map((filter) => (
-          <FilterChip key={filter.column} {...filter} />
+          <FilterChip key={filter.column} {...filter}>
+            <HugeiconsIcon
+              icon={Cancel01Icon}
+              strokeWidth={2}
+              className="size-3.5"
+            />
+          </FilterChip>
         ))}
         <span className="text-muted-foreground truncate text-sm">
           Filter or ask AI…

@@ -1,21 +1,11 @@
-import { Dialect } from '@tamery/shared/enums/connection-type'
-import type {
-  Dialect as KyselyDialect,
-  OffsetNode,
-  SelectQueryNode,
-} from 'kysely'
+import type { OffsetNode, SelectQueryNode } from 'kysely'
 import {
   MssqlQueryCompiler as DefaultMssqlQueryCompiler,
-  DummyDriver,
-  MssqlAdapter,
   TopNode,
   ValueNode,
 } from 'kysely'
 
-import type { DialectOptions } from '~/core/runtime/dialects/driver'
-import { createKyselyDriver } from '~/core/runtime/dialects/driver'
-
-class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
+export class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
   // A NULL parameter is typed nvarchar, which SQL Server refuses to convert to varbinary.
   protected override appendValue(value: unknown) {
     if (value === null) {
@@ -53,23 +43,3 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
     }
   }
 }
-
-export const mssqlDialect = (options: DialectOptions) =>
-  ({
-    createAdapter: () => new MssqlAdapter(),
-    createDriver: () => createKyselyDriver(Dialect.MSSQL, options),
-    createIntrospector: () => {
-      throw new Error('Not implemented')
-    },
-    createQueryCompiler: () => new MssqlQueryCompiler(),
-  }) satisfies KyselyDialect
-
-export const mssqlColdDialect = () =>
-  ({
-    createAdapter: () => new MssqlAdapter(),
-    createDriver: () => new DummyDriver(),
-    createIntrospector: () => {
-      throw new Error('Not implemented')
-    },
-    createQueryCompiler: () => new MssqlQueryCompiler(),
-  }) satisfies KyselyDialect

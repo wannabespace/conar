@@ -1,8 +1,9 @@
+import type { ColumnTypes } from '@tamery/shared/filters'
 import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
-import type { BindValue, ColumnTypes } from './shape'
+import type { BindValue } from './shape'
 import {
   bindRow,
   bindValue,

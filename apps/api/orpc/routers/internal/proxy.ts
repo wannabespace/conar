@@ -6,22 +6,9 @@ import { db } from '@tamery/db'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { type } from 'arktype'
 
-import { env } from '~/env'
 import { authMiddleware, orpc } from '~/orpc'
 
-const proxySecretMiddleware = orpc
-  .errors({
-    FORBIDDEN: { message: 'Invalid proxy token' },
-  })
-  .middleware(({ context, errors, next }) => {
-    const token = context.headers.get('x-proxy-token')
-
-    if (token !== env.PROXY_SHARED_SECRET) {
-      throw errors.FORBIDDEN()
-    }
-
-    return next()
-  })
+import { proxySecretMiddleware } from './proxy-secret'
 
 const CONNECTION_COLUMNS = {
   connectionString: true,

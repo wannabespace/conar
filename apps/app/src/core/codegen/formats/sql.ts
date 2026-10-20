@@ -1,3 +1,4 @@
+import { coldDialects } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
 
@@ -9,7 +10,6 @@ import {
   isSingleColumnConstraint,
   quoteIdentifier,
 } from '~/core/codegen/utils'
-import { coldDialects } from '~/core/runtime/dialects'
 import type { Column } from '~/core/table/cell/utils'
 import { formatSql } from '~/utils/formatter'
 

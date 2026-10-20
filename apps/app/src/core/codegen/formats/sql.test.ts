@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it } from 'bun:test'
 
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
@@ -7,10 +7,8 @@ import type { Column } from '~/core/table/cell/utils'
 import { generateSchemaDrizzle } from './drizzle'
 import { generateQueryKysely, generateSchemaKysely } from './kysely'
 import { generateQueryPrisma, generateSchemaPrisma } from './prisma'
+import { generateSchemaSQL, inlineParameters } from './sql'
 import { generateSchemaTypeScript } from './typescript'
-
-mock.module('../../runtime/dialects', () => ({ coldDialects: {} }))
-const { generateSchemaSQL, inlineParameters } = await import('./sql')
 
 const columns: Column[] = [
   {

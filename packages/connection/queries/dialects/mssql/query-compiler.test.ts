@@ -1,15 +1,11 @@
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
 
-import { Kysely } from 'kysely'
+import { DummyDriver, Kysely } from 'kysely'
 
-mock.module('~/core/runtime/dialects/driver', () => ({
-  createKyselyDriver: mock(),
-}))
-
-const { mssqlColdDialect } = await import('.')
+import { kyselyDialects } from '../../kysely'
 
 const db = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: mssqlColdDialect(),
+  dialect: { ...kyselyDialects.mssql, createDriver: () => new DummyDriver() },
 })
 
 test('a null is inlined and the remaining parameters keep their numbering', () => {

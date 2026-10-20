@@ -1,10 +1,13 @@
-import { CommandIcon, Search01Icon } from '@hugeicons/core-free-icons'
+import {
+  Cancel01Icon,
+  CommandIcon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import { Kbd } from '@tamery/ui/components/kbd'
 import type { Variants } from 'motion/react'
 import { motion } from 'motion/react'
-
-import { FilterChip } from '~/components/filter-chip'
 
 import { ResultsTable } from './results-table'
 
@@ -77,7 +80,13 @@ export const FilterIllustration = () => (
             key={filter.column}
             variants={appear(CONVERT_AT + 0.1 + index * 0.08)}
           >
-            <FilterChip {...filter} />
+            <FilterChip {...filter}>
+              <HugeiconsIcon
+                icon={Cancel01Icon}
+                strokeWidth={2}
+                className="size-3.5"
+              />
+            </FilterChip>
           </motion.span>
         ))}
         <motion.span

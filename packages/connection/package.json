@@ -12,6 +12,7 @@
     "arktype": "catalog:",
     "better-result": "catalog:",
     "json5": "catalog:",
+    "kysely": "catalog:",
     "memoza": "catalog:",
     "shell-quote": "catalog:"
   },

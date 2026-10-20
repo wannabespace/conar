@@ -1,5 +1,14 @@
-import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
-import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
+import type {
+  ActiveFilter,
+  ColumnTypes,
+  FilterValueBinding,
+} from '@tamery/shared/filters'
+import {
+  clickhouseFilterValues,
+  EQUAL_FILTER,
+  sqliteFilterValues,
+  toKyselyFilter,
+} from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import type { Kysely } from 'kysely'
@@ -11,9 +20,6 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
-
-import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues, sqliteFilterValues } from './shape'
 
 const rowType = type('Record<string, unknown>')
 

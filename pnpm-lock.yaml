@@ -1432,9 +1432,15 @@ importers:
       arktype:
         specifier: 'catalog:'
         version: 2.2.8
+      better-result:
+        specifier: 'catalog:'
+        version: 3.0.1
       hono:
         specifier: 'catalog:'
         version: 4.13.13
+      memoza:
+        specifier: 'catalog:'
+        version: 1.4.0
       ua-parser-js:
         specifier: 'catalog:'
         version: 2.0.10
@@ -1445,6 +1451,97 @@ importers:
       better-auth:
         specifier: 'catalog:'
         version: 1.7.9(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.2(esbuild@0.25.12)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(supports-color@7.2.0)(vite@8.3.4(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.4)(drizzle-orm@1.0.0-rc.4(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.8)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mysql2@3.24.6(@types/node@26.1.1))(next@16.3.4(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.1.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
+
+  apps/share:
+    dependencies:
+      '@hugeicons/core-free-icons':
+        specifier: 'catalog:'
+        version: 4.3.5
+      '@hugeicons/react':
+        specifier: 'catalog:'
+        version: 1.1.10(react@19.3.1)
+      '@orpc/client':
+        specifier: 'catalog:'
+        version: 2.0.0-beta.44
+      '@tanstack/react-router':
+        specifier: 'catalog:'
+        version: 1.170.44(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@tanstack/react-start':
+        specifier: 'catalog:'
+        version: 1.169.2(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(supports-color@7.2.0)(vite@8.3.4(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+      arktype:
+        specifier: 'catalog:'
+        version: 2.2.8
+      better-result:
+        specifier: 'catalog:'
+        version: 3.0.1
+      d3-dsv:
+        specifier: 'catalog:'
+        version: 3.0.1
+      date-fns:
+        specifier: 'catalog:'
+        version: 4.4.0
+      motion:
+        specifier: 'catalog:'
+        version: 14.2.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      nitro:
+        specifier: 'catalog:'
+        version: 3.0.260903-beta
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@orpc/server':
+        specifier: 'catalog:'
+        version: 2.0.0-beta.44(crossws@0.4.15(srvx@1.0.5))
+      '@rolldown/plugin-babel':
+        specifier: 'catalog:'
+        version: 0.2.4(@babel/core@7.29.7(supports-color@7.2.0))(@babel/runtime@7.29.7)(rolldown@1.2.14)(vite@8.3.4(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+      '@tailwindcss/vite':
+        specifier: 'catalog:'
+        version: 4.3.3(vite@8.3.4(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
+      '@tamery/proxy':
+        specifier: workspace:*
+        version: link:../proxy
+      '@tamery/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@tamery/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@types/d3-dsv':
+        specifier: 'catalog:'
+        version: 3.0.7
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: 'catalog:'
+        version: 6.1.2(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@7.2.0))(@babel/runtime@7.29.7)(rolldown@1.2.14)(vite@8.3.4(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.4(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+      babel-plugin-react-compiler:
+        specifier: 'catalog:'
+        version: 1.0.0
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 4.3.3
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.4(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
 
   packages/ai:
     dependencies:
@@ -1501,6 +1598,9 @@ importers:
       json5:
         specifier: 'catalog:'
         version: 2.2.3
+      kysely:
+        specifier: 'catalog:'
+        version: 0.29.6
       memoza:
         specifier: 'catalog:'
         version: 1.4.0

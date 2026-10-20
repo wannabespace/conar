@@ -15,7 +15,9 @@
     "@tamery/query-proxy": "workspace:*",
     "@tamery/shared": "workspace:*",
     "arktype": "catalog:",
+    "better-result": "catalog:",
     "hono": "catalog:",
+    "memoza": "catalog:",
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {

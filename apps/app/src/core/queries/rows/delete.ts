@@ -1,10 +1,11 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
+import type { ColumnTypes } from '@tamery/shared/filters'
 import type { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
 import { createQuery } from '~/core/runtime/query'
 
-import type { BindValue, ColumnTypes } from './shape'
+import type { BindValue } from './shape'
 import {
   bindValue,
   clickhouseWrite,

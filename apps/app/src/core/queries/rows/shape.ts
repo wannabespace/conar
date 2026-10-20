@@ -1,5 +1,6 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import type { FilterValueBinding } from '@tamery/shared/filters'
+import { clickhouseDateTime } from '@tamery/shared/filters'
+import type { ColumnTypes } from '@tamery/shared/filters'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
@@ -27,8 +28,6 @@ export const textContains: Record<Dialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), 'text'), 'like', pattern),
 }
 
-export type ColumnTypes = { id: string; type?: string }[]
-
 export type BindValue = (columnType: string, value: unknown) => unknown
 
 const bindJsonAsText = (dialect: Dialect): BindValue => {
@@ -47,17 +46,6 @@ const bindJsonAsText = (dialect: Dialect): BindValue => {
 
 const clickhouseJsonColumnType = getCapabilities(Dialect.ClickHouse).columnTypes
   .json
-const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
-
-// Reads come back ISO (`date_time_output_format`), which a DateTime comparison or cast cannot parse.
-const clickhouseDateTime = (columnType: string, value: unknown) => {
-  const dateTime =
-    typeof value === 'string' && clickhouseDateTimeType.exec(columnType)
-  return dateTime
-    ? sql`parseDateTime64BestEffort(${value}, ${Number(dateTime.groups?.precision ?? 0)})`
-    : value
-}
-
 const clickhouseBind =
   (parseJson: (columnType: string, json: string) => unknown): BindValue =>
   (columnType, value) => {
@@ -130,25 +118,6 @@ export const matchesPrimaryKeys = (
       eb(id, '=', value)
     )
   )
-
-export const clickhouseFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
-    clickhouseDateTime(
-      columns.find(({ id }) => id === column)?.type ?? '',
-      value
-    )
-
-const sqliteBooleanType = getCapabilities(Dialect.SQLite).columnTypes.boolean
-
-// SQLite stores a boolean as 1 or 0, so the filter's `true` text never equals it.
-export const sqliteFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
-    (value === 'true' || value === 'false') &&
-    sqliteBooleanType?.test(columns.find(({ id }) => id === column)?.type ?? '')
-      ? Number(value === 'true')
-      : value
 
 // SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
 const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {

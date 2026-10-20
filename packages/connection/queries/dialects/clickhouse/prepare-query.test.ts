@@ -1,15 +1,15 @@
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
 
-import { Kysely, sql } from 'kysely'
+import { DummyDriver, Kysely, sql } from 'kysely'
 
-mock.module('~/core/runtime/dialects/driver', () => ({
-  createKyselyDriver: mock(),
-}))
-
-const { clickhouseColdDialect, prepareQuery } = await import('.')
+import { kyselyDialects } from '../../kysely'
+import { prepareQuery } from './prepare-query'
 
 const db = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: clickhouseColdDialect(),
+  dialect: {
+    ...kyselyDialects.clickhouse,
+    createDriver: () => new DummyDriver(),
+  },
 })
 
 const update = (value: unknown) =>

@@ -1,52 +1,79 @@
-import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { prepareQuery } from '@tamery/connection/queries/dialects/clickhouse/prepare-query'
+import { kyselyDialects } from '@tamery/connection/queries/kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction } from '@tamery/shared/utils'
 import { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
-import { clickhouseColdDialect, clickhouseDialect } from './clickhouse'
 import type { Database as ClickhouseDatabase } from './clickhouse/schema'
 import type { DialectOptions } from './driver'
-import { mssqlColdDialect, mssqlDialect } from './mssql'
+import { createKyselyDriver } from './driver'
 import type { Database as MssqlDatabase } from './mssql/schema'
-import { mysqlColdDialect, mysqlDialect } from './mysql'
 import type { Database as MysqlDatabase } from './mysql/schema'
-import { postgresColdDialect, postgresDialect } from './postgres'
 import type { Database as PostgresDatabase } from './postgres/schema'
-import { sqliteColdDialect, sqliteDialect } from './sqlite'
 import type { Database as SqliteDatabase } from './sqlite/schema'
+
+const byConnection = {
+  cacheKey: ({ log: _log, ...rest }: DialectOptions) => rest,
+}
 
 export const dialects = {
   clickhouse: memoize(
     (options: DialectOptions) =>
-      new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }),
-    { cacheKey: ({ log: _log, ...rest }) => rest }
+      new Kysely<ClickhouseDatabase>({
+        dialect: {
+          ...kyselyDialects.clickhouse,
+          createDriver: () =>
+            createKyselyDriver(
+              Dialect.ClickHouse,
+              options,
+              (compiledQuery) => ({
+                query: prepareQuery(compiledQuery),
+                values: [],
+              })
+            ),
+        },
+      }),
+    byConnection
   ),
   mssql: memoize(
     (options: DialectOptions) =>
-      new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }),
-    { cacheKey: ({ log: _log, ...rest }) => rest }
+      new Kysely<MssqlDatabase>({
+        dialect: {
+          ...kyselyDialects.mssql,
+          createDriver: () => createKyselyDriver(Dialect.MSSQL, options),
+        },
+      }),
+    byConnection
   ),
   mysql: memoize(
     (options: DialectOptions) =>
-      new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }),
-    { cacheKey: ({ log: _log, ...rest }) => rest }
+      new Kysely<MysqlDatabase>({
+        dialect: {
+          ...kyselyDialects.mysql,
+          createDriver: () => createKyselyDriver(Dialect.MySQL, options),
+        },
+      }),
+    byConnection
   ),
   postgres: memoize(
     (options: DialectOptions) =>
-      new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }),
-    { cacheKey: ({ log: _log, ...rest }) => rest }
+      new Kysely<PostgresDatabase>({
+        dialect: {
+          ...kyselyDialects.postgres,
+          createDriver: () => createKyselyDriver(Dialect.Postgres, options),
+        },
+      }),
+    byConnection
   ),
   sqlite: memoize(
     (options: DialectOptions) =>
-      new Kysely<SqliteDatabase>({ dialect: sqliteDialect(options) }),
-    { cacheKey: ({ log: _log, ...rest }) => rest }
+      new Kysely<SqliteDatabase>({
+        dialect: {
+          ...kyselyDialects.sqlite,
+          createDriver: () => createKyselyDriver(Dialect.SQLite, options),
+        },
+      }),
+    byConnection
   ),
-} satisfies Record<Dialect, AnyFunction>
-
-export const coldDialects = {
-  clickhouse: memoize(() => new Kysely({ dialect: clickhouseColdDialect() })),
-  mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
-  mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
-  postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
-  sqlite: memoize(() => new Kysely({ dialect: sqliteColdDialect() })),
 } satisfies Record<Dialect, AnyFunction>

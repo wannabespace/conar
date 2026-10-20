@@ -1,0 +1,44 @@
+{
+  "name": "@tamery/share",
+  "type": "module",
+  "scripts": {
+    "dev": "portless run vite dev",
+    "build": "vite build",
+    "start": "bun run .output/server/index.mjs",
+    "check-types": "tsc"
+  },
+  "dependencies": {
+    "@hugeicons/core-free-icons": "catalog:",
+    "@hugeicons/react": "catalog:",
+    "@orpc/client": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "arktype": "catalog:",
+    "better-result": "catalog:",
+    "d3-dsv": "catalog:",
+    "date-fns": "catalog:",
+    "motion": "catalog:",
+    "nitro": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@orpc/server": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@tamery/configs": "workspace:*",
+    "@tamery/proxy": "workspace:*",
+    "@tamery/query-proxy": "workspace:*",
+    "@tamery/shared": "workspace:*",
+    "@tamery/ui": "workspace:*",
+    "@types/d3-dsv": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  },
+  "portless": "share.local.tamery"
+}

@@ -1,0 +1,93 @@
+import { db } from '@tamery/db'
+import { shares } from '@tamery/db/schema'
+import { SyncType } from '@tamery/shared/enums/sync-type'
+import { shareSaveInput } from '@tamery/shared/share'
+import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
+import { and, eq, ne, or } from 'drizzle-orm'
+
+import { orpc, permissionsMiddleware } from '~/orpc'
+
+export const save = orpc
+  .use(permissionsMiddleware)
+  .input(shareSaveInput)
+  .errors({
+    FORBIDDEN: {
+      message: `The free plan shares up to ${FREE_SHARE_LIMIT} tables. Upgrade to Pro to share more.`,
+    },
+    NOT_FOUND: { message: 'Connection resource not found' },
+    NOT_SYNCED: {
+      message: 'Only a connection synced with Full can be shared.',
+    },
+  })
+  .handler(async ({ context, errors, input }) => {
+    const {
+      connectionResourceId,
+      description,
+      expiresAt,
+      name,
+      password,
+      refresh,
+      schema,
+      table,
+      ...view
+    } = input
+    const resource = await db.query.connectionsResources.findFirst({
+      columns: { id: true },
+      where: {
+        connection: { userId: { eq: context.user.id } },
+        id: { eq: connectionResourceId },
+      },
+      with: { connection: { columns: { syncType: true } } },
+    })
+
+    if (!resource?.connection) {
+      throw errors.NOT_FOUND()
+    }
+    if (resource.connection.syncType !== SyncType.Cloud) {
+      throw errors.NOT_SYNCED()
+    }
+
+    const count = await db.$count(
+      shares,
+      and(
+        eq(shares.userId, context.user.id),
+        or(
+          ne(shares.connectionResourceId, connectionResourceId),
+          ne(shares.schema, schema),
+          ne(shares.table, table)
+        )
+      )
+    )
+
+    if (!context.permissions.check('share.create', { count })) {
+      throw errors.FORBIDDEN()
+    }
+
+    const changes = {
+      description,
+      expiresAt,
+      failingSince: null,
+      name,
+      refresh,
+      view,
+      ...(password !== undefined && {
+        passwordHash: password && (await Bun.password.hash(password)),
+      }),
+    }
+    const [saved] = await db
+      .insert(shares)
+      .values({
+        ...changes,
+        connectionResourceId,
+        schema,
+        table,
+        userId: context.user.id,
+      })
+      .onConflictDoUpdate({
+        set: changes,
+        target: [shares.connectionResourceId, shares.schema, shares.table],
+      })
+      .returning({ id: shares.id })
+
+    return saved
+  })

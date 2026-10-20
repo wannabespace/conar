@@ -271,6 +271,14 @@ The docs site mirrors the web account area: same canvas, same inset panel, so re
 - Section headings show a link glyph on hover or focus that sets the URL to the heading; the heading text itself is not a link.
 - **Links show the pointer cursor.** The docs are a website, not the app, so the no-pointer rule stops at `apps/docs`: one unlayered `a[href]` rule in the docs stylesheet beats the kit's layered `cursor-default` on every link-rendered component.
 
+## Share site (`apps/share`)
+
+A public page for people with no Tamery account, so it reads as the website, not the app: the same canvas and kit, links keep the pointer (like the docs), and nothing on it edits.
+
+- **The page is the table**: name as the `text-2xl` heading, the description muted under it, the owner's filters as the kit `FilterChip` with no trailing segment (read-only, so no ✕), then the rows in a level-3 `cardClass` card holding the kit `Table`. Headers are links that cycle the sort like the grid (ascending, descending, off), the glyph only on the sorted column. Under the card: an outline `sm` **Download CSV**, the refresh cadence as muted `text-xs`, and outline `icon-sm` previous/next with a muted `Page N`. A muted "Made with Tamery" link closes the page. No fetched-at time: server and viewer clocks differ and the text would not hydrate.
+- **Every state that is not the table is a status page**: a muted glyph, `text-2xl` title, one muted line, at most one outline action (Try again for an unavailable database). The password state uses the same column with a `PasswordInput` and **Open** side by side, its refusal as one `text-xs` destructive line under them.
+- **Making a share lives where the table is**: an outline icon button in the table toolbar, disabled with its reason as the tooltip when the connection is not synced with Full. It opens one dialog for creating and editing: the link (read-only field with copy and open) once it exists, then name, description, refresh and expiry side by side, `OptionField` switches for the table's filters (only when it has some) and for a password, which reveals its field under it. A footnote says what viewers see. Creating copies the link and keeps the dialog open on it. **Stop sharing is not in the dialog**: dropping is the list's verb, so it lives on Settings → Shares, which the dialog's `link-muted` **Manage shares** opens.
+
 ## Two principles behind the rest
 
 - **The target is the whole surface, not the glyph inside it.** A row's hit area is the row, a strip button's is its hover square, a separator's is the grab strip around its line. A control whose clickable area is its ink is a control the user has to aim at.
