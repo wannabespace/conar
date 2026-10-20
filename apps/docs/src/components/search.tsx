@@ -131,7 +131,7 @@ export const Search = () => {
           />
           <CommandList className="scroll-fade max-h-none flex-1 scroll-py-2">
             <div key={data?.query} ref={highlight} className="p-1">
-              {search.length === 0 &&
+              {!data &&
                 nav.groups.map((group) => (
                   <CommandGroup key={group.title} heading={group.title}>
                     {group.pages.map((page) => (
@@ -146,13 +146,16 @@ export const Search = () => {
                     ))}
                   </CommandGroup>
                 ))}
-              {search.length > 0 &&
+              {data &&
                 [...groupByPage(records)].map(([href, pageRecords]) => (
                   <CommandGroup key={href}>
                     <CommandItem onSelect={() => go(href)} value={href}>
                       <HugeiconsIcon icon={File01Icon} strokeWidth={2} />
                       <span className="truncate">
-                        {nav.getPage(href)?.title ?? href}
+                        {nav.getPage(href)?.title ??
+                          pageRecords.find((record) => record.type === 'page')
+                            ?.content ??
+                          href}
                       </span>
                       <CommandShortcut>
                         {nav.getGroup(href)?.title}
