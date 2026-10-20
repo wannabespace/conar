@@ -1,4 +1,3 @@
-import '@tamery/shared/arktype-config'
 import { createRouter } from '@tanstack/react-router'
 
 import { RoutePending } from './components/route-pending'

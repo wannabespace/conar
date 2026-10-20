@@ -6,7 +6,6 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
-import { Toaster } from '@tamery/ui/components/sonner'
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
 import {
@@ -34,7 +33,6 @@ const RootComponent = () => (
           <Outlet />
         </TooltipProvider>
       </MotionConfig>
-      <Toaster />
       <Scripts />
     </body>
   </html>
@@ -48,7 +46,7 @@ const NotFound = () => (
         <EmptyDescription>That page is not in the docs.</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button render={<Link to="/" />}>Docs home</Button>
+        <Button render={<Link to="/$" />}>Docs home</Button>
       </EmptyContent>
     </Empty>
   </main>
@@ -79,6 +77,7 @@ export const Route = createRootRoute({
       { charSet: 'utf-8' },
       { content: 'width=device-width, initial-scale=1', name: 'viewport' },
       { content: '#0a0a0a', name: 'theme-color' },
+      { content: '1475164F19E362EBC46DEE1D9813275A', name: 'msvalidate.01' },
     ],
   }),
   notFoundComponent: NotFound,

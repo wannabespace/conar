@@ -3,7 +3,6 @@
 ## About this project
 
 - Docs site is `apps/docs` (Fumadocs). Pages = MDX with YAML frontmatter in this folder; nav in `docs.json`
-- Components available in MDX: `Card`, `CardGroup`, `Note`, `Tip`, `Warning`, `Steps`, `Step`, `Tabs`, `Tab`, `ParamField`
 
 ## Terminology
 

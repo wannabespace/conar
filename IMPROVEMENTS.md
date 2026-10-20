@@ -150,6 +150,8 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **The deep-link status is a hand-built `Empty`.** `deep-link/open-status.tsx` stacks logo, title, description and action by hand; the kit `Empty` the error page uses covers it, at the cost of a small visual change.
 - **Redirect conar.app to tamery.app.** Search Console still lists `conar.app` as a page linking to the home page and gets "conar app" searches; a 301 from every legacy Conar URL to its Tamery counterpart would move that traffic and link weight over instead of splitting it.
 - **`/email-code` without an email answers 500.** Opening the page bare (a crawler or a stale bookmark) throws on search validation instead of sending the visitor back to `/sign-in`.
+- **Track docs search.** `apps/docs` has no PostHog, so nobody sees which questions the docs fail to answer. Counting searches and empty results (no query text) would show the gaps.
+- **Clean docs search snippets.** Results show raw Markdown (`**5432**`, table pipes) from Fumadocs' structured data; stripping it before indexing would make the rows readable.
 
 ## Keyboard
 

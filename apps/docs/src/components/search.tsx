@@ -7,37 +7,28 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
+  CommandInput,
   CommandList,
-  CommandPrimitive,
 } from '@tamery/ui/components/command'
 import { KbdHotkey } from '@tamery/ui/components/custom/shortcuts'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
 import { useFetchSearch } from 'fumadocs-core/search/client'
-import { useState, useSyncExternalStore } from 'react'
+import { useState } from 'react'
+
+import { getUserAgent } from '~/utils/user-agent'
 
 import { docsLinkProps } from './docs-link'
 
-const emptySubscribe = () => () => false
-
-const useUserAgent = () =>
-  useSyncExternalStore(
-    emptySubscribe,
-    () => navigator.userAgent,
-    () => ''
-  )
-
-const rowsOf = (
-  items: NonNullable<ReturnType<typeof useFetchSearch>['data']>['items']
-) => items.flatMap((item) => (item.type === 'table' ? item.rows : [item]))
-
 export const Search = () => {
   const [open, setOpen] = useState(false)
-  const userAgent = useUserAgent()
+  const userAgent = getUserAgent()
   const router = useRouter()
   const { data, isLoading, onSearchChange, search } = useFetchSearch()
-  const rows = data ? rowsOf(data.items).slice(0, 20) : []
+  const rows = (data?.items ?? [])
+    .flatMap((item) => (item.type === 'table' ? item.rows : [item]))
+    .slice(0, 20)
 
   useHotkey('Mod+K', (event) => {
     event.preventDefault()
@@ -64,20 +55,12 @@ export const Search = () => {
         title="Search docs"
       >
         <Command className="min-h-0" shouldFilter={false} variant="transparent">
-          <div className="flex shrink-0 items-center gap-3 border-b px-4">
-            <HugeiconsIcon
-              icon={Search01Icon}
-              strokeWidth={2}
-              className="text-muted-foreground size-4 shrink-0"
-            />
-            <CommandPrimitive.Input
-              data-slot="command-input"
-              className="placeholder:text-muted-foreground h-12 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
-              onValueChange={onSearchChange}
-              placeholder="Search docs"
-              value={search}
-            />
-          </div>
+          <CommandInput
+            onValueChange={onSearchChange}
+            placeholder="Search docs"
+            value={search}
+            variant="flat"
+          />
           <CommandList>
             {!isLoading && search.length === 0 && (
               <p className="text-muted-foreground px-4 py-6 text-sm">

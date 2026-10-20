@@ -1,28 +1,15 @@
 import { cn } from '@tamery/ui/lib/utils'
 import { useRouterState } from '@tanstack/react-router'
 
-import type { DocsTab } from '~/lib/nav'
+import { nav } from '~/lib/nav'
 
 import { DocsLink } from './docs-link'
 
-const activeTab = (nav: DocsTab[], pathname: string) =>
-  nav.find((tab) =>
-    tab.groups.some((group) =>
-      group.pages.some((page) => page.href === pathname)
-    )
-  ) ?? nav[0]
-
-export const Sidebar = ({
-  nav,
-  onNavigate,
-}: {
-  nav: DocsTab[]
-  onNavigate?: () => void
-}) => {
+export const Sidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
-  const tab = activeTab(nav, pathname)
+  const tab = nav.getActiveTab(pathname)
 
   if (!tab) {
     return null

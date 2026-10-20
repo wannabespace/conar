@@ -12,32 +12,17 @@ import {
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import type { DocsTab } from '~/lib/nav'
+import { nav } from '~/lib/nav'
 
 import { docsLinkProps } from './docs-link'
 import { Search } from './search'
 import { Sidebar } from './sidebar'
 
-const tabHref = (tab: DocsTab) => tab.groups[0]?.pages[0]?.href ?? '/'
-
-const tabIsActive = (tab: DocsTab, pathname: string, fallback: boolean) => {
-  const contains = tab.groups.some((group) =>
-    group.pages.some((page) => page.href === pathname)
-  )
-
-  return contains || fallback
-}
-
-export const Navbar = ({ nav }: { nav: DocsTab[] }) => {
+export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false)
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
+  const activeTab = useRouterState({
+    select: (state) => nav.getActiveTab(state.location.pathname),
   })
-  const matched = nav.some((tab) =>
-    tab.groups.some((group) =>
-      group.pages.some((page) => page.href === pathname)
-    )
-  )
 
   return (
     <header className="border-border bg-body/80 sticky top-0 z-40 border-b backdrop-blur-xl">
@@ -60,12 +45,12 @@ export const Navbar = ({ nav }: { nav: DocsTab[] }) => {
             <DrawerHeader>
               <DrawerTitle>Docs</DrawerTitle>
             </DrawerHeader>
-            <Sidebar nav={nav} onNavigate={() => setMenuOpen(false)} />
+            <Sidebar onNavigate={() => setMenuOpen(false)} />
           </DrawerContent>
         </Drawer>
         <Link
           className="text-foreground flex items-center gap-2 text-base font-semibold tracking-tight"
-          to="/"
+          to="/$"
         >
           <AppLogo aria-hidden="true" className="text-primary size-5" />
           Tamery
@@ -74,16 +59,16 @@ export const Navbar = ({ nav }: { nav: DocsTab[] }) => {
           aria-label="Documentation sections"
           className="ml-2 hidden items-center md:flex"
         >
-          {nav.map((tab, index) => (
+          {nav.tabs.map((tab) => (
             <Button
               key={tab.label}
-              render={<Link {...docsLinkProps(tabHref(tab))} />}
-              size="sm"
-              variant={
-                tabIsActive(tab, pathname, !matched && index === 0)
-                  ? 'secondary'
-                  : 'ghost-muted'
+              render={
+                <Link
+                  {...docsLinkProps(tab.groups[0]?.pages[0]?.href ?? '/')}
+                />
               }
+              size="sm"
+              variant={tab === activeTab ? 'secondary' : 'ghost-muted'}
             >
               {tab.label}
             </Button>

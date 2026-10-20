@@ -1,34 +1,27 @@
-import { createFileRoute, getRouteApi } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 
 import { DocsScreen } from '~/components/docs-screen'
-import { docs } from '~/lib/collections'
-import { loadDocsPage } from '~/lib/page'
-import type { DocsPageData } from '~/lib/page'
+import { source } from '~/lib/source'
 import { docsHead } from '~/seo'
 
-const { useLoaderData } = getRouteApi('/$')
+const getDocsPage = (splat: string | undefined) => {
+  const page = source.getPage(splat?.split('/').filter(Boolean))
 
-const loadSplatPage = async (
-  splat: string | undefined
-): Promise<DocsPageData> => {
-  const slugs = splat?.split('/').filter(Boolean) ?? []
-  const data = await loadDocsPage({ data: slugs })
-  await docs.getPage(data.path)?.preload()
+  if (!page) {
+    throw notFound()
+  }
 
-  return data
+  return page
 }
 
-const Page = () => {
-  const data = useLoaderData()
+const DocsRoute = () => {
+  const page = getDocsPage(Route.useParams()._splat)
 
-  return <DocsScreen key={data.href} data={data} />
+  return <DocsScreen key={page.url} page={page} />
 }
 
 export const Route = createFileRoute('/$')({
-  component: Page,
-  head: ({ loaderData }) => (loaderData ? docsHead(loaderData) : {}),
-  // The annotation is required. Inferring `params` from `/$` cycles through
-  // routeTree.gen and collapses this route's loader data to `undefined`.
-  loader: ({ params }: { params: { _splat?: string } }) =>
-    loadSplatPage(params._splat),
+  component: DocsRoute,
+  head: ({ params }) => docsHead(getDocsPage(params._splat)),
+  loader: ({ params }) => getDocsPage(params._splat).data.preload(),
 })

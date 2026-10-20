@@ -34,7 +34,7 @@ export const ErrorPage = ({ error: thrown }: ErrorComponentProps) => {
             <Button onClick={() => router.invalidate()} variant="outline">
               Try again
             </Button>
-            <Button render={<Link to="/" />}>Docs home</Button>
+            <Button render={<Link to="/$" />}>Docs home</Button>
           </EmptyContent>
         </Empty>
       </main>

@@ -1,30 +1,24 @@
-const SITE_URL = 'https://docs.tamery.app'
+import { SITE_URL } from './constants'
+import type { DocsPage } from './lib/source'
 
-export const docsHead = ({
-  description,
-  href,
-  title,
-}: {
-  description: string
-  href: string
-  title: string
-}) => {
-  const pageUrl = `${SITE_URL}${href === '/' ? '' : href}`
-  const fullTitle = `${title} · Tamery`
+export const docsHead = (page: DocsPage) => {
+  const pageUrl = `${SITE_URL}${page.url === '/' ? '' : page.url}`
+  const title = `${page.data.title} · Tamery`
+  const description = page.data.description ?? ''
 
   return {
     links: [{ href: pageUrl, rel: 'canonical' }],
     meta: [
-      { title: fullTitle },
+      { title },
       { content: description, name: 'description' },
       { content: 'summary', name: 'twitter:card' },
       { content: '@tamery_app', name: 'twitter:site' },
-      { content: fullTitle, name: 'twitter:title' },
+      { content: title, name: 'twitter:title' },
       { content: description, name: 'twitter:description' },
       { content: 'website', property: 'og:type' },
       { content: 'Tamery', property: 'og:site_name' },
       { content: pageUrl, property: 'og:url' },
-      { content: fullTitle, property: 'og:title' },
+      { content: title, property: 'og:title' },
       { content: description, property: 'og:description' },
     ],
   }
