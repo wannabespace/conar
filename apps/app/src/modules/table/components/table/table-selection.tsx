@@ -1,12 +1,17 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
+import { ArrowTurnBackwardIcon } from '@hugeicons/core-free-icons'
 import type { GridRow } from '@tamery/table'
 import { Checkbox } from '@tamery/ui/components/checkbox'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import type { CSSProperties } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { rowSelectId } from '~/core/table/cell/utils'
 import type { GridEntry, PrimaryKeys } from '~/core/table/session'
 import {
   getRowPrimaryKeysValues,
+  isSaving,
+  newRowsActions,
   useTableSessionStore,
 } from '~/core/table/session'
 
@@ -61,11 +66,13 @@ export const LeadingHeaderCell = ({
 )
 
 const SelectRow = ({
+  id,
   keys,
   rowIndex,
   rowKey,
   rows,
 }: {
+  id: string
   keys: string[]
   rowIndex: number
   rowKey: PrimaryKeys
@@ -78,6 +85,7 @@ const SelectRow = ({
 
   return (
     <Checkbox
+      id={id}
       aria-label="Select row"
       tabIndex={-1}
       checked={isSelected}
@@ -95,14 +103,34 @@ const SelectRow = ({
   )
 }
 
+const DiscardRow = ({ id }: { id: string }) => {
+  const store = useTableSessionStore()
+  const saving = useSubscription(store, { selector: isSaving })
+
+  return (
+    <IconButton
+      variant="ghost-muted"
+      size="icon-xs"
+      className="-mr-1"
+      icon={ArrowTurnBackwardIcon}
+      label="Discard row"
+      tabIndex={-1}
+      disabled={saving}
+      onClick={() => newRowsActions(store).discard(id)}
+    />
+  )
+}
+
 export const LeadingCell = ({
   entry,
   keys,
+  rowIndex,
   rows,
   style,
 }: {
   entry: GridEntry
   keys: string[]
+  rowIndex: number
   rows: GridRow[]
   style?: CSSProperties
 }) => (
@@ -111,8 +139,11 @@ export const LeadingCell = ({
     className="bg-background group-hover/row:bg-accent z-10 flex items-center justify-end pr-3"
     style={style}
   >
-    {entry.kind === 'saved' && (
+    {entry.kind === 'new' ? (
+      <DiscardRow id={entry.newRow.id} />
+    ) : (
       <SelectRow
+        id={rowSelectId(rowIndex)}
         keys={keys}
         rowIndex={entry.index}
         rowKey={entry.keys}

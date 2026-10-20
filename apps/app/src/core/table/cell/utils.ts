@@ -101,6 +101,8 @@ export const INTERNAL_COLUMN_IDS = {
   SELECT: SELECT_COLUMN_ID,
 }
 
+export const rowSelectId = (rowIndex: number) => `row-select-${rowIndex}`
+
 const columnsSizeMap: Record<string, number> = {
   bigint: 170,
   boolean: 160,

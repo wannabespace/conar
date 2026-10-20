@@ -2,8 +2,7 @@
 
 ## About this project
 
-- Docs site on [Mintlify](https://mintlify.com); pages = MDX with YAML frontmatter; config in `docs.json`
-- Mintlify MCP server `https://mcp.mintlify.com` edits content/settings; docs MCP server `https://www.mintlify.com/docs/mcp` answers Mintlify usage questions
+- Docs site is `apps/docs` (Fumadocs). Pages = MDX with YAML frontmatter in this folder; nav in `docs.json`
 
 ## Terminology
 
