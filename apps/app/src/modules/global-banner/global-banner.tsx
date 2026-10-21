@@ -219,12 +219,10 @@ export const GlobalBanner = () => {
   const { data: serverItems = [] } = useQuery({
     ...bannerQueryOptions,
     enabled: delayPassed,
-    networkMode: 'online',
     refetchInterval: 1000 * 60 * 5,
     select: (bannerItems) =>
       bannerItems.filter((item) => !dismissed.includes(item.text)),
     staleTime: 1000 * 60 * 5,
-    throwOnError: false,
   })
   const data = isOnline
     ? serverItems

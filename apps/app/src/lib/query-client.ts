@@ -12,7 +12,8 @@ declare module '@tanstack/react-query' {
   }
 }
 
-// A query calling the Tamery API must set networkMode: 'online' (architecture.md).
+export const API_QUERY_KEY = 'api'
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     mutations: { networkMode: 'always' },
@@ -33,12 +34,8 @@ export const queryClient = new QueryClient({
   }),
 })
 
-export const subscriptionQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      placeholderData: keepPreviousData,
-      refetchOnWindowFocus: 'always',
-      retry: 0,
-    },
-  },
+queryClient.setQueryDefaults([API_QUERY_KEY], {
+  networkMode: 'online',
+  staleTime: 0,
+  throwOnError: false,
 })
