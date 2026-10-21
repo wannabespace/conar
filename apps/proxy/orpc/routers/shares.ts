@@ -12,9 +12,9 @@ import { Result } from 'better-result'
 import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'
 import { assertReachable } from '~/public-host'
-import { readShareRows, shareRows } from '~/share-rows'
+import { readCachedShareRows, readShareRows } from '~/share-rows'
 
-const proxyApi = createApiClient()
+const proxyApi = createApiClient({})
 
 const shareAccess = type({
   id: 'string.uuid',
@@ -92,7 +92,7 @@ export const shares = {
         view.columns.some((shown) => shown.id === column)
       const read = await Result.tryPromise(async () => {
         await assertReachable(share.connectionString)
-        return shareRows.read(share, {
+        return readCachedShareRows(share, {
           connectionString: share.connectionString,
           dialect: share.dialect,
           limit: SHARE_PAGE_SIZE + 1,
@@ -126,11 +126,8 @@ export const shares = {
 
       return {
         columns: view.columns,
-        description: share.description,
         fetchedAt: read.value.fetchedAt,
-        filters: view.filters,
         hasMore: read.value.rows.length > SHARE_PAGE_SIZE,
-        name: share.name,
         orderBy: Object.fromEntries(
           Object.entries(view.orderBy).filter(([column]) => isShown(column))
         ),

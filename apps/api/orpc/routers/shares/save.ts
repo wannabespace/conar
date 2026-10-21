@@ -3,6 +3,7 @@ import { shares, users } from '@tamery/db/schema'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { shareSaveInput } from '@tamery/shared/share'
 import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
+import { pick } from '@tamery/shared/utils'
 import { and, eq } from 'drizzle-orm'
 
 import { orpc, permissionsMiddleware } from '~/orpc'
@@ -20,23 +21,12 @@ export const save = orpc
     },
   })
   .handler(async ({ context, errors, input }) => {
-    const {
-      connectionResourceId,
-      description,
-      expiresAt,
-      id,
-      name,
-      password,
-      refresh,
-      schema,
-      table,
-      ...view
-    } = input
+    const { id, password } = input
     const resource = await db.query.connectionsResources.findFirst({
       columns: { id: true },
       where: {
         connection: { userId: { eq: context.user.id } },
-        id: { eq: connectionResourceId },
+        id: { eq: input.connectionResourceId },
       },
       with: { connection: { columns: { syncType: true } } },
     })
@@ -49,12 +39,9 @@ export const save = orpc
     }
 
     const changes = {
-      description,
-      expiresAt,
+      ...pick(input, ['description', 'expiresAt', 'name', 'refresh']),
       failingSince: null,
-      name,
-      refresh,
-      view,
+      view: pick(input, ['columnTypes', 'columns', 'filters', 'orderBy']),
       ...(password !== undefined && {
         passwordHash: password && (await Bun.password.hash(password)),
       }),
@@ -90,9 +77,7 @@ export const save = orpc
         .insert(shares)
         .values({
           ...changes,
-          connectionResourceId,
-          schema,
-          table,
+          ...pick(input, ['connectionResourceId', 'schema', 'table']),
           userId: context.user.id,
         })
         .returning({ id: shares.id })

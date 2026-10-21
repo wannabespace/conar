@@ -1,156 +1,21 @@
-import { Alert02Icon, LayoutTable02Icon } from '@hugeicons/core-free-icons'
-import type { IconSvgElement } from '@hugeicons/react'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { silently } from '@tamery/shared/utils'
 import { TableSkeleton } from '@tamery/table'
-import { Button } from '@tamery/ui/components/button'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@tamery/ui/components/empty'
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { cn } from '@tamery/ui/lib/utils'
-import {
-  useSuspenseInfiniteQuery,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { formatDistanceToNow } from 'date-fns'
-import type { ReactNode } from 'react'
-import { Suspense, useDeferredValue } from 'react'
+import { Suspense } from 'react'
 
 import { PasswordForm } from '~/components/password-form'
-import { ShareGrid, shareSearch } from '~/components/share-grid'
+import { ShareTable } from '~/components/share-table'
 import { StatusPage } from '~/components/status-page'
 import { TopBar } from '~/components/top-bar'
-import { shareInfoQueryOptions, shareRowsQueryOptions } from '~/lib/share-rows'
-
-const toSort = ({ order, sort }: typeof shareSearch.infer) =>
-  sort
-    ? ({ column: sort, direction: order === 'desc' ? 'DESC' : 'ASC' } as const)
-    : null
-
-const useShareRows = () => {
-  const { shareId } = Route.useParams()
-  const search = Route.useSearch()
-  const shownSearch = useDeferredValue(search)
-  const query = useSuspenseInfiniteQuery(
-    shareRowsQueryOptions({ id: shareId, sort: toSort(shownSearch) })
-  )
-  return { ...query, search, sorting: search !== shownSearch }
-}
-
-const FRESH_AGE = 'less than a minute'
-
-const UpdatedAt = () => {
-  const { data } = useShareRows()
-  const [first] = data.pages
-  if (first?.status !== 'ready') {
-    return null
-  }
-  const age = formatDistanceToNow(first.fetchedAt)
-  return (
-    <p
-      className={cn(
-        'text-muted-foreground text-xs',
-        age === FRESH_AGE && 'invisible'
-      )}
-    >
-      {`Updated ${age} ago`}
-    </p>
-  )
-}
-
-const TableEmpty = ({
-  children,
-  description,
-  icon,
-  title,
-}: {
-  children?: ReactNode
-  description: string
-  icon: IconSvgElement
-  title: string
-}) => (
-  <Empty size="sm">
-    <EmptyHeader>
-      <EmptyMedia variant="muted">
-        <HugeiconsIcon icon={icon} strokeWidth={2} />
-      </EmptyMedia>
-      <EmptyTitle>{title}</EmptyTitle>
-      <EmptyDescription>{description}</EmptyDescription>
-    </EmptyHeader>
-    {children}
-  </Empty>
-)
-
-const ShareTable = () => {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    refetch,
-    search,
-    sorting,
-  } = useShareRows()
-  const [first] = data.pages
-
-  if (first?.status !== 'ready') {
-    return (
-      <TableEmpty
-        icon={Alert02Icon}
-        title="This table cannot be loaded right now"
-        description="The database behind this link is not answering. Try again in a little while."
-      >
-        <EmptyContent>
-          <Button variant="outline" onClick={() => refetch()}>
-            Try again
-          </Button>
-        </EmptyContent>
-      </TableEmpty>
-    )
-  }
-
-  const rows = data.pages.flatMap((page) =>
-    page.status === 'ready'
-      ? page.rows.map((row) =>
-          Object.fromEntries(first.columns.map(({ id }, i) => [id, row[i]]))
-        )
-      : []
-  )
-
-  return (
-    <>
-      {rows.length === 0 ? (
-        <TableEmpty
-          icon={LayoutTable02Icon}
-          title="No rows"
-          description="Nothing in this table matches."
-        />
-      ) : (
-        <ShareGrid
-          columns={first.columns}
-          hasNextPage={hasNextPage}
-          isFetching={isFetching}
-          onEndReached={() => hasNextPage && fetchNextPage()}
-          orderBy={first.orderBy}
-          rows={rows}
-          search={search}
-        />
-      )}
-      {sorting && (
-        <div className="bg-background animate-in fade-in fill-mode-both absolute inset-0 delay-150 duration-150">
-          <TableSkeleton selectable={false} />
-        </div>
-      )}
-    </>
-  )
-}
+import { UpdatedAt } from '~/components/updated-at'
+import {
+  shareInfoQueryOptions,
+  shareRowsQueryOptions,
+  shareSearch,
+} from '~/lib/share-rows'
 
 const SharePage = () => {
   const { shareId } = Route.useParams()
@@ -207,12 +72,16 @@ export const Route = createFileRoute('/$shareId')({
   validateSearch: shareSearch,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps, params }) => {
-    void context.queryClient.ensureInfiniteQueryData(
-      shareRowsQueryOptions({ id: params.shareId, sort: toSort(deps) })
+    void silently(() =>
+      context.queryClient.infiniteQuery({
+        ...shareRowsQueryOptions({ id: params.shareId, search: deps }),
+        staleTime: 'static',
+      })
     )
-    return context.queryClient.ensureQueryData(
-      shareInfoQueryOptions(params.shareId)
-    )
+    return context.queryClient.query({
+      ...shareInfoQueryOptions(params.shareId),
+      staleTime: 'static',
+    })
   },
   head: ({ loaderData }) => ({
     meta:

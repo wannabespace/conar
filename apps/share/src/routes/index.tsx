@@ -1,25 +1,24 @@
-import { Unlink01Icon, ViewIcon } from '@hugeicons/core-free-icons'
+import { Share08Icon, Unlink01Icon, ViewIcon } from '@hugeicons/core-free-icons'
 import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { SettingsGroup } from '@tamery/ui/components/custom/settings-group'
-import { ShareRow } from '@tamery/ui/components/custom/share-row'
-import { SharesEmpty } from '@tamery/ui/components/custom/shares-empty'
-import { StopSharingDialog } from '@tamery/ui/components/custom/stop-sharing-dialog'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { EmptyState } from '~/components/empty-state'
+import { ShareRow } from '~/components/share-row'
 import { SharesFrame } from '~/components/shares-frame'
 import { SharesSkeleton } from '~/components/shares-skeleton'
+import { StopSharingDialog } from '~/components/stop-sharing-dialog'
+import type { MyShare } from '~/lib/account'
 import { getMyShares, stopSharing } from '~/lib/account'
-
-type Share = Awaited<ReturnType<typeof getMyShares>>[number]
 
 const SharesPage = () => {
   const router = useRouter()
   const { viewer } = Route.useRouteContext()
   const shares = Route.useLoaderData()
-  const [stopping, setStopping] = useState<Share | null>(null)
+  const [stopping, setStopping] = useState<MyShare | null>(null)
   const stop = useMutation({
     meta: { event: 'share_removed' },
     mutationFn: (id: string) => stopSharing({ data: { id } }),
@@ -44,7 +43,14 @@ const SharesPage = () => {
     >
       {shares && (
         <SettingsGroup>
-          {shares.length === 0 && <SharesEmpty />}
+          {shares.length === 0 && (
+            <EmptyState
+              size="sm"
+              icon={Share08Icon}
+              title="No shared tables"
+              description="Open a table and set up the filters and columns you want seen, then choose Share in its ⋯ menu. Only connections synced with Full can be shared."
+            />
+          )}
           {shares.map((share) => (
             <ShareRow key={share.id} share={share}>
               <CopyIconButton

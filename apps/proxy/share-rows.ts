@@ -12,7 +12,6 @@ import { selectPage } from '@tamery/connection/queries/select-page'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { ShareRefresh } from '@tamery/shared/enums/share-refresh'
 import { SHARE_REFRESH_MS } from '@tamery/shared/enums/share-refresh'
-import type { ColumnTypes, FilterValueBinding } from '@tamery/shared/filters'
 import {
   clickhouseFilterValues,
   sqliteFilterValues,
@@ -32,9 +31,7 @@ const executors: Record<Dialect, QueryExecutor> = {
   sqlite: sqlite.query,
 }
 
-const filterBindings: Partial<
-  Record<Dialect, (columns: ColumnTypes) => FilterValueBinding>
-> = {
+const filterBindings: Partial<Record<Dialect, typeof sqliteFilterValues>> = {
   clickhouse: clickhouseFilterValues,
   sqlite: sqliteFilterValues,
 }
@@ -48,20 +45,14 @@ interface ShareRead {
   view: ShareView
 }
 
-export const readShareRows = async ({
-  connectionString,
-  dialect,
-  limit,
-  offset,
-  sort,
-  view,
-}: ShareRead) => {
+export const readShareRows = async (read: ShareRead) => {
+  const { dialect, sort, view } = read
   const compiled = selectPage(
     coldDialect(dialect),
     {
       filters: view.filters,
-      limit,
-      offset,
+      limit: read.limit,
+      offset: read.offset,
       orderBy: sort ? { [sort.column]: sort.direction } : view.orderBy,
       schema: view.schema,
       select: view.columns.map(({ id }) => id),
@@ -70,7 +61,7 @@ export const readShareRows = async ({
     filterBindings[dialect]?.(view.columnTypes)
   ).compile()
   const { result } = await executors[dialect].execute({
-    connectionString,
+    connectionString: read.connectionString,
     ...toQueryPayload(dialect, compiled),
   })
 
@@ -97,22 +88,20 @@ const pages = new LRUCache<
   max: MAX_CACHED_PAGES,
 })
 
-export const shareRows = {
-  read: (
-    share: { id: string; refresh: ShareRefresh; updatedAt: Date },
-    read: ShareRead
-  ) =>
-    pages.forceFetch(
-      JSON.stringify([
-        share.id,
-        share.updatedAt,
-        read.limit,
-        read.offset,
-        read.sort,
-      ]),
-      {
-        context: { read, shareId: share.id },
-        ttl: SHARE_REFRESH_MS[share.refresh],
-      }
-    ),
-}
+export const readCachedShareRows = (
+  share: { id: string; refresh: ShareRefresh; updatedAt: Date },
+  read: ShareRead
+) =>
+  pages.forceFetch(
+    JSON.stringify([
+      share.id,
+      share.updatedAt,
+      read.limit,
+      read.offset,
+      read.sort,
+    ]),
+    {
+      context: { read, shareId: share.id },
+      ttl: SHARE_REFRESH_MS[share.refresh],
+    }
+  )

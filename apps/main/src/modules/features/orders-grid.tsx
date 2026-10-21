@@ -42,19 +42,13 @@ export const OrdersGrid = ({
           variants={rise(at + index * 0.05)}
           className="flex h-8 border-b"
         >
-          {COLUMNS.map(({ id, numeric, width }) => (
+          {COLUMNS.map(({ id, width }) => (
             <div
               key={id}
-              className={cn(
-                orderCellClass,
-                'relative isolate',
-                width,
-                numeric && 'tabular-nums'
-              )}
+              className={cn(orderCellClass, 'relative isolate', width)}
             >
               {flashed?.id === order.id && id === 'total' && (
                 <motion.span
-                  aria-hidden
                   variants={flash(flashed.at)}
                   className="bg-primary/20 absolute inset-0 -z-10"
                 />

@@ -38,13 +38,12 @@ export const Grid = () => (
         <div className="flex w-10 shrink-0 items-center justify-center border-r">
           <Checkbox checked={SELECTED_ROWS.has(order.id)} />
         </div>
-        {ORDER_COLUMNS.map(({ id, numeric, width }) => (
+        {ORDER_COLUMNS.map(({ id, width }) => (
           <div
             key={id}
             className={cn(
               orderCellClass,
               width,
-              numeric && 'tabular-nums',
               id === 'status' && order.id === EDITED_ROW && 'bg-warning/15'
             )}
           >

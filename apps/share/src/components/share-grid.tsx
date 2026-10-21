@@ -9,21 +9,11 @@ import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { cn } from '@tamery/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
-import { type } from 'arktype'
 import { useRef } from 'react'
 
-export const shareSearch = type({
-  'order?': '"asc" | "desc"',
-  'sort?': 'string',
-})
+import type { shareSearch } from '~/lib/share-rows'
 
 type ShareSearch = typeof shareSearch.infer
-
-const LoadingMoreRows = () => (
-  <div className="pointer-events-none sticky left-0 flex h-80 w-[100cqw] items-center justify-center">
-    <Spinner />
-  </div>
-)
 
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const
 
@@ -87,7 +77,13 @@ export const ShareGrid = ({
     <div className="min-h-0 flex-1">
       <Grid
         scrollRef={scrollRef}
-        footer={hasNextPage && <LoadingMoreRows />}
+        footer={
+          hasNextPage && (
+            <div className="pointer-events-none sticky left-0 flex h-80 w-[100cqw] items-center justify-center">
+              <Spinner />
+            </div>
+          )
+        }
         isFetching={isFetching}
         onEndReached={onEndReached}
         renderBody={(body) => body}

@@ -8,9 +8,7 @@ import { FILTER_OPERATORS } from './filters'
 export const SHARE_PAGE_SIZE = 100
 export const SHARE_MAX_PAGES = 100
 
-export const sharePage = type('number.integer')
-  .atLeast(1)
-  .atMost(SHARE_MAX_PAGES)
+export const sharePage = type(`1 <= number.integer <= ${SHARE_MAX_PAGES}`)
 
 const orderDirection = type('"ASC" | "DESC"')
 

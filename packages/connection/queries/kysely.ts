@@ -17,19 +17,21 @@ import { prepareQuery } from './dialects/clickhouse/prepare-query'
 import { MssqlQueryCompiler } from './dialects/mssql/query-compiler'
 import { OracleQueryCompiler } from './dialects/oracle/query-compiler'
 
+const createBareAdapter = () => ({
+  acquireMigrationLock: () => Promise.resolve(),
+  releaseMigrationLock: () => Promise.resolve(),
+  supportsCreateIfNotExists: false,
+  supportsReturning: false,
+  supportsTransactionalDdl: false,
+})
+
 const createIntrospector = () => {
   throw new Error('Not implemented')
 }
 
 export const kyselyDialects = {
   clickhouse: {
-    createAdapter: () => ({
-      acquireMigrationLock: () => Promise.resolve(),
-      releaseMigrationLock: () => Promise.resolve(),
-      supportsCreateIfNotExists: false,
-      supportsReturning: false,
-      supportsTransactionalDdl: false,
-    }),
+    createAdapter: createBareAdapter,
     createIntrospector,
     createQueryCompiler: () => new MysqlQueryCompiler(),
   },
@@ -44,13 +46,7 @@ export const kyselyDialects = {
     createQueryCompiler: () => new MysqlQueryCompiler(),
   },
   oracle: {
-    createAdapter: () => ({
-      acquireMigrationLock: () => Promise.resolve(),
-      releaseMigrationLock: () => Promise.resolve(),
-      supportsCreateIfNotExists: false,
-      supportsReturning: false,
-      supportsTransactionalDdl: false,
-    }),
+    createAdapter: createBareAdapter,
     createIntrospector,
     createQueryCompiler: () => new OracleQueryCompiler(),
   },

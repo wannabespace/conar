@@ -25,7 +25,7 @@ const CONVERT_AT = TYPE_AT + SENTENCE.length * TYPE_STEP + 0.25
 
 export const FilterIllustration = () => (
   <ProductCrop>
-    <div className="flex items-center gap-2 px-3 py-2">
+    <div className="flex items-center gap-2 border-b px-3 py-2">
       <div className="bg-input ring-foreground/4 relative flex min-h-8 min-w-0 flex-1 items-center gap-1 rounded-xl py-0.75 pr-1.5 pl-2 shadow-xs ring">
         <HugeiconsIcon
           icon={SparklesIcon}
@@ -57,16 +57,14 @@ export const FilterIllustration = () => (
         </Kbd>
       </div>
     </div>
-    <div className="border-t">
-      <OrdersGrid
-        at={0.1}
-        filtered={{
-          at: CONVERT_AT + 0.3,
-          matches: ({ status, total }) =>
-            status === 'paid' && Number(total.slice(1)) > MIN_TOTAL,
-        }}
-        orders={ORDERS.slice(0, 8)}
-      />
-    </div>
+    <OrdersGrid
+      at={0.1}
+      filtered={{
+        at: CONVERT_AT + 0.3,
+        matches: ({ status, total }) =>
+          status === 'paid' && Number(total.slice(1)) > MIN_TOTAL,
+      }}
+      orders={ORDERS.slice(0, 8)}
+    />
   </ProductCrop>
 )

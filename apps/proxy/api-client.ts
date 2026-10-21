@@ -4,12 +4,10 @@ import type { ORPCRouter } from '@tamery/api/orpc/routers'
 
 import { env } from './env'
 
-export const createApiClient = (
-  options: {
-    authorization?: string | null
-    cookie?: string | null
-  } = {}
-): ORPCRouter =>
+export const createApiClient = (options: {
+  authorization?: string | null
+  cookie?: string | null
+}): ORPCRouter =>
   createORPCClient(
     new RPCLink({
       headers: () => ({

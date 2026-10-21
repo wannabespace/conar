@@ -1,7 +1,6 @@
 import { ORPCError } from '@orpc/client'
 import type { ColumnKind } from '@tamery/shared/column-kind'
 import { sharePage, shareSort } from '@tamery/shared/share'
-import { omit } from '@tamery/shared/utils'
 import { valueToText } from '@tamery/shared/value-text'
 import { createServerFn } from '@tanstack/react-start'
 import { type } from 'arktype'
@@ -38,12 +37,7 @@ export const getShare = createServerFn({ method: 'GET' })
   .validator(type({ id: 'string', page: sharePage, sort: shareSort }))
   .handler(async ({ data }) => {
     const result = await Result.tryPromise(() =>
-      proxy.shares.rows({
-        id: data.id,
-        page: data.page,
-        sort: data.sort,
-        token: unlockToken.get(data.id),
-      })
+      proxy.shares.rows({ ...data, token: unlockToken.get(data.id) })
     )
 
     if (result.isErr()) {
@@ -53,7 +47,7 @@ export const getShare = createServerFn({ method: 'GET' })
     const { columns, rows } = result.value
 
     return {
-      ...omit(result.value, ['filters']),
+      ...result.value,
       rows: rows.map((row) =>
         row.map((value, index) => cellText(value, columns[index]?.kind ?? null))
       ),

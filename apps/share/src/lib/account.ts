@@ -24,6 +24,8 @@ export const getMyShares = createServerFn({ method: 'GET' }).handler(
   }
 )
 
+export type MyShare = Awaited<ReturnType<typeof getMyShares>>[number]
+
 export const stopSharing = createServerFn({ method: 'POST' })
   .validator(type({ id: 'string.uuid' }))
   .handler(({ data }) => api.shares.remove(data))

@@ -1,31 +1,19 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type {
-  ConnectionType,
-  Provider,
-} from '@tamery/shared/enums/connection-type'
-import type { ShareRefresh } from '@tamery/shared/enums/share-refresh'
 import { shareRefreshLabels } from '@tamery/shared/enums/share-refresh'
 import { SettingsRow } from '@tamery/ui/components/custom/settings-group'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { format } from 'date-fns'
 import type { ReactNode } from 'react'
 
+import type { MyShare } from '~/lib/account'
+
 export const ShareRow = ({
   children,
   share,
 }: {
   children: ReactNode
-  share: {
-    connection: { provider: Provider | null; type: ConnectionType } | null
-    expiresAt: Date | null
-    failingSince: Date | null
-    hasPassword: boolean
-    name: string
-    refresh: ShareRefresh
-    schema: string
-    table: string
-  }
+  share: MyShare
 }) => (
   <SettingsRow
     title={
