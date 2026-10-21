@@ -7,7 +7,7 @@ import { usePermix } from 'permix/react'
 import { useEffect } from 'react'
 
 import { authClient, getSessionUser, isAnonymous } from '~/lib/auth'
-import { subscriptionQueryClient } from '~/lib/query-client'
+import { API_QUERY_KEY, queryClient } from '~/lib/query-client'
 import { promptSignIn, setIsSubscriptionDialogOpen } from '~/store'
 
 import {
@@ -51,7 +51,7 @@ export const loadPermissions = async () => {
   const subscriptions = user?.isAnonymous
     ? null
     : await Result.tryPromise(() =>
-        subscriptionQueryClient.query({
+        queryClient.query({
           ...subscriptionsQueryOptions,
           staleTime: 'static',
         })
@@ -69,7 +69,7 @@ export const loadPermissions = async () => {
 export const resetGuestState = async () => {
   const { cleanCollections } = await import('~/core/collections')
   await cleanCollections()
-  subscriptionQueryClient.clear()
+  queryClient.removeQueries({ queryKey: [API_QUERY_KEY] })
   await loadPermissions()
 }
 

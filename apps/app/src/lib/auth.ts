@@ -12,7 +12,7 @@ import {
   isAuthLocation,
   lastLocationStorageValue,
 } from './last-location'
-import { subscriptionQueryClient } from './query-client'
+import { API_QUERY_KEY, queryClient } from './query-client'
 import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
@@ -116,6 +116,6 @@ export const fullSignOut = async () => {
   }
 
   subscriptionsCache.clear()
-  subscriptionQueryClient.clear()
+  queryClient.removeQueries({ queryKey: [API_QUERY_KEY] })
   await Promise.all([clearDb(), deviceEncryption.reset()])
 }
