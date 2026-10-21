@@ -14,6 +14,8 @@ import { authMiddleware, orpc } from '~/orpc'
 import { assertReachable } from '~/public-host'
 import { readShareRows, shareRows } from '~/share-rows'
 
+const proxyApi = createApiClient()
+
 const shareAccess = type({
   id: 'string.uuid',
   password: 'string | null',
@@ -64,7 +66,7 @@ export const shares = {
       }
     }),
   info: orpc.input(shareAccess).handler(async ({ input }) => {
-    const share = await createApiClient({}).internal.shares.resolve(input)
+    const share = await proxyApi.internal.shares.resolve(input)
     return {
       description: share.description,
       filters: share.view.filters,
@@ -79,9 +81,8 @@ export const shares = {
         message: 'This table cannot be loaded right now. Try again later.',
       },
     })
-    .handler(async ({ errors, input: { id, page, password, sort, token } }) => {
-      const api = createApiClient({})
-      const share = await api.internal.shares.resolve({ id, password, token })
+    .handler(async ({ errors, input: { page, sort, ...access } }) => {
+      const share = await proxyApi.internal.shares.resolve(access)
       const view = { ...share.view, schema: share.schema, table: share.table }
       const isShown = (column: string) =>
         view.columns.some((shown) => shown.id === column)
@@ -110,7 +111,9 @@ export const shares = {
         sort === null &&
         failing !== (share.failingSince !== null)
       ) {
-        await silently(() => api.internal.shares.report({ failing, id }))
+        await silently(() =>
+          proxyApi.internal.shares.report({ failing, id: access.id })
+        )
       }
 
       if (read.isErr()) {
