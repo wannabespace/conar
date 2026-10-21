@@ -13,6 +13,7 @@ import {
   EmptyTitle,
 } from '@tamery/ui/components/empty'
 import { Skeleton } from '@tamery/ui/components/skeleton'
+import { cn } from '@tamery/ui/lib/utils'
 import {
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
@@ -43,15 +44,24 @@ const useShareRows = () => {
   return { ...query, search, sorting: search !== shownSearch }
 }
 
+const FRESH_AGE = 'less than a minute'
+
 const UpdatedAt = () => {
   const { data } = useShareRows()
   const [first] = data.pages
+  if (first?.status !== 'ready') {
+    return null
+  }
+  const age = formatDistanceToNow(first.fetchedAt)
   return (
-    first?.status === 'ready' && (
-      <p className="text-muted-foreground text-xs">
-        {`Updated ${formatDistanceToNow(first.fetchedAt, { addSuffix: true })}`}
-      </p>
-    )
+    <p
+      className={cn(
+        'text-muted-foreground text-xs',
+        age === FRESH_AGE && 'invisible'
+      )}
+    >
+      {`Updated ${age} ago`}
+    </p>
   )
 }
 
