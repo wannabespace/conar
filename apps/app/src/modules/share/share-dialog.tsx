@@ -44,12 +44,11 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { Link } from '~/components/link'
 import { OptionField } from '~/components/option-field'
 import { getColumnKind } from '~/core/table/cell/utils'
 import { orpc, orpcProxy } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
-import { shareUrl } from '~/lib/urls'
+import { sharesUrl, shareUrl } from '~/lib/urls'
 import { useTableColumnsContext } from '~/modules/table/lib/columns'
 import { columnView, useTablePageStore } from '~/modules/table/lib/store'
 import { plural } from '~/utils/plural'
@@ -361,9 +360,7 @@ const ShareLinkForm = ({
       <DialogFooter className="sm:justify-between">
         <Button
           variant="link-muted"
-          render={
-            <Link to="/settings/$section" params={{ section: 'shares' }} />
-          }
+          onClick={() => window.open(sharesUrl, '_blank')}
         >
           Manage shares
         </Button>
