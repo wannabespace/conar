@@ -29,7 +29,7 @@ const { useRouteContext } = getRouteApi(
 )
 
 export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { queriesCollection } = useCollections()
   const router = useRouter()
   const store = useRunnerPageStore()
@@ -48,6 +48,7 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
   const openInNewTab = (query: Query) => {
     const tabId = openRunnerTab(connectionResource.id)
     const tabStore = runnerPageStore({
+      dialect,
       resourceId: connectionResource.id,
       tabId,
     })

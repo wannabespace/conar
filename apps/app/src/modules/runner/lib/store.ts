@@ -1,12 +1,18 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
+import { getRouteApi } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createComputed } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
+import { starterQuery } from './starter'
 import { runnerStoreKey } from './tab'
+
+const { useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/$tabId'
+)
 
 export const RUNNER_RESULTS_MIN_HEIGHT = 160
 export const RUNNER_RESULTS_MAX_HEIGHT = 720
@@ -20,33 +26,32 @@ export const runnerPageType = type({
   query: 'string',
 })
 
-const defaultState: typeof runnerPageType.infer = {
-  layout: {
-    resultsHeight: RUNNER_RESULTS_DEFAULT_HEIGHT,
-    resultsVisible: true,
-  },
-  query: '',
-}
-
 export interface RunnerTab {
   resourceId: string
   tabId: string
 }
 
-export const runnerPageStore = memoize(({ resourceId, tabId }: RunnerTab) =>
-  createWebStorageValue({
-    defaultValue: defaultState,
-    key: runnerStoreKey(resourceId, tabId),
-    schema: runnerPageType,
-    type: 'localStorage',
-  })
+export const runnerPageStore = memoize(
+  ({ dialect, resourceId, tabId }: RunnerTab & { dialect: Dialect }) =>
+    createWebStorageValue({
+      defaultValue: {
+        layout: {
+          resultsHeight: RUNNER_RESULTS_DEFAULT_HEIGHT,
+          resultsVisible: true,
+        },
+        query: starterQuery(dialect),
+      },
+      key: runnerStoreKey(resourceId, tabId),
+      schema: runnerPageType,
+      type: 'localStorage',
+    })
 )
 
 export type RunnerPageStore = ReturnType<typeof runnerPageStore>
 
 export const runnerStatements = memoize(
   ({ dialect, resourceId, tabId }: RunnerTab & { dialect: Dialect }) =>
-    createComputed(runnerPageStore({ resourceId, tabId }), (state) =>
+    createComputed(runnerPageStore({ dialect, resourceId, tabId }), (state) =>
       splitStatements(state.query, dialects[dialect])
     )
 )
@@ -61,7 +66,10 @@ export const useRunnerTab = () => {
   return tab
 }
 
-export const useRunnerPageStore = () => runnerPageStore(useRunnerTab())
+export const useRunnerPageStore = () => {
+  const { dialect } = useRouteContext()
+  return runnerPageStore({ dialect, ...useRunnerTab() })
+}
 
 export const setQuery = (store: RunnerPageStore, query: string) => {
   if (store.get().query !== query) {
