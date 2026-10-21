@@ -10,6 +10,7 @@ import { type } from 'arktype'
 import { Result } from 'better-result'
 
 import { createApiClient } from '~/api-client'
+import { clientNetwork } from '~/client-network'
 import { authMiddleware, orpc } from '~/orpc'
 import { assertReachable } from '~/public-host'
 import { readShareRows, shareRows } from '~/share-rows'
@@ -18,7 +19,6 @@ const proxyApi = createApiClient()
 
 const shareAccess = type({
   id: 'string.uuid',
-  password: 'string | null',
   token: 'string | null',
 })
 
@@ -66,12 +66,14 @@ export const shares = {
       }
     }),
   info: orpc.input(shareAccess).handler(async ({ input }) => {
-    const share = await proxyApi.internal.shares.resolve(input)
+    const share = await proxyApi.internal.shares.resolve({
+      ...input,
+      unlock: null,
+    })
     return {
       description: share.description,
       filters: share.view.filters,
       name: share.name,
-      token: share.token,
     }
   }),
   rows: orpc
@@ -82,7 +84,10 @@ export const shares = {
       },
     })
     .handler(async ({ errors, input: { page, sort, ...access } }) => {
-      const share = await proxyApi.internal.shares.resolve(access)
+      const share = await proxyApi.internal.shares.resolve({
+        ...access,
+        unlock: null,
+      })
       const view = { ...share.view, schema: share.schema, table: share.table }
       const isShown = (column: string) =>
         view.columns.some((shown) => shown.id === column)
@@ -132,7 +137,16 @@ export const shares = {
         ),
         refresh: share.refresh,
         rows: read.value.rows.slice(0, SHARE_PAGE_SIZE),
-        token: share.token,
       }
+    }),
+  unlock: orpc
+    .input(type({ id: 'string.uuid', password: 'string > 0' }))
+    .handler(async ({ context, input: { id, password } }) => {
+      const { token } = await proxyApi.internal.shares.resolve({
+        id,
+        token: null,
+        unlock: { client: clientNetwork(context.headers), password },
+      })
+      return { token }
     }),
 }

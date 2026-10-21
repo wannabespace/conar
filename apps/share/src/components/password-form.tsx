@@ -31,7 +31,8 @@ export const PasswordForm = ({
   const [error, submit, pending] = useActionState(
     async (_previous: string | null, form: FormData) => {
       const refused = await unlockShare({
-        data: { id: shareId, password: String(form.get('password')) },
+        id: shareId,
+        password: String(form.get('password')),
       })
       void posthog.capture('share_unlocked', { success: !refused })
       if (!refused) {

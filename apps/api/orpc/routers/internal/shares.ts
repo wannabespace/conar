@@ -14,19 +14,31 @@ import { getWorkspaceSecret, orpc } from '~/orpc'
 
 import { proxySecretMiddleware } from './proxy-secret'
 
-const MAX_PASSWORD_FAILURES = 10
+const MAX_CLIENT_FAILURES = 10
+const MAX_SHARE_FAILURES = 1000
 const PASSWORD_LOCKOUT_SECONDS = 10 * 60
 
 const passwordFailures = {
-  count: async (shareId: string) =>
-    Number(await redis.get(passwordFailures.key(shareId))),
-  key: (shareId: string) => `share-password-failures:${shareId}`,
-  record: (shareId: string) =>
-    redis
-      .multi()
-      .incr(passwordFailures.key(shareId))
-      .expire(passwordFailures.key(shareId), PASSWORD_LOCKOUT_SECONDS, 'NX')
-      .exec(),
+  keys: (shareId: string, client: string) => [
+    `share-password-failures:${shareId}:${client}`,
+    `share-password-failures:${shareId}`,
+  ],
+  locked: async (shareId: string, client: string) => {
+    const [byClient, byShare] = await redis.mGet(
+      passwordFailures.keys(shareId, client)
+    )
+    return (
+      Number(byClient) >= MAX_CLIENT_FAILURES ||
+      Number(byShare) >= MAX_SHARE_FAILURES
+    )
+  },
+  record: (shareId: string, client: string) => {
+    const multi = redis.multi()
+    for (const key of passwordFailures.keys(shareId, client)) {
+      multi.incr(key).expire(key, PASSWORD_LOCKOUT_SECONDS, 'NX')
+    }
+    return multi.exec()
+  },
 }
 
 export const shares = {
@@ -44,8 +56,8 @@ export const shares = {
     .input(
       type({
         id: 'string.uuid',
-        password: 'string | null',
         token: 'string.hex == 64 | null',
+        unlock: type({ client: 'string', password: 'string > 0' }).or('null'),
       })
     )
     .errors({
@@ -100,16 +112,15 @@ export const shares = {
 
       // The lockout is checked before verifying, or a guess past it would still be answered.
       if (!unlocked && share.passwordHash) {
-        if ((await passwordFailures.count(share.id)) >= MAX_PASSWORD_FAILURES) {
+        const { unlock } = input
+        if (!unlock) {
+          throw errors.LOCKED()
+        }
+        if (await passwordFailures.locked(share.id, unlock.client)) {
           throw errors.TOO_MANY_ATTEMPTS()
         }
-        if (
-          !input.password ||
-          !(await Bun.password.verify(input.password, share.passwordHash))
-        ) {
-          if (input.password) {
-            await passwordFailures.record(share.id)
-          }
+        if (!(await Bun.password.verify(unlock.password, share.passwordHash))) {
+          await passwordFailures.record(share.id, unlock.client)
           throw errors.LOCKED()
         }
       }
