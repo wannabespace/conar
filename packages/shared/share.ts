@@ -1,11 +1,9 @@
-import type { ArkError } from 'arktype'
 import { type } from 'arktype'
 
 import { columnKind } from './column-kind'
 import { Dialect } from './enums/connection-type'
 import { ShareRefresh } from './enums/share-refresh'
-import type { Filter } from './filters'
-import { FILTERS_LIST } from './filters'
+import { activeFilter } from './filters'
 
 export const SHARE_PAGE_SIZE = 100
 export const SHARE_MAX_PAGES = 100
@@ -17,23 +15,6 @@ const orderDirection = type('"ASC" | "DESC"')
 
 export const shareToken = type('string.hex == 64')
 
-// Only the operator is taken from the client: the rest of `ref` decides how values reach SQL, so it is always the canonical filter.
-const shareFilter = type({
-  column: 'string',
-  ref: type({ operator: 'string' }).pipe(
-    ({ operator }, ctx): Filter | ArkError =>
-      FILTERS_LIST.find((filter) => filter.operator === operator) ??
-      ctx.error('a known filter operator')
-  ),
-  values: 'unknown[]',
-  'via?': {
-    key: 'string',
-    schema: 'string',
-    table: 'string',
-    target: 'string',
-  },
-})
-
 const shareView = type({
   /** The type of every column in the table, which ClickHouse and SQLite bind filter values by. */
   columnTypes: type({ id: 'string', type: 'string' }).array(),
@@ -41,7 +22,7 @@ const shareView = type({
   columns: type({ id: 'string', kind: columnKind, type: 'string | null' })
     .array()
     .atLeastLength(1),
-  filters: shareFilter.array(),
+  filters: activeFilter.array(),
   orderBy: { '[string]': orderDirection },
   schema: 'string',
   table: 'string',
