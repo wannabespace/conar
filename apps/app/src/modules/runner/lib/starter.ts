@@ -13,31 +13,38 @@ const STEP_BY_STEP =
   'Run BEGIN on its own to go step by step, then Commit or Rollback in the toolbar.'
 const EXPLAIN = "Explain is in a statement's ⋯ menu."
 
+interface Example {
+  title: string
+  sql: string
+}
+
 const DIALECT_STARTERS: Record<
   Dialect,
-  { examples: string[]; notes: string[] }
+  { examples: Example[]; notes: string[] }
 > = {
   [Dialect.ClickHouse]: {
     examples: [
-      `-- Largest tables
-SELECT
-  table,
-  formatReadableSize(sum(bytes_on_disk)) AS size,
-  sum(rows) AS rows
-FROM system.parts
-WHERE active AND database = currentDatabase()
-GROUP BY table
-ORDER BY sum(bytes_on_disk) DESC
-LIMIT 10;`,
-      `-- Queries running right now
-SELECT
-  query_id,
-  user,
-  round(elapsed, 1) AS seconds,
-  formatReadableSize(memory_usage) AS memory,
-  query
-FROM system.processes
-ORDER BY elapsed DESC;`,
+      {
+        sql: `SELECT toStartOfHour(timestamp) AS hour, count() AS events, uniq(user_id) AS users
+FROM events
+WHERE timestamp > now() - INTERVAL 1 DAY
+GROUP BY hour
+ORDER BY hour;`,
+        title: 'Events and unique users per hour, last 24 hours',
+      },
+      {
+        sql: `SELECT path, quantile(0.95)(duration_ms) AS p95, count() AS hits
+FROM requests
+WHERE timestamp > now() - INTERVAL 7 DAY
+GROUP BY path
+ORDER BY p95 DESC
+LIMIT 20;`,
+        title: 'Slowest endpoints this week',
+      },
+      {
+        sql: 'ALTER TABLE events DELETE WHERE user_id = 42;',
+        title: "Remove one user's events",
+      },
     ],
     notes: [
       'ClickHouse has no transactions, so each statement applies as it runs.',
@@ -45,29 +52,28 @@ ORDER BY elapsed DESC;`,
   },
   [Dialect.MSSQL]: {
     examples: [
-      `-- Largest tables
-SELECT TOP 10
-  SCHEMA_NAME(t.schema_id) AS schema_name,
-  t.name AS table_name,
-  SUM(CASE WHEN ps.index_id IN (0, 1) THEN ps.row_count ELSE 0 END) AS row_count,
-  SUM(ps.used_page_count) * 8 / 1024 AS used_mb
-FROM sys.dm_db_partition_stats AS ps
-JOIN sys.tables AS t ON t.object_id = ps.object_id
-GROUP BY t.schema_id, t.name
-ORDER BY used_mb DESC;`,
-      `-- Queries running right now
-SELECT
-  r.session_id,
-  s.login_name,
-  r.status,
-  r.total_elapsed_time / 1000 AS seconds,
-  r.blocking_session_id,
-  q.text AS query
-FROM sys.dm_exec_requests AS r
-JOIN sys.dm_exec_sessions AS s ON s.session_id = r.session_id
-CROSS APPLY sys.dm_exec_sql_text(r.sql_handle) AS q
-WHERE r.session_id <> @@SPID
-ORDER BY r.total_elapsed_time DESC;`,
+      {
+        sql: `SELECT TOP 50 id, email, created_at
+FROM users
+WHERE created_at > DATEADD(day, -7, SYSUTCDATETIME())
+ORDER BY created_at DESC;`,
+        title: "Last week's signups",
+      },
+      {
+        sql: `SELECT CAST(created_at AS date) AS day, SUM(total) AS revenue
+FROM orders
+GROUP BY CAST(created_at AS date)
+ORDER BY day DESC;`,
+        title: 'Revenue per day',
+      },
+      {
+        sql: `BEGIN TRAN;
+UPDATE orders SET status = 'shipped'
+OUTPUT inserted.*
+WHERE id = 42;
+COMMIT;`,
+        title: 'Ship an order and see the updated row',
+      },
     ],
     notes: [
       'Run BEGIN TRAN on its own to go step by step, then Commit or Rollback in the toolbar.',
@@ -75,20 +81,26 @@ ORDER BY r.total_elapsed_time DESC;`,
   },
   [Dialect.MySQL]: {
     examples: [
-      `-- Largest tables
-SELECT
-  TABLE_NAME,
-  TABLE_ROWS,
-  ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 1) AS size_mb
-FROM information_schema.TABLES
-WHERE TABLE_SCHEMA = DATABASE()
-ORDER BY DATA_LENGTH + INDEX_LENGTH DESC
-LIMIT 10;`,
-      `-- Queries running right now
-SELECT ID, USER, DB, TIME AS seconds, STATE, INFO AS query
-FROM information_schema.PROCESSLIST
-WHERE COMMAND <> 'Sleep' AND ID <> CONNECTION_ID()
-ORDER BY TIME DESC;`,
+      {
+        sql: `SELECT id, email, created_at
+FROM users
+WHERE created_at > NOW() - INTERVAL 7 DAY
+ORDER BY created_at DESC;`,
+        title: "Last week's signups",
+      },
+      {
+        sql: `INSERT INTO cart_items (cart_id, product_id, quantity)
+VALUES (7, 101, 1)
+ON DUPLICATE KEY UPDATE quantity = quantity + 1;`,
+        title: 'Add to cart, or bump the quantity',
+      },
+      {
+        sql: `START TRANSACTION;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;`,
+        title: 'Move money between accounts',
+      },
     ],
     notes: [
       STEP_BY_STEP,
@@ -98,20 +110,30 @@ ORDER BY TIME DESC;`,
   },
   [Dialect.Oracle]: {
     examples: [
-      `-- Largest tables
-SELECT
-  SEGMENT_NAME AS TABLE_NAME,
-  ROUND(SUM(BYTES) / 1024 / 1024, 1) AS SIZE_MB
-FROM USER_SEGMENTS
-WHERE SEGMENT_TYPE LIKE 'TABLE%'
-GROUP BY SEGMENT_NAME
-ORDER BY SIZE_MB DESC
-FETCH FIRST 10 ROWS ONLY;`,
-      `-- Objects that failed to compile
-SELECT OBJECT_TYPE, OBJECT_NAME, LAST_DDL_TIME
-FROM USER_OBJECTS
-WHERE STATUS = 'INVALID'
-ORDER BY OBJECT_TYPE, OBJECT_NAME;`,
+      {
+        sql: `SELECT id, email, created_at
+FROM users
+WHERE created_at > SYSDATE - 7
+ORDER BY created_at DESC
+FETCH FIRST 50 ROWS ONLY;`,
+        title: "Last week's signups",
+      },
+      {
+        sql: `MERGE INTO products p
+USING (SELECT 101 AS id, 25 AS stock FROM DUAL) s
+ON (p.id = s.id)
+WHEN MATCHED THEN UPDATE SET p.stock = s.stock
+WHEN NOT MATCHED THEN INSERT (id, stock) VALUES (s.id, s.stock);`,
+        title: 'Set stock, adding the product if it is new',
+      },
+      {
+        sql: `BEGIN
+  UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+  UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+  COMMIT;
+END;`,
+        title: 'Move money between accounts',
+      },
     ],
     notes: [
       'Each statement commits as it runs. BEGIN starts a PL/SQL block,',
@@ -120,42 +142,50 @@ ORDER BY OBJECT_TYPE, OBJECT_NAME;`,
   },
   [Dialect.Postgres]: {
     examples: [
-      `-- Largest tables
-SELECT
-  schemaname,
-  relname AS table_name,
-  n_live_tup AS rows,
-  pg_size_pretty(pg_total_relation_size(relid)) AS total_size
-FROM pg_stat_user_tables
-ORDER BY pg_total_relation_size(relid) DESC
-LIMIT 10;`,
-      `-- Queries running right now
-SELECT
-  pid,
-  usename,
-  state,
-  now() - query_start AS duration,
-  wait_event_type,
-  query
-FROM pg_stat_activity
-WHERE state <> 'idle' AND pid <> pg_backend_pid()
-ORDER BY duration DESC;`,
+      {
+        sql: `SELECT id, email, created_at
+FROM users
+WHERE created_at > now() - interval '7 days'
+ORDER BY created_at DESC;`,
+        title: "Last week's signups",
+      },
+      {
+        sql: `SELECT date_trunc('day', created_at) AS day, sum(total) AS revenue
+FROM orders
+GROUP BY day
+ORDER BY day DESC;`,
+        title: 'Revenue per day',
+      },
+      {
+        sql: `UPDATE orders SET status = 'shipped'
+WHERE id = 42
+RETURNING *;`,
+        title: 'Ship an order and see the updated row',
+      },
     ],
     notes: [STEP_BY_STEP, EXPLAIN],
   },
   [Dialect.SQLite]: {
     examples: [
-      `-- Every column of every table
-SELECT t.name AS table_name, c.name AS column_name, c.type, c.pk, c."notnull"
-FROM pragma_table_list() AS t
-JOIN pragma_table_info(t.name) AS c
-WHERE t.schema = 'main'
-  AND t.type = 'table'
-  AND substr(t.name, 1, 7) != 'sqlite_'
-  AND substr(t.name, 1, 4) != '_cf_'
-ORDER BY t.name, c.cid;`,
-      `-- Rows that break a foreign key
-PRAGMA foreign_key_check;`,
+      {
+        sql: `SELECT id, email, created_at
+FROM users
+WHERE created_at > datetime('now', '-7 days')
+ORDER BY created_at DESC;`,
+        title: "Last week's signups",
+      },
+      {
+        sql: `INSERT INTO settings (key, value)
+VALUES ('theme', 'dark')
+ON CONFLICT (key) DO UPDATE SET value = excluded.value;`,
+        title: 'Save a setting, replacing the old value',
+      },
+      {
+        sql: `UPDATE orders SET status = 'shipped'
+WHERE id = 42
+RETURNING *;`,
+        title: 'Ship an order and see the updated row',
+      },
     ],
     notes: [
       STEP_BY_STEP,
@@ -164,15 +194,26 @@ PRAGMA foreign_key_check;`,
   },
 }
 
+const comment = (text: string) =>
+  text
+    .split('\n')
+    .map((line) => `-- ${line}`)
+    .join('\n')
+
 export const starterQuery = (dialect: Dialect) => {
   const { examples, notes } = DIALECT_STARTERS[dialect]
-  const comments = [
-    `${keys('runStatement')} runs the statement under the caret, or the selection.`,
-    `${keys('runAll')} runs every statement in this tab.`,
-    `${keys('saveStatement')} saves the statement as a query, ${keys('saveTab')} the whole tab.`,
-    `${keys('editWithAi')} edits with AI, ${keys('fixWithAi')} fixes a statement that failed.`,
-    'Tamery asks before running UPDATE, DELETE, DROP or ALTER.',
-    ...notes,
-  ].map((line) => `-- ${line}`)
-  return `${[comments.join('\n'), ...examples].join('\n\n')}\n`
+  return `${[
+    comment(
+      [
+        `${keys('runStatement')} runs the statement under the caret, or the selection.`,
+        `${keys('runAll')} runs every statement in this tab.`,
+        `${keys('saveStatement')} saves the statement as a query, ${keys('saveTab')} the whole tab.`,
+        `${keys('editWithAi')} edits with AI, ${keys('fixWithAi')} fixes a statement that failed.`,
+        'Tamery asks before running UPDATE, DELETE, DROP or ALTER.',
+        ...notes,
+      ].join('\n')
+    ),
+    comment('Examples to start from: uncomment one and change the names.'),
+    ...examples.map(({ sql, title }) => comment(`${title}\n${sql}`)),
+  ].join('\n\n')}\n`
 }
