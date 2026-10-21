@@ -26,8 +26,8 @@ import { SHARE_FORM_ID, ShareLinkForm } from './share-link-form'
 import { useShareView } from './use-share-view'
 import { sameShareView, useTableShare } from './use-table-share'
 
-/** Goes inside `Dialog`, never around it: the first link is picked once, when the content mounts on open. */
-export const ShareDialog = ({
+// Its state must live inside DialogContent, which unmounts on close, so every open picks the link that matches the table again.
+const ShareDialogBody = ({
   schema,
   table,
 }: {
@@ -48,7 +48,7 @@ export const ShareDialog = ({
   ]
 
   return (
-    <DialogContent>
+    <>
       <DialogHeader>
         <DialogTitle>{share ? 'Shared table' : 'Share table'}</DialogTitle>
         <DialogDescription data-mask>{`${schema}.${table}`}</DialogDescription>
@@ -93,6 +93,12 @@ export const ShareDialog = ({
           </Button>
         </div>
       </DialogFooter>
-    </DialogContent>
+    </>
   )
 }
+
+export const ShareDialog = (props: { schema: string; table: string }) => (
+  <DialogContent>
+    <ShareDialogBody {...props} />
+  </DialogContent>
+)

@@ -1,6 +1,7 @@
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { Permissions } from '@tamery/shared/permissions'
 import { getPermissions } from '@tamery/shared/permissions'
+import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
 import { Result } from 'better-result'
 import { createPermix } from 'permix'
 import { usePermix } from 'permix/react'
@@ -28,6 +29,10 @@ const SIGN_IN_HINTS: Partial<Record<keyof Permissions, string>> = {
   share: 'Sharing tables needs an account.',
 }
 
+const UPGRADE_HINTS: Record<string, string> = {
+  'share.create': `The Free plan keeps ${FREE_SHARE_LIMIT} shared links at a time. Stop sharing one in Manage shares, or upgrade to share as many as you need.`,
+}
+
 export const checkOrUpgrade = (...args: Parameters<typeof permix.check>) => {
   if (permix.check(...args)) {
     return true
@@ -41,7 +46,10 @@ export const checkOrUpgrade = (...args: Parameters<typeof permix.check>) => {
       SIGN_IN_HINTS[group as keyof Permissions] ?? 'That needs an account.'
     )
   } else {
-    setIsSubscriptionDialogOpen(true)
+    setIsSubscriptionDialogOpen(
+      true,
+      typeof path === 'string' ? (UPGRADE_HINTS[path] ?? null) : null
+    )
   }
 
   return false
