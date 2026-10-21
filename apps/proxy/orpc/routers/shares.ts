@@ -11,13 +11,8 @@ import { Result } from 'better-result'
 
 import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'
-import { assertNoServerFiles, assertPublicHost } from '~/public-host'
+import { assertReachable } from '~/public-host'
 import { readShareRows, shareRows } from '~/share-rows'
-
-const assertReachable = async (connectionString: string) => {
-  assertNoServerFiles(connectionString)
-  await assertPublicHost(connectionString)
-}
 
 const shareAccess = type({
   id: 'string.uuid',

@@ -27,12 +27,21 @@ for (const [network, prefix, family] of [
   NON_PUBLIC_NETWORKS.addSubnet(network, prefix, family)
 }
 
+/** The drivers read each of these as a path on the proxy's own disk. */
+const FILE_PARAMS = ['sslca', 'sslcert', 'sslkey', 'sslrootcert']
+
 /**
  * The driver resolves the host again, so a DNS answer that changes between the two lookups still slips through.
  * An empty host is refused too: drivers fall back to localhost for it.
  */
-export const assertPublicHost = async (connectionString: string) => {
-  const { host } = readConnectionString(connectionString)
+export const assertReachable = async (connectionString: string) => {
+  const { host, searchParams } = readConnectionString(connectionString)
+  if (FILE_PARAMS.some((param) => searchParams.has(param))) {
+    throw new ORPCError('FORBIDDEN', {
+      message:
+        'The cloud proxy cannot read certificate files. Run `tamery proxy` or open this connection in the desktop app.',
+    })
+  }
   const addresses = host ? await lookup(host, { all: true }) : []
   if (
     addresses.length === 0 ||
@@ -43,19 +52,6 @@ export const assertPublicHost = async (connectionString: string) => {
     throw new ORPCError('FORBIDDEN', {
       message:
         'The cloud proxy reaches only public hosts. Run `tamery proxy` or open this connection in the desktop app.',
-    })
-  }
-}
-
-/** The drivers read each of these as a path on the proxy's own disk. */
-const FILE_PARAMS = ['sslca', 'sslcert', 'sslkey', 'sslrootcert']
-
-export const assertNoServerFiles = (connectionString: string) => {
-  const { searchParams } = readConnectionString(connectionString)
-  if (FILE_PARAMS.some((param) => searchParams.has(param))) {
-    throw new ORPCError('FORBIDDEN', {
-      message:
-        'The cloud proxy cannot read certificate files. Run `tamery proxy` or open this connection in the desktop app.',
     })
   }
 }
