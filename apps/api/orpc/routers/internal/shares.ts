@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 
+import { normalizeIP } from '@better-auth/core/utils/ip'
 import { resourceConnectionString } from '@tamery/connection/utils'
 import { db } from '@tamery/db'
 import { shares as sharesTable } from '@tamery/db/schema'
@@ -20,7 +21,7 @@ const PASSWORD_LOCKOUT_SECONDS = 10 * 60
 
 const passwordFailures = {
   keys: (shareId: string, client: string) => [
-    `share-password-failures:${shareId}:${client}`,
+    `share-password-failures:${shareId}:${normalizeIP(client)}`,
     `share-password-failures:${shareId}`,
   ],
   locked: async (shareId: string, client: string) => {

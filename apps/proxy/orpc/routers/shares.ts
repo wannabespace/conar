@@ -10,7 +10,6 @@ import { type } from 'arktype'
 import { Result } from 'better-result'
 
 import { createApiClient } from '~/api-client'
-import { clientNetwork } from '~/client-network'
 import { authMiddleware, orpc } from '~/orpc'
 import { assertReachable } from '~/public-host'
 import { readShareRows, shareRows } from '~/share-rows'
@@ -145,7 +144,11 @@ export const shares = {
       const { token } = await proxyApi.internal.shares.resolve({
         id,
         token: null,
-        unlock: { client: clientNetwork(context.headers), password },
+        unlock: {
+          // Only X-Real-IP is set by Railway's edge; any other client-IP header can be spoofed.
+          client: context.headers.get('x-real-ip') ?? 'unknown',
+          password,
+        },
       })
       return { token }
     }),
