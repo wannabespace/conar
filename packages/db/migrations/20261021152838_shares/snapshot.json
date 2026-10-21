@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "1a73856b-9dd0-4894-bd07-8d17093581d5",
+  "id": "74ad60d0-7932-4f5c-ab2f-17bf57d7fb4a",
   "prevIds": [
-    "f74e2223-7461-4d1f-b791-cf142278ad86"
+    "7332ecff-8b31-4da8-a8cf-b13c90575290"
   ],
   "ddl": [
     {
@@ -27,7 +27,8 @@
         "mariadb",
         "mssql",
         "clickhouse",
-        "sqlite"
+        "sqlite",
+        "oracle"
       ],
       "name": "connection_type",
       "entityType": "enums",
@@ -2567,6 +2568,48 @@
       "table": "sessions"
     },
     {
+      "nameExplicit": false,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "shares_user_id_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        {
+          "value": "connection_resource_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "shares_connection_resource_id_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
       "nameExplicit": true,
       "columns": [
         {
@@ -3215,19 +3258,6 @@
       "entityType": "uniques",
       "schema": "public",
       "table": "connections_resources"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "connection_resource_id",
-        "schema",
-        "table"
-      ],
-      "nullsNotDistinct": false,
-      "name": "shares_connection_resource_id_schema_table_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "shares"
     },
     {
       "nameExplicit": false,

@@ -1,45 +1,35 @@
 import { timingSafeEqual } from 'node:crypto'
 
 import { normalizeIP } from '@better-auth/core/utils/ip'
+import { RedisRateLimiter } from '@orpc/ratelimit/redis'
 import { resourceConnectionString } from '@tamery/connection/utils'
 import { db } from '@tamery/db'
 import { shares as sharesTable } from '@tamery/db/schema'
-import { decrypt } from '@tamery/shared/crypto-node'
 import { getDialect } from '@tamery/shared/enums/connection-type'
+import { SyncType } from '@tamery/shared/enums/sync-type'
+import { shareToken } from '@tamery/shared/share'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 
 import { env } from '~/env'
 import { redis } from '~/lib/redis'
-import { getWorkspaceSecret, orpc } from '~/orpc'
+import { decryptConnectionString, orpc } from '~/orpc'
 
 import { proxySecretMiddleware } from './proxy-secret'
 
-const MAX_CLIENT_FAILURES = 10
-const MAX_SHARE_FAILURES = 1000
-const PASSWORD_LOCKOUT_SECONDS = 10 * 60
+const PASSWORD_WINDOW_MS = 10 * 60 * 1000
 
-const passwordFailures = {
-  keys: (shareId: string, client: string) => [
-    `share-password-failures:${shareId}:${normalizeIP(client)}`,
-    `share-password-failures:${shareId}`,
-  ],
-  locked: async (shareId: string, client: string) => {
-    const [byClient, byShare] = await redis.mGet(
-      passwordFailures.keys(shareId, client)
-    )
-    return (
-      Number(byClient) >= MAX_CLIENT_FAILURES ||
-      Number(byShare) >= MAX_SHARE_FAILURES
-    )
-  },
-  record: (shareId: string, client: string) => {
-    const multi = redis.multi()
-    for (const key of passwordFailures.keys(shareId, client)) {
-      multi.incr(key).expire(key, PASSWORD_LOCKOUT_SECONDS, 'NX')
-    }
-    return multi.exec()
-  },
+const passwordAttempts = {
+  byClient: new RedisRateLimiter(redis, {
+    maxRequests: 10,
+    prefix: 'share-password:client:',
+    window: PASSWORD_WINDOW_MS,
+  }),
+  byShare: new RedisRateLimiter(redis, {
+    maxRequests: 1000,
+    prefix: 'share-password:share:',
+    window: PASSWORD_WINDOW_MS,
+  }),
 }
 
 export const shares = {
@@ -57,7 +47,7 @@ export const shares = {
     .input(
       type({
         id: 'string.uuid',
-        token: 'string.hex == 64 | null',
+        token: shareToken.or('null'),
         unlock: type({ client: 'string', password: 'string > 0' }).or('null'),
       })
     )
@@ -79,6 +69,7 @@ export const shares = {
               connection: {
                 columns: {
                   connectionString: true,
+                  syncType: true,
                   type: true,
                   workspaceId: true,
                 },
@@ -87,11 +78,12 @@ export const shares = {
           },
         },
       })
-      const connection = share?.connectionResource?.connection
+      const connection = share?.connectionResource.connection
 
       if (
-        !share?.connectionResource ||
+        !share ||
         !connection?.connectionString ||
+        connection.syncType !== SyncType.Cloud ||
         (share.expiresAt && share.expiresAt <= new Date())
       ) {
         throw errors.NOT_FOUND()
@@ -111,17 +103,22 @@ export const shares = {
             Buffer.from(token, 'hex')
           ))
 
-      // The lockout is checked before verifying, or a guess past it would still be answered.
       if (!unlocked && share.passwordHash) {
         const { unlock } = input
         if (!unlock) {
           throw errors.LOCKED()
         }
-        if (await passwordFailures.locked(share.id, unlock.client)) {
+        const byClient = await passwordAttempts.byClient.limit(
+          `${share.id}:${normalizeIP(unlock.client)}`
+        )
+        if (!byClient.success) {
+          throw errors.TOO_MANY_ATTEMPTS()
+        }
+        const byShare = await passwordAttempts.byShare.limit(share.id)
+        if (!byShare.success) {
           throw errors.TOO_MANY_ATTEMPTS()
         }
         if (!(await Bun.password.verify(unlock.password, share.passwordHash))) {
-          await passwordFailures.record(share.id, unlock.client)
           throw errors.LOCKED()
         }
       }
@@ -131,9 +128,9 @@ export const shares = {
       return {
         ...rest,
         connectionString: resourceConnectionString(
-          decrypt({
+          await decryptConnectionString({
             encryptedText: connection.connectionString,
-            secret: await getWorkspaceSecret(connection.workspaceId),
+            workspaceId: connection.workspaceId,
           }),
           connectionResource.name
         ),

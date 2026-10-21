@@ -43,7 +43,7 @@ export const getWorkspaceSecret = memoize(
   { maxAge: 5 * 60 * 1000 }
 )
 
-const decryptConnectionString = async ({
+export const decryptConnectionString = async ({
   encryptedText,
   workspaceId,
 }: {

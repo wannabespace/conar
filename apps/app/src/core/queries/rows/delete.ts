@@ -1,5 +1,5 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import type { ColumnTypes } from '@tamery/shared/filters'
 import type { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 

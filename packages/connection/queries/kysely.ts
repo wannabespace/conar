@@ -14,6 +14,7 @@ import {
 import { memoize } from 'memoza'
 
 import { prepareQuery } from './dialects/clickhouse/prepare-query'
+import { ClickhouseQueryCompiler } from './dialects/clickhouse/query-compiler'
 import { MssqlQueryCompiler } from './dialects/mssql/query-compiler'
 import { OracleQueryCompiler } from './dialects/oracle/query-compiler'
 
@@ -33,7 +34,7 @@ export const kyselyDialects = {
   clickhouse: {
     createAdapter: createBareAdapter,
     createIntrospector,
-    createQueryCompiler: () => new MysqlQueryCompiler(),
+    createQueryCompiler: () => new ClickhouseQueryCompiler(),
   },
   mssql: {
     createAdapter: () => new MssqlAdapter(),

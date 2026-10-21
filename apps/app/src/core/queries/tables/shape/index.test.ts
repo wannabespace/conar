@@ -2,17 +2,6 @@ import { describe, expect, test } from 'bun:test'
 
 import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import type { DialectAdapter, QueryCompiler } from 'kysely'
-import {
-  DummyDriver,
-  Kysely,
-  MssqlAdapter,
-  MssqlQueryCompiler,
-  MysqlAdapter,
-  MysqlQueryCompiler,
-  PostgresAdapter,
-  PostgresQueryCompiler,
-} from 'kysely'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 
@@ -26,37 +15,9 @@ import {
 } from '.'
 import { alterColumnStatement } from './alter-column'
 
-// The app's own cold dialects reach the browser runtime, so compiling here
-// stays on Kysely's own compilers; ClickHouse compiles through MySQL's, and
-// Oracle, which Kysely lacks, through the app's with its driver mocked.
-const cold = (
-  adapter: () => DialectAdapter,
-  queryCompiler: () => QueryCompiler
-) =>
-  new Kysely<never>({
-    dialect: {
-      createAdapter: adapter,
-      createDriver: () => new DummyDriver(),
-      createIntrospector: () => {
-        throw new Error('A statement test never introspects')
-      },
-      createQueryCompiler: queryCompiler,
-    },
-  })
-
-const mysql = cold(
-  () => new MysqlAdapter(),
-  () => new MysqlQueryCompiler()
-)
-const mssql = cold(
-  () => new MssqlAdapter(),
-  () => new MssqlQueryCompiler()
-)
-const postgres = cold(
-  () => new PostgresAdapter(),
-  () => new PostgresQueryCompiler()
-)
-
+const mysql = coldDialect(Dialect.MySQL)
+const mssql = coldDialect(Dialect.MSSQL)
+const postgres = coldDialect(Dialect.Postgres)
 const oracle = coldDialect(Dialect.Oracle)
 
 const target = { schema: 's', table: 't' }

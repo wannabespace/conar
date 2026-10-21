@@ -4,6 +4,7 @@ import {
   shareCheckInput,
   sharePage,
   shareSort,
+  shareToken,
 } from '@tamery/shared/share'
 import { silently, toError } from '@tamery/shared/utils'
 import { type } from 'arktype'
@@ -11,14 +12,14 @@ import { Result } from 'better-result'
 
 import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'
-import { assertReachable } from '~/public-host'
+import { PRIVATE_HOST_MESSAGE } from '~/public-host'
 import { readCachedShareRows, readShareRows } from '~/share-rows'
 
 const proxyApi = createApiClient({})
 
 const shareAccess = type({
   id: 'string.uuid',
-  token: 'string | null',
+  token: shareToken.or('null'),
 })
 
 export const shares = {
@@ -39,14 +40,6 @@ export const shares = {
         cookie: context.headers.get('cookie'),
       }).internal.proxy.resolveConnectionString({ resourceId })
 
-      const reachable = await Result.tryPromise(() =>
-        assertReachable(connectionString)
-      )
-
-      if (reachable.isErr()) {
-        throw errors.PRIVATE_HOST()
-      }
-
       const read = await Result.tryPromise(() =>
         readShareRows({
           connectionString,
@@ -59,9 +52,12 @@ export const shares = {
       )
 
       if (read.isErr()) {
-        throw errors.UNREACHABLE({
-          message: `Tamery’s servers could not read this table: ${toError(read.error.cause).message}`,
-        })
+        const { message } = toError(read.error.cause)
+        throw message === PRIVATE_HOST_MESSAGE
+          ? errors.PRIVATE_HOST()
+          : errors.UNREACHABLE({
+              message: `Tamery’s servers could not read this table: ${message}`,
+            })
       }
     }),
   info: orpc.input(shareAccess).handler(async ({ input }) => {
@@ -90,9 +86,8 @@ export const shares = {
       const view = { ...share.view, schema: share.schema, table: share.table }
       const isShown = (column: string) =>
         view.columns.some((shown) => shown.id === column)
-      const read = await Result.tryPromise(async () => {
-        await assertReachable(share.connectionString)
-        return readCachedShareRows(share, {
+      const read = await Result.tryPromise(() =>
+        readCachedShareRows(share, {
           connectionString: share.connectionString,
           dialect: share.dialect,
           limit: SHARE_PAGE_SIZE + 1,
@@ -101,9 +96,13 @@ export const shares = {
           sort: sort && isShown(sort.column) ? sort : null,
           view,
         })
-      })
+      )
 
-      if (read.isErr() && read.error.cause instanceof ORPCError) {
+      if (
+        read.isErr() &&
+        read.error.cause instanceof ORPCError &&
+        read.error.cause.code === 'TOO_MANY_REQUESTS'
+      ) {
         throw read.error.cause
       }
 

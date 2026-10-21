@@ -1,7 +1,8 @@
 import { ORPCError } from '@orpc/client'
 import type { ColumnKind } from '@tamery/shared/column-kind'
-import { sharePage, shareSort } from '@tamery/shared/share'
+import { sharePage, shareSort, shareToken } from '@tamery/shared/share'
 import { valueToText } from '@tamery/shared/value-text'
+import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { type } from 'arktype'
 import { Result } from 'better-result'
@@ -9,20 +10,24 @@ import { Result } from 'better-result'
 import { proxy } from './proxy'
 import { unlockToken } from './share.server'
 
-const LOCKED_CODES = new Set(['LOCKED', 'TOO_MANY_ATTEMPTS'])
-const GONE_CODES = new Set(['BAD_REQUEST', 'NOT_FOUND'])
+export const SHARE_LOCKED = 'This table needs a password'
 
+const UNAVAILABLE = 'This table cannot be loaded right now.'
+const WRONG_PASSWORD = 'That password is not right.'
+const REFUSED_CODES = new Set(['BAD_REQUEST', 'LOCKED'])
+// The API words these for viewers; any other failure's message is a server's own.
+const WORDED_CODES = new Set(['NOT_FOUND', 'TOO_MANY_ATTEMPTS'])
+
+// Thrown, never returned: a failure cached as data would outlive invalidation under `staleTime: 'static'`. A fresh error, so no proxy message reaches the viewer.
 const failure = (cause: unknown) => {
-  if (cause instanceof ORPCError && LOCKED_CODES.has(cause.code)) {
-    return {
-      message: cause.code === 'LOCKED' ? null : cause.message,
-      status: 'locked' as const,
-    }
+  if (cause instanceof ORPCError && cause.code === 'NOT_FOUND') {
+    return notFound()
   }
-  if (cause instanceof ORPCError && GONE_CODES.has(cause.code)) {
-    return { status: 'gone' as const }
-  }
-  return { status: 'unavailable' as const }
+  return new Error(
+    cause instanceof ORPCError && cause.code === 'LOCKED'
+      ? SHARE_LOCKED
+      : UNAVAILABLE
+  )
 }
 
 // Engines hand booleans back as 1 and 0 too (SQLite), which read as text would never check the box.
@@ -41,7 +46,7 @@ export const getShare = createServerFn({ method: 'GET' })
     )
 
     if (result.isErr()) {
-      return failure(result.error.cause)
+      throw failure(result.error.cause)
     }
 
     const { columns, rows } = result.value
@@ -51,7 +56,6 @@ export const getShare = createServerFn({ method: 'GET' })
       rows: rows.map((row) =>
         row.map((value, index) => cellText(value, columns[index]?.kind ?? null))
       ),
-      status: 'ready' as const,
     }
   })
 
@@ -63,7 +67,7 @@ export const getShareInfo = createServerFn({ method: 'GET' })
     )
 
     if (result.isErr()) {
-      return failure(result.error.cause)
+      throw failure(result.error.cause)
     }
 
     return {
@@ -76,12 +80,11 @@ export const getShareInfo = createServerFn({ method: 'GET' })
             ? null
             : values.map((value) => cellText(value, null)).join(', '),
       })),
-      status: 'ready' as const,
     }
   })
 
 const rememberUnlock = createServerFn({ method: 'POST' })
-  .validator(type({ id: 'string', token: 'string.hex == 64' }))
+  .validator(type({ id: 'string', token: shareToken }))
   .handler(({ data }) => {
     unlockToken.set(data.id, data.token)
   })
@@ -91,14 +94,19 @@ export const unlockShare = async (data: { id: string; password: string }) => {
   const result = await Result.tryPromise(() => proxy.shares.unlock(data))
 
   if (result.isErr()) {
-    const refused = failure(result.error.cause)
-    return refused.status === 'locked'
-      ? (refused.message ?? 'That password is not right.')
-      : null
+    const { cause } = result.error
+    if (cause instanceof ORPCError && WORDED_CODES.has(cause.code)) {
+      return Result.err(cause.message)
+    }
+    return Result.err(
+      cause instanceof ORPCError && REFUSED_CODES.has(cause.code)
+        ? WRONG_PASSWORD
+        : UNAVAILABLE
+    )
   }
 
   if (result.value.token) {
     await rememberUnlock({ data: { id: data.id, token: result.value.token } })
   }
-  return null
+  return Result.ok()
 }

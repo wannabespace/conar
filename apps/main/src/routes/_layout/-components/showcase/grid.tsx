@@ -8,11 +8,11 @@ import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
 
+import { OrderCell } from '~/components/product/order-cell'
 import {
   ORDER_COLUMNS,
   orderCellClass,
 } from '~/components/product/order-columns'
-import { OrderStatusBadge } from '~/components/product/order-status-badge'
 import { ORDERS } from '~/components/product/orders'
 import { OrdersHeader } from '~/components/product/orders-header'
 
@@ -47,11 +47,7 @@ export const Grid = () => (
               id === 'status' && order.id === EDITED_ROW && 'bg-warning/15'
             )}
           >
-            {id === 'status' ? (
-              <OrderStatusBadge status={order.status} />
-            ) : (
-              order[id]
-            )}
+            <OrderCell id={id} order={order} />
             {id === 'user_id' && (
               <Button variant="ghost-faint" size="icon-2xs" className="ml-auto">
                 <HugeiconsIcon

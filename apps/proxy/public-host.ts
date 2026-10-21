@@ -30,6 +30,9 @@ for (const [network, prefix, family] of [
 /** The drivers read each of these as a path on the proxy's own disk. */
 const FILE_PARAMS = ['sslca', 'sslcert', 'sslkey', 'sslrootcert']
 
+export const PRIVATE_HOST_MESSAGE =
+  'The cloud proxy reaches only public hosts. Run `tamery proxy` or open this connection in the desktop app.'
+
 /**
  * The driver resolves the host again, so a DNS answer that changes between the two lookups still slips through.
  * An empty host is refused too: drivers fall back to localhost for it.
@@ -49,9 +52,6 @@ export const assertReachable = async (connectionString: string) => {
       NON_PUBLIC_NETWORKS.check(address, family === 6 ? 'ipv6' : 'ipv4')
     )
   ) {
-    throw new ORPCError('FORBIDDEN', {
-      message:
-        'The cloud proxy reaches only public hosts. Run `tamery proxy` or open this connection in the desktop app.',
-    })
+    throw new ORPCError('FORBIDDEN', { message: PRIVATE_HOST_MESSAGE })
   }
 }

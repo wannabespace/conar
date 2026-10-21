@@ -1,5 +1,6 @@
 import { ArrowDown02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
 import { cn } from '@tamery/ui/lib/utils'
 import type { ReactNode } from 'react'
 
@@ -25,14 +26,7 @@ export const OrdersHeader = ({
           column.width
         )}
       >
-        <HugeiconsIcon
-          icon={column.icon}
-          strokeWidth={2}
-          className={cn(
-            'size-3.5 shrink-0',
-            column.id === 'id' ? 'text-primary' : 'text-muted-foreground'
-          )}
-        />
+        <ColumnKindIcon kind={column.kind} />
         <span className="min-w-0 flex-1 truncate text-xs font-medium">
           {column.id}
         </span>

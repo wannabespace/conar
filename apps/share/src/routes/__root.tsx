@@ -1,3 +1,4 @@
+import { Toaster } from '@tamery/ui/components/sonner'
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
 import type { QueryClient } from '@tanstack/react-query'
@@ -11,7 +12,6 @@ import { MotionConfig } from 'motion/react'
 import { useEffect } from 'react'
 
 import { StatusPage } from '~/components/status-page'
-import { getViewer } from '~/lib/account'
 import { posthog } from '~/lib/posthog'
 
 import appCss from '~/styles.css?url'
@@ -31,6 +31,7 @@ const RootComponent = () => {
           <TooltipProvider>
             <ThemeObserver />
             <Outlet />
+            <Toaster />
           </TooltipProvider>
         </MotionConfig>
         <Scripts />
@@ -41,15 +42,8 @@ const RootComponent = () => {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
-    beforeLoad: async ({ context }) => ({
-      viewer: await context.queryClient.query({
-        queryFn: () => getViewer(),
-        queryKey: ['viewer'],
-        staleTime: 'static',
-      }),
-    }),
     component: RootComponent,
-    errorComponent: () => <StatusPage status="unavailable" />,
+    errorComponent: () => <StatusPage status="error" />,
     head: () => ({
       links: [
         { href: appCss, rel: 'stylesheet' },
@@ -71,7 +65,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { charSet: 'utf-8' },
         { title: 'Shared table · Tamery' },
         { content: 'width=device-width, initial-scale=1', name: 'viewport' },
-        { content: 'noindex, nofollow', name: 'robots' },
       ],
     }),
     notFoundComponent: () => <StatusPage status="gone" />,

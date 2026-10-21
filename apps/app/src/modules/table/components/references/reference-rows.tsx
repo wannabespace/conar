@@ -1,5 +1,6 @@
 import { SearchRemoveIcon } from '@hugeicons/core-free-icons'
 import type { GridRow } from '@tamery/table'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Table,
@@ -14,7 +15,6 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useRef } from 'react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
 import { TableError } from '~/core/table/table-error'
 
@@ -91,7 +91,7 @@ export const RowsView = ({
   }
   if (!onlyRow) {
     return (
-      <PaneEmpty
+      <IconEmpty
         icon={SearchRemoveIcon}
         title="No matching row"
         description={`Nothing in ${hop.table} has ${hop.column} = ${String(hop.value)}.`}

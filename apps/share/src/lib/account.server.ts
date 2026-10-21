@@ -3,6 +3,7 @@ import { RPCLink } from '@orpc/client/fetch'
 import type { ORPCRouter } from '@tamery/api/orpc/routers'
 import { getRequest } from '@tanstack/react-start/server'
 import { type } from 'arktype'
+import { Result } from 'better-result'
 
 const cookie = () => getRequest().headers.get('cookie') ?? ''
 
@@ -19,11 +20,14 @@ const sessionResponse = type({
 }).or('null')
 
 export const getSessionUser = async () => {
-  const response = await fetch(
-    `${import.meta.env.VITE_PUBLIC_API_URL}/auth/get-session`,
-    { headers: { cookie: cookie() } }
-  )
-  const session = sessionResponse(response.ok ? await response.json() : null)
+  const response = await Result.tryPromise(async () => {
+    const answer = await fetch(
+      `${import.meta.env.VITE_PUBLIC_API_URL}/auth/get-session`,
+      { headers: { cookie: cookie() } }
+    )
+    return answer.ok ? answer.json() : null
+  })
+  const session = sessionResponse(response.unwrapOr(null))
   if (session instanceof type.errors || !session || session.user.isAnonymous) {
     return null
   }

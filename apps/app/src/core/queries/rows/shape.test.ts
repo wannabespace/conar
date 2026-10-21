@@ -3,19 +3,6 @@ import { expect, test } from 'bun:test'
 import { prepareQuery } from '@tamery/connection/queries/dialects/clickhouse/prepare-query'
 import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import {
-  clickhouseFilterValues,
-  EQUAL_FILTER,
-  sqliteFilterValues,
-  toKyselyFilter,
-} from '@tamery/shared/filters'
-import {
-  Kysely,
-  PostgresAdapter,
-  PostgresQueryCompiler,
-  DummyDriver,
-  PostgresIntrospector,
-} from 'kysely'
 
 import {
   bindRow,
@@ -28,14 +15,9 @@ const clickhouse = coldDialect(Dialect.ClickHouse).withTables<
   Record<string, Record<string, unknown>>
 >()
 
-const postgres = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: {
-    createAdapter: () => new PostgresAdapter(),
-    createDriver: () => new DummyDriver(),
-    createIntrospector: (db) => new PostgresIntrospector(db),
-    createQueryCompiler: () => new PostgresQueryCompiler(),
-  },
-})
+const postgres = coldDialect(Dialect.Postgres).withTables<
+  Record<string, Record<string, unknown>>
+>()
 
 test('ClickHouse parses ISO text for a DateTime column only, in SET and WHERE', () => {
   const columns = [
@@ -53,56 +35,6 @@ test('ClickHouse parses ISO text for a DateTime column only, in SET and WHERE', 
   expect(prepareQuery(query.compile())).toBe(
     `alter table \`events\` update \`note\` = '${iso}' where \`at\` = parseDateTime64BestEffort('${iso}', 3) settings mutations_sync = 1`
   )
-})
-
-test('ClickHouse filters parse ISO text for a DateTime column and keep it for a String one', () => {
-  const columns = [
-    { id: 'at', type: 'DateTime' },
-    { id: 'note', type: 'String' },
-  ]
-  const iso = '2024-02-29T13:45:10Z'
-  const query = clickhouse
-    .selectFrom('events')
-    .selectAll()
-    .where((eb) =>
-      toKyselyFilter(
-        eb,
-        ['at', 'note'].map((column) => ({
-          column,
-          ref: EQUAL_FILTER,
-          values: [iso],
-        })),
-        'AND',
-        clickhouseFilterValues(columns)
-      )
-    )
-
-  expect(prepareQuery(query.compile())).toBe(
-    `select * from \`events\` where (\`at\` = parseDateTime64BestEffort('${iso}', 0) and \`note\` = '${iso}')`
-  )
-})
-
-test('SQLite filters bind true and false as 1 and 0 on a boolean column only', () => {
-  const { parameters } = postgres
-    .selectFrom('items')
-    .selectAll()
-    .where((eb) =>
-      toKyselyFilter(
-        eb,
-        [
-          { column: 'active', ref: EQUAL_FILTER, values: ['true'] },
-          { column: 'note', ref: EQUAL_FILTER, values: ['false'] },
-        ],
-        'AND',
-        sqliteFilterValues([
-          { id: 'active', type: 'boolean' },
-          { id: 'note', type: 'text' },
-        ])
-      )
-    )
-    .compile()
-
-  expect(parameters).toEqual([1, 'false'])
 })
 
 test('a json column binds json text, NULL as is and undefined as DEFAULT', () => {

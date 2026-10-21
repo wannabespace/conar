@@ -1,10 +1,8 @@
 import { selectPage } from '@tamery/connection/queries/select-page'
-import type { ActiveFilter, ColumnTypes } from '@tamery/shared/filters'
-import {
-  clickhouseFilterValues,
-  EQUAL_FILTER,
-  sqliteFilterValues,
-} from '@tamery/shared/filters'
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
+import { filterValueBindings } from '@tamery/connection/queries/value-binding'
+import type { ActiveFilter } from '@tamery/shared/filters'
+import { EQUAL_FILTER } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
@@ -38,7 +36,7 @@ export interface RowsQueryProps {
 
 export const resourceRowsQuery = memoize(
   ({
-    columns,
+    columns = [],
     limit = DEFAULT_PAGE_LIMIT,
     query,
     ...props
@@ -47,13 +45,17 @@ export const resourceRowsQuery = memoize(
     return createQuery({
       query: {
         clickhouse: (db) =>
-          selectPage(db, page, clickhouseFilterValues(columns)).execute(),
+          selectPage(
+            db,
+            page,
+            filterValueBindings.clickhouse?.(columns)
+          ).execute(),
         mssql: (db) => selectPage(db, page).execute(),
         mysql: (db) => selectPage(db, page).execute(),
         oracle: (db) => selectPage(db, page).execute(),
         postgres: (db) => selectPage(db, page).execute(),
         sqlite: (db) =>
-          selectPage(db, page, sqliteFilterValues(columns)).execute(),
+          selectPage(db, page, filterValueBindings.sqlite?.(columns)).execute(),
       },
       type: rowType.array(),
     })

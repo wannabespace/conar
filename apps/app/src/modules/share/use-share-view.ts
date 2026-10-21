@@ -1,4 +1,5 @@
 import { enabledFilters } from '@tamery/shared/filters'
+import type { ShareView } from '@tamery/shared/share'
 import { pick } from '@tamery/shared/utils'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
@@ -9,7 +10,7 @@ import { columnView, useTablePageStore } from '~/modules/table/lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export const useShareView = (schema: string, table: string) => {
+export const useShareView = (schema: string, table: string): ShareView => {
   const { dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const { filters, orderBy, ...layout } = useSubscription(useTablePageStore(), {

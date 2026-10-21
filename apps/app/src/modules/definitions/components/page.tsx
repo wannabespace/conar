@@ -8,6 +8,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { uppercaseFirst } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import { Drawer, DrawerContent } from '@tamery/ui/components/drawer'
@@ -27,7 +28,6 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-menu'
-import { PaneEmpty } from '~/components/pane-empty'
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type { DropWording } from '~/core/catalog/drop-dialog'
 import { DropDialog } from '~/core/catalog/drop-dialog'
@@ -314,7 +314,7 @@ export const DefinitionsPage = <T extends { name: string }>({
           transition={{ duration: SWAP_FADE, ease: HOUSE_EASE }}
         >
           {empty ? (
-            <PaneEmpty
+            <IconEmpty
               icon={icon}
               title={items.length === 0 ? `No ${plural}` : 'No matches'}
               description={

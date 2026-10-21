@@ -1,27 +1,30 @@
+import type { ArkError } from 'arktype'
 import { type } from 'arktype'
 
 import { columnKind } from './column-kind'
 import { Dialect } from './enums/connection-type'
 import { ShareRefresh } from './enums/share-refresh'
-import { FILTER_OPERATORS } from './filters'
+import type { Filter } from './filters'
+import { FILTERS_LIST } from './filters'
 
 export const SHARE_PAGE_SIZE = 100
 export const SHARE_MAX_PAGES = 100
+export const SHARE_PASSWORD_MIN_LENGTH = 4
 
 export const sharePage = type(`1 <= number.integer <= ${SHARE_MAX_PAGES}`)
 
 const orderDirection = type('"ASC" | "DESC"')
 
-// `operator` reaches SQL through `sql.raw`, so only a known one passes.
+export const shareToken = type('string.hex == 64')
+
+// Only the operator is taken from the client: the rest of `ref` decides how values reach SQL, so it is always the canonical filter.
 const shareFilter = type({
   column: 'string',
-  ref: {
-    'hasValue?': 'boolean',
-    'isArray?': 'boolean',
-    label: 'string',
-    operator: type.enumerated(...FILTER_OPERATORS),
-    symbol: 'string',
-  },
+  ref: type({ operator: 'string' }).pipe(
+    ({ operator }, ctx): Filter | ArkError =>
+      FILTERS_LIST.find((filter) => filter.operator === operator) ??
+      ctx.error('a known filter operator')
+  ),
   values: 'unknown[]',
   'via?': {
     key: 'string',
@@ -64,6 +67,6 @@ export const shareSaveInput = shareView.merge({
   'id?': 'string.uuid',
   name: 'string > 0',
   /** Left out keeps the current password; `null` removes it. */
-  'password?': 'string > 0 | null',
+  'password?': `string >= ${SHARE_PASSWORD_MIN_LENGTH} | null`,
   refresh: type.valueOf(ShareRefresh),
 })

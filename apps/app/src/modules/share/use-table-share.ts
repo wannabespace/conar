@@ -27,10 +27,10 @@ export const sameShareView = (left: ComparedView, right: ComparedView) =>
 
 export const useTableShare = (schema: string, table: string) => {
   const { connection, connectionResource } = useRouteContext()
-  const { data: shares = [] } = useQuery(sharesQueryOptions)
+  const { data: shares = [], isSuccess } = useQuery(sharesQueryOptions)
 
   return {
-    count: shares.length,
+    loaded: isSuccess,
     shares: shares.filter(
       (entry) =>
         entry.connectionResourceId === connectionResource.id &&

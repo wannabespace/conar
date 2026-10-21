@@ -4,7 +4,7 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { shareSaveInput } from '@tamery/shared/share'
 import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
 import { pick } from '@tamery/shared/utils'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, gt, isNull, or, sql } from 'drizzle-orm'
 
 import { orpc, permissionsMiddleware } from '~/orpc'
 
@@ -12,6 +12,7 @@ export const save = orpc
   .use(permissionsMiddleware)
   .input(shareSaveInput)
   .errors({
+    ACCOUNT_REQUIRED: { message: 'Sign in with an account to share tables.' },
     FORBIDDEN: {
       message: `The free plan keeps up to ${FREE_SHARE_LIMIT} shared links. Upgrade to Pro to share more.`,
     },
@@ -21,6 +22,9 @@ export const save = orpc
     },
   })
   .handler(async ({ context, errors, input }) => {
+    if (context.user.isAnonymous) {
+      throw errors.ACCOUNT_REQUIRED()
+    }
     const { id, password } = input
     const resource = await db.query.connectionsResources.findFirst({
       columns: { id: true },
@@ -51,7 +55,15 @@ export const save = orpc
       const [row] = await db
         .update(shares)
         .set(changes)
-        .where(and(eq(shares.id, id), eq(shares.userId, context.user.id)))
+        .where(
+          and(
+            eq(shares.id, id),
+            eq(shares.userId, context.user.id),
+            eq(shares.connectionResourceId, input.connectionResourceId),
+            eq(shares.schema, input.schema),
+            eq(shares.table, input.table)
+          )
+        )
         .returning({ id: shares.id })
       if (!row) {
         throw errors.NOT_FOUND()
@@ -67,7 +79,13 @@ export const save = orpc
         .where(eq(users.id, context.user.id))
         .for('update')
 
-      const count = await tx.$count(shares, eq(shares.userId, context.user.id))
+      const count = await tx.$count(
+        shares,
+        and(
+          eq(shares.userId, context.user.id),
+          or(isNull(shares.expiresAt), gt(shares.expiresAt, sql`now()`))
+        )
+      )
 
       if (!context.permissions.check('share.create', { count })) {
         throw errors.FORBIDDEN()

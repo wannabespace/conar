@@ -22,7 +22,7 @@ export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
 
   return rows.map(({ connectionResource, ...share }) => ({
     ...omit(share, ['passwordHash']),
-    connection: connectionResource?.connection ?? null,
+    connection: connectionResource.connection,
     hasPassword: share.passwordHash !== null,
   }))
 })

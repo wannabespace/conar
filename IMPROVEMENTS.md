@@ -270,3 +270,9 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **A share cache shared across proxy instances.** Each proxy keeps its own bounded page cache and rate limit in memory; Redis would let a second instance reuse the first one's pages and count one limit.
 - **CSV download for viewers.** Left out of the first version; the proxy would need an export read capped well past a page, and the share site a server route turning it into CSV.
 - **Share a saved query.** A share is one table; a share of a saved runner query would cover joins and aggregates, with the same read-only and public-host checks.
+- **Say why Share is greyed out when the share list fails.** The ⋯ menu's **Share** waits for the share list, so offline or with the API down it stays disabled with no reason; a muted trailing "Offline" like "Needs Full sync" would explain it.
+- **Show free links left in the share dialog.** A Free user learns about the 3-link limit only when **Share** opens the upgrade dialog; a muted "2 of 3 free links" footnote on New link would set the expectation first.
+- **Renew an expired link from the dialog.** An expired link still opens in the dialog on its old date; picking a new expiry works, but the dialog never says the link is already dead for viewers.
+- **Keep the share page's header when the first rows fail.** A failure on the first page shows the full-page status; keeping the title, filters and column headers with an inline Try again in the grid would say less loudly that only the rows are missing.
+- **Horizontal-only scroll for the grid's cell scroll.** Home/End on a read-only grid's header row scrolls back to the top when the target column is not mounted, since the shared scroll-to-cell always scrolls both axes.
+- **Count the free share limit when an expired link is renewed.** Only creating a link checks the limit, so giving an expired link a new date or no expiry can leave a Free user with more than 3 live links.

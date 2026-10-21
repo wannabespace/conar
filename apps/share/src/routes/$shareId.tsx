@@ -3,30 +3,28 @@ import { TableSkeleton } from '@tamery/table'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
+import { type } from 'arktype'
 import { Suspense } from 'react'
 
-import { PasswordForm } from '~/components/password-form'
-import { ShareTable } from '~/components/share-table'
 import { StatusPage } from '~/components/status-page'
 import { TopBar } from '~/components/top-bar'
-import { UpdatedAt } from '~/components/updated-at'
+import { SHARE_LOCKED } from '~/lib/share'
 import {
   shareInfoQueryOptions,
   shareRowsQueryOptions,
   shareSearch,
 } from '~/lib/share-rows'
 
+import { PasswordForm } from './-components/password-form'
+import { ShareTable } from './-components/share-table'
+import { UpdatedAt } from './-components/updated-at'
+
+const uuid = type('string.uuid')
+
 const SharePage = () => {
   const { shareId } = Route.useParams()
   const { data: info } = useSuspenseQuery(shareInfoQueryOptions(shareId))
-
-  if (info.status === 'locked') {
-    return <PasswordForm shareId={shareId} message={info.message} />
-  }
-  if (info.status !== 'ready') {
-    return <StatusPage status={info.status} />
-  }
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-5xl flex-col gap-6 px-4 pt-4 pb-10 sm:px-6">
@@ -72,6 +70,9 @@ export const Route = createFileRoute('/$shareId')({
   validateSearch: shareSearch,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps, params }) => {
+    if (!uuid.allows(params.shareId)) {
+      throw notFound()
+    }
     void silently(() =>
       context.queryClient.infiniteQuery({
         ...shareRowsQueryOptions({ id: params.shareId, search: deps }),
@@ -84,16 +85,21 @@ export const Route = createFileRoute('/$shareId')({
     })
   },
   head: ({ loaderData }) => ({
-    meta:
-      loaderData?.status === 'ready'
-        ? [
-            { title: `${loaderData.name} · Tamery` },
-            ...(loaderData.description
-              ? [{ content: loaderData.description, name: 'description' }]
-              : []),
-            { content: loaderData.name, property: 'og:title' },
-          ]
-        : [],
+    meta: loaderData
+      ? [
+          { title: `${loaderData.name} · Tamery` },
+          ...(loaderData.description
+            ? [{ content: loaderData.description, name: 'description' }]
+            : []),
+          { content: loaderData.name, property: 'og:title' },
+        ]
+      : [],
   }),
   component: SharePage,
+  errorComponent: ({ error }) =>
+    error instanceof Error && error.message === SHARE_LOCKED ? (
+      <PasswordForm />
+    ) : (
+      <StatusPage status="unavailable" />
+    ),
 })
