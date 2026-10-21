@@ -84,8 +84,6 @@ interface ShareTarget {
   table: string
 }
 
-const NEW_LINK = 'new'
-
 const useShareView = () => {
   const { dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
@@ -382,14 +380,13 @@ const ShareLinkForm = ({
 const ShareForm = ({ schema, table }: ShareTarget) => {
   const { shares } = useTableShare(schema, table)
   const view = useShareView()
-  const [linkId, setLinkId] = useState(
-    () =>
-      shares.find((entry) => sameShareView(entry.view, view))?.id ?? NEW_LINK
+  const [linkId, setLinkId] = useState<string | null>(
+    () => shares.find((entry) => sameShareView(entry.view, view))?.id ?? null
   )
   const share = shares.find(({ id }) => id === linkId) ?? null
   const linkItems = [
     ...shares.map(({ id, name }) => ({ label: name, value: id })),
-    { label: 'New link', value: NEW_LINK },
+    { label: 'New link', value: null },
   ]
 
   return (
@@ -401,22 +398,17 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
       {shares.length > 0 && (
         <Field>
           <FieldLabel id="share-target-label">Link</FieldLabel>
-          <Select
-            items={linkItems}
-            value={linkId}
-            onValueChange={(next) => next !== null && setLinkId(next)}
-          >
+          <Select items={linkItems} value={linkId} onValueChange={setLinkId}>
             <SelectTrigger aria-labelledby="share-target-label">
               <SelectValue data-mask />
             </SelectTrigger>
             <SelectContent>
-              {linkItems.map(({ label, value }) => (
-                <SelectItem key={value} value={value}>
-                  <span data-mask={value !== NEW_LINK || undefined}>
-                    {label}
-                  </span>
+              {shares.map(({ id, name }) => (
+                <SelectItem key={id} value={id}>
+                  <span data-mask>{name}</span>
                 </SelectItem>
               ))}
+              <SelectItem value={null}>New link</SelectItem>
             </SelectContent>
           </Select>
         </Field>
