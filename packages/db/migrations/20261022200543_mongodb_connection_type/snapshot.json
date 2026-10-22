@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "2c4be931-2df3-4bc4-a927-937bcf111b03",
+  "id": "d94f1f80-edc1-4bab-a56b-230a449d2df1",
   "prevIds": [
-    "7332ecff-8b31-4da8-a8cf-b13c90575290"
+    "74ad60d0-7932-4f5c-ab2f-17bf57d7fb4a"
   ],
   "ddl": [
     {
@@ -42,6 +42,17 @@
         "turso"
       ],
       "name": "provider",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "live",
+        "minute",
+        "hour",
+        "day"
+      ],
+      "name": "share_refresh",
       "entityType": "enums",
       "schema": "public"
     },
@@ -133,6 +144,12 @@
     {
       "isRlsEnabled": false,
       "name": "sessions",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "shares",
       "entityType": "tables",
       "schema": "public"
     },
@@ -1451,6 +1468,188 @@
       "name": "created_at",
       "entityType": "columns",
       "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "connection_resource_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "expires_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "failing_since",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "password_hash",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "share_refresh",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "refresh",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "schema",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "table",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "view",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
       "table": "subscriptions"
     },
     {
@@ -2371,6 +2570,48 @@
       "table": "sessions"
     },
     {
+      "nameExplicit": false,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "shares_user_id_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        {
+          "value": "connection_resource_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "shares_connection_resource_id_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
       "nameExplicit": true,
       "columns": [
         {
@@ -2763,6 +3004,40 @@
     {
       "nameExplicit": false,
       "columns": [
+        "connection_resource_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "connections_resources",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "shares_connection_resource_id_connections_resources_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "shares_user_id_users_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "shares"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "user_id"
       ],
       "schemaTo": "public",
@@ -2912,6 +3187,16 @@
       "name": "sessions_pkey",
       "schema": "public",
       "table": "sessions",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "shares_pkey",
+      "schema": "public",
+      "table": "shares",
       "entityType": "pks"
     },
     {
