@@ -35,6 +35,12 @@ interface Resolvers<T extends AnyBuilder> {
   owner: (context: HandlerContext<T>) => string
 }
 
+// A proxy serves many users at once; one unbounded result would hold its memory for all of them.
+const MAX_ROWS = 100_000
+
+const capRows = (maxRows: number | undefined) =>
+  Math.min(maxRows ?? MAX_ROWS, MAX_ROWS)
+
 const createQueryDialect = <T extends AnyBuilder>(
   dialect: QueryExecutor,
   orpc: T,
@@ -69,6 +75,7 @@ const createQueryDialect = <T extends AnyBuilder>(
         dialect.execute({
           ...input,
           connectionString: await resolve.connectionString(input, context),
+          maxRows: capRows(input.maxRows),
         })
       ),
     executeTransaction: orpc
@@ -76,6 +83,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(({ input, context }) =>
         dialect.executeTransaction({
           ...input,
+          maxRows: capRows(input.maxRows),
           ownerId: resolve.owner(context),
         })
       ),
