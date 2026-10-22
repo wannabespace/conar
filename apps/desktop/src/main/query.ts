@@ -8,6 +8,11 @@ import type { ConfirmHostKey } from '@tamery/connection/ssh/host-key'
 import { tunnelForwarding } from '@tamery/connection/ssh/tunnel'
 import { isConnectionError } from '@tamery/shared/connections'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
+
+import type { CopyDatabaseRequest } from './copy-database'
+import { copyDatabase } from './copy-database'
 
 export type QueryProcessRequest =
   | {
@@ -19,6 +24,8 @@ export type QueryProcessRequest =
     }
   | { type: 'hostKey'; hostKeyId: number; trusted: boolean }
   | { type: 'resetTransactions' }
+  | { type: 'copyDatabase'; request: CopyDatabaseRequest }
+  | { type: 'cancelCopy'; copyId: string }
 
 export type QueryProcessReply =
   | { type: 'result'; id: number; result: unknown }
@@ -28,6 +35,8 @@ export type QueryProcessReply =
       hostKeyId: number
       prompt: Parameters<ConfirmHostKey>[0]
     }
+  | { type: 'copyLog'; copyId: string; line: string }
+  | { type: 'copied'; copyId: string; error: string | null }
 
 const dialects: Record<Dialect, () => Promise<{ query: QueryExecutor }>> = {
   clickhouse: () => import('@tamery/connection/queries/dialects/clickhouse'),
@@ -42,6 +51,7 @@ const reply = (message: QueryProcessReply) =>
   process.parentPort.postMessage(message)
 
 const hostKeyAnswers = new Map<number, (trusted: boolean) => void>()
+const copies = new Map<string, AbortController>()
 let nextHostKeyId = 0
 
 sshForwarding.use((connectionString) =>
@@ -60,6 +70,29 @@ process.parentPort.on(
   async ({ data }: { data: QueryProcessRequest }) => {
     if (data.type === 'resetTransactions') {
       await resetTransactions()
+      return
+    }
+    if (data.type === 'cancelCopy') {
+      copies.get(data.copyId)?.abort()
+      return
+    }
+    if (data.type === 'copyDatabase') {
+      const copyId = data.request.id
+      const controller = new AbortController()
+      copies.set(copyId, controller)
+      const copied = await Result.tryPromise(() =>
+        copyDatabase(
+          data.request,
+          (line) => reply({ copyId, line, type: 'copyLog' }),
+          controller.signal
+        )
+      )
+      copies.delete(copyId)
+      reply({
+        copyId,
+        error: copied.isErr() ? toError(copied.error.cause).message : null,
+        type: 'copied',
+      })
       return
     }
     if (data.type === 'hostKey') {

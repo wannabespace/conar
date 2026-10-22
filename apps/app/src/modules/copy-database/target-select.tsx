@@ -1,0 +1,108 @@
+import {
+  ConnectionType,
+  getDialect,
+} from '@tamery/shared/enums/connection-type'
+import {
+  Select,
+  SelectContent,
+  SelectEmpty,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
+import { and, eq, inArray, not, useLiveQuery } from '@tanstack/react-db'
+
+import { getCapabilities } from '~/core/catalog/capabilities'
+import { useCollections } from '~/core/collections'
+import { ResourceLabel } from '~/core/connection/resource-label'
+import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import { useActiveWorkspace } from '~/core/workspace/hooks'
+
+export interface CopyEnd {
+  connection: Connection
+  resource: ConnectionResource
+}
+
+const COPYABLE_TYPES = Object.values(ConnectionType).filter(
+  (type) => getCapabilities(getDialect(type)).copyDatabase
+)
+
+export const CopyEndLabel = ({ connection, resource }: CopyEnd) => (
+  <span data-mask className="min-w-0 truncate">
+    {connection.name}
+    <span className="text-muted-foreground"> / </span>
+    <ResourceLabel connection={connection} name={resource.name} />
+  </span>
+)
+
+export const TargetSelect = ({
+  id,
+  onTargetChange,
+  source,
+  target,
+}: {
+  id: string
+  onTargetChange: (target: CopyEnd) => void
+  source: CopyEnd
+  target: CopyEnd | null
+}) => {
+  const { connectionsCollection, connectionsResourcesCollection } =
+    useCollections()
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const { data: targets } = useLiveQuery({
+    query: (q) =>
+      q
+        .from({ c: connectionsCollection })
+        .innerJoin({ r: connectionsResourcesCollection }, ({ c, r }) =>
+          eq(r.connectionId, c.id)
+        )
+        .where(({ c, r }) =>
+          and(
+            inArray(c.type, COPYABLE_TYPES),
+            not(eq(r.id, source.resource.id)),
+            activeWorkspace ? eq(c.workspaceId, activeWorkspace.id) : true
+          )
+        )
+        .select(({ c, r }) => ({ connection: c, resource: r }))
+        .orderBy(({ c }) => c.name)
+        .orderBy(({ r }) => r.name),
+  })
+  const groups = Map.groupBy(targets, ({ connection }) => connection.id)
+
+  return (
+    <Select
+      value={target?.resource.id ?? null}
+      onValueChange={(resourceId) => {
+        const picked = targets.find(
+          ({ resource }) => resource.id === resourceId
+        )
+        if (picked) {
+          onTargetChange(picked)
+        }
+      }}
+    >
+      <SelectTrigger id={id} className="w-full">
+        <SelectValue placeholder="Choose a database">
+          {target && <CopyEndLabel {...target} />}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent data-mask>
+        {targets.length === 0 && (
+          <SelectEmpty>No other database to copy to</SelectEmpty>
+        )}
+        {[...groups].map(([connectionId, group]) => (
+          <SelectGroup key={connectionId}>
+            <SelectLabel>{group[0]?.connection.name}</SelectLabel>
+            {group.map(({ connection, resource }) => (
+              <SelectItem key={resource.id} value={resource.id}>
+                <ResourceLabel connection={connection} name={resource.name} />
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}

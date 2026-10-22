@@ -15,6 +15,7 @@
     "build:todesktop": "todesktop build",
     "check-types": "tsc",
     "test": "bun test ./src",
+    "todesktop:afterPack": "./scripts/todesktop-after-pack.cjs",
     "todesktop:beforeInstall": "./scripts/todesktop-before-install.cjs"
   },
   "dependencies": {

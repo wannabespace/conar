@@ -1,0 +1,242 @@
+import { spawn } from 'node:child_process'
+import type { ChildProcess } from 'node:child_process'
+import { once } from 'node:events'
+import { existsSync } from 'node:fs'
+import type { AddressInfo } from 'node:net'
+import { createServer } from 'node:net'
+import path from 'node:path'
+import process from 'node:process'
+import { createInterface } from 'node:readline'
+import type { Readable } from 'node:stream'
+import { Transform } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
+
+import { getDriverConfig } from '@tamery/connection/parse-connection-string'
+import { getPool } from '@tamery/connection/queries/dialects/pg/client'
+import type { Forwarding } from '@tamery/connection/ssh/forwarding'
+import { sshForwarding } from '@tamery/connection/ssh/forwarding'
+import { silently, toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
+import type { PoolConfig } from 'pg'
+
+export interface CopyDatabaseRequest {
+  id: string
+  source: string
+  target: string
+  /** `null` copies the whole database: every schema, type, function and view, not only tables. */
+  tables: { schema: string; table: string }[] | null
+}
+
+type Tool = 'pg_dump' | 'psql'
+
+// Packaged by `scripts/todesktop-after-pack.cjs`; Linux and dev builds have none and run the user's own from PATH.
+const BUNDLED_TOOLS = path.join(process.resourcesPath, 'postgres', 'bin')
+
+const POSTGRES_17 = 170_000
+// pg_dump 17+ writes this into every dump's header, and older servers refuse the whole transaction over it.
+const TRANSACTION_TIMEOUT = Buffer.from('SET transaction_timeout = 0;')
+const HEADER_BYTES = 4096
+const COMMIT = Buffer.from('COMMIT;\n')
+
+const LIBPQ_VERIFY_MODES = new Set(['verify-ca', 'verify-full'])
+
+const quoteIdentifier = (name: string) => `"${name.replaceAll('"', '""')}"`
+
+const getSslMode = (ssl: PoolConfig['ssl'], sslMode: string | null) => {
+  if (ssl === false) {
+    return 'disable'
+  }
+  if (typeof ssl === 'object' && ssl.rejectUnauthorized === false) {
+    return 'require'
+  }
+  return sslMode && LIBPQ_VERIFY_MODES.has(sslMode) ? sslMode : 'verify-full'
+}
+
+/** libpq dials a TCP port, while a tunnel opens none, so the copy gets a loopback listener for its length. */
+const listenLocally = async (forwarding: Forwarding) => {
+  const server = createServer((local) => {
+    void silently(() => pipeline(local, forwarding.socket(), local))
+  })
+  server.listen(0, '127.0.0.1')
+  await once(server, 'listening')
+  // A TCP server listening on a port answers with AddressInfo, never a pipe name.
+  const { port } = server.address() as AddressInfo
+  return { close: () => server.close(), port }
+}
+
+/** The app's own pool connects first: it opens the tunnel, asks about an unknown host key and settles the TLS fallback the tools then reuse. */
+const openEndpoint = async (connectionString: string) => {
+  const pool = await getPool(connectionString)
+  const { rows } = await pool.query<{ server_version_num: string }>(
+    'SHOW server_version_num'
+  )
+  const { database, host, password, port, searchParams, user } =
+    getDriverConfig(connectionString)
+  const forwarding = await sshForwarding.of(connectionString)
+  const local = forwarding ? await listenLocally(forwarding) : null
+  const sslMode = getSslMode(pool.options.ssl, searchParams.get('sslmode'))
+  return {
+    close: () => local?.close(),
+    env: {
+      ...Object.fromEntries(
+        Object.entries(process.env).filter(([key]) => !key.startsWith('PG'))
+      ),
+      PGAPPNAME: 'Tamery',
+      PGCONNECT_TIMEOUT: '30',
+      PGDATABASE: database,
+      PGHOST: host,
+      // libpq dials the address and still checks the certificate against the host.
+      PGHOSTADDR: local ? '127.0.0.1' : undefined,
+      PGPASSWORD: password,
+      PGPORT: local ? String(local.port) : port?.toString(),
+      PGSSLCERT: searchParams.get('sslcert') ?? undefined,
+      PGSSLKEY: searchParams.get('sslkey') ?? undefined,
+      PGSSLMODE: sslMode,
+      PGSSLROOTCERT:
+        searchParams.get('sslrootcert') ??
+        (sslMode === 'verify-full' ? 'system' : undefined),
+      PGUSER: user,
+    },
+    version: Number(rows[0]?.server_version_num),
+  }
+}
+
+const toolPath = (tool: Tool) =>
+  existsSync(BUNDLED_TOOLS) ? path.join(BUNDLED_TOOLS, tool) : tool
+
+/** Streams the tool's stderr into the log and rejects with its last error line. */
+const watchTool = async (
+  tool: Tool,
+  child: ChildProcess & { stderr: Readable },
+  log: (line: string) => void
+) => {
+  let lastError: string | null = null
+  createInterface({ input: child.stderr }).on('line', (line) => {
+    if (/error:/iu.test(line)) {
+      lastError = line
+    }
+    log(line)
+  })
+  const closed = await Result.tryPromise(() => once(child, 'close'))
+  if (closed.isErr()) {
+    const error = toError(closed.error.cause)
+    throw 'code' in error && error.code === 'ENOENT'
+      ? new Error(
+          `${tool} was not found. Install the PostgreSQL client tools to copy databases.`
+        )
+      : error
+  }
+  const [code] = closed.value
+  if (code !== 0) {
+    throw new Error(lastError ?? `${tool} stopped with code ${code}`)
+  }
+}
+
+const strip = (bytes: Buffer) => {
+  const at = bytes.indexOf(TRANSACTION_TIMEOUT)
+  return at === -1
+    ? bytes
+    : Buffer.concat([
+        bytes.subarray(0, at),
+        bytes.subarray(at + TRANSACTION_TIMEOUT.length),
+      ])
+}
+
+/** Holds the end of the dump until pg_dump has exited, so only a complete dump commits; any other end leaves the transaction open and psql's exit rolls it back. */
+const commitAfter = (dumped: Promise<void>, stripHeader: boolean) => {
+  let header: Buffer | null = stripHeader ? Buffer.alloc(0) : null
+  return new Transform({
+    flush: async (done) => {
+      const result = await Result.tryPromise(() => dumped)
+      if (result.isErr()) {
+        done(toError(result.error.cause))
+        return
+      }
+      done(
+        null,
+        Buffer.concat([header ? strip(header) : Buffer.alloc(0), COMMIT])
+      )
+    },
+    transform: (chunk: Buffer, _encoding, done) => {
+      if (!header) {
+        done(null, chunk)
+        return
+      }
+      header = Buffer.concat([header, chunk])
+      if (header.length < HEADER_BYTES) {
+        done()
+        return
+      }
+      const stripped = strip(header)
+      header = null
+      done(null, stripped)
+    },
+  })
+}
+
+export const copyDatabase = async (
+  { source, tables, target }: CopyDatabaseRequest,
+  log: (line: string) => void,
+  signal: AbortSignal
+) => {
+  const from = await openEndpoint(source)
+  try {
+    const to = await openEndpoint(target)
+    try {
+      const dump = spawn(
+        toolPath('pg_dump'),
+        [
+          '--clean',
+          '--if-exists',
+          '--no-owner',
+          '--no-privileges',
+          '--verbose',
+          ...(tables ?? []).map(
+            ({ schema, table }) =>
+              `--table=${quoteIdentifier(schema)}.${quoteIdentifier(table)}`
+          ),
+        ],
+        { env: from.env, signal, stdio: ['ignore', 'pipe', 'pipe'] }
+      )
+      const restore = spawn(
+        toolPath('psql'),
+        ['--no-psqlrc', '--quiet', '--set=ON_ERROR_STOP=1'],
+        { env: to.env, signal, stdio: ['pipe', 'ignore', 'pipe'] }
+      )
+      const dumped = watchTool('pg_dump', dump, log)
+      const restored = watchTool('psql', restore, log)
+      const schemas = new Set(tables?.map(({ schema }) => schema))
+      restore.stdin.write(
+        [
+          'BEGIN;',
+          ...[...schemas].map(
+            (schema) =>
+              `CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(schema)};`
+          ),
+          '',
+        ].join('\n')
+      )
+      // psql's failure first: once it stops, pg_dump only reports the broken pipe.
+      const results = await Promise.allSettled([
+        restored,
+        dumped,
+        pipeline(
+          dump.stdout,
+          commitAfter(dumped, to.version < POSTGRES_17),
+          restore.stdin
+        ),
+      ])
+      const failure = results.find(
+        (result): result is PromiseRejectedResult =>
+          result.status === 'rejected'
+      )
+      if (failure) {
+        throw failure.reason
+      }
+    } finally {
+      to.close()
+    }
+  } finally {
+    from.close()
+  }
+}

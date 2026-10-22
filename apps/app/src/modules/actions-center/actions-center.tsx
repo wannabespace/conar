@@ -53,6 +53,7 @@ import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
 import { posthog } from '~/lib/posthog'
 import { chatCommands } from '~/modules/chat/commands'
+import { copyDatabaseCommands } from '~/modules/copy-database/commands'
 import { navigatorCommands } from '~/modules/navigator/commands'
 import { queryLoggerCommands } from '~/modules/query-logger/commands'
 import { newQueryAction } from '~/modules/runner/lib/new-query'
@@ -248,6 +249,7 @@ export const ActionsCenter = () => {
   const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
   const moduleEntries = [
     ...chatCommands({ current }),
+    ...copyDatabaseCommands({ current }),
     ...navigatorCommands({ current }),
     ...queryLoggerCommands({ current }),
     ...tableCommands({ current, tabId }),
