@@ -12,6 +12,7 @@ const SSH_SECRET_PARAMS = [
 /** Sync with the secret params `ssl/*.ts` and `ssh/` read. `sslkey` stays out: the drivers read it as a file path. */
 const SECRET_PARAMS = [
   ...SSH_SECRET_PARAMS,
+  'access_token',
   'sslpassword',
   'sslpassphrase',
   'sslpfx',
