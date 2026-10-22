@@ -104,12 +104,14 @@ test('a row without a primary key is found by a NOT NULL unique key, else by eve
       [
         { id: 'email', isNullable: true, type: 'text', unique: 'users_email' },
         { id: 'doc', type: 'json' },
+        { id: 'at', type: 'point' },
+        { id: 'tags', isArray: true, type: 'text' },
         { id: 'score', type: 'real' },
         { id: 'name', type: 'text' },
       ],
       Dialect.Postgres
     )
-  ).toEqual({ columns: ['email', 'name'], unique: false })
+  ).toEqual({ columns: ['email', 'score', 'name'], unique: false })
 })
 
 test('a NULL in a row identity matches with IS NULL', () => {

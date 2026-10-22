@@ -6,6 +6,7 @@ import { sql } from 'kysely'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
+import { isComparableColumn } from '~/core/table/cell/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
 type Eb = ExpressionBuilder<any, any>
@@ -142,23 +143,9 @@ export const matchesPrimaryKeys = (
     )
   )
 
-// `=` is missing for these, compares something else (a Postgres box compares areas) or misses after a JS number round trip (4-byte floats).
-const UNMATCHABLE_TYPES: Record<Dialect, RegExp | null> = {
-  [Dialect.ClickHouse]:
-    /\b(?:Float32|JSON|Object|AggregateFunction|SimpleAggregateFunction|Dynamic|Variant)\b/u,
-  [Dialect.MSSQL]: /^(?:text|ntext|image|xml|geography|geometry|real)$/iu,
-  [Dialect.MySQL]:
-    /^(?:float|json|geometry|point|linestring|polygon|multi\w+|geom(?:etry)?collection)$/iu,
-  [Dialect.Oracle]:
-    /^(?:n?clob|blob|bfile|long(?: raw)?|xmltype|binary_float|sdo_geometry)$/iu,
-  [Dialect.Postgres]:
-    /^(?:json|xml|real|float4|point|line|lseg|box|path|polygon|circle)$/iu,
-  [Dialect.SQLite]: null,
-}
-
 type IdentityColumn = Pick<
   Column,
-  'id' | 'isNullable' | 'primaryKey' | 'type' | 'unique'
+  'id' | 'isArray' | 'isNullable' | 'primaryKey' | 'type' | 'unique'
 >
 
 const ids = (columns: IdentityColumn[]) => columns.map((column) => column.id)
@@ -183,10 +170,9 @@ export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
   if (uniqueKey) {
     return { columns: ids(uniqueKey), unique: true }
   }
-  const unmatchable = UNMATCHABLE_TYPES[dialect]
   return {
     columns: ids(
-      columns.filter((column) => !unmatchable?.test(column.type ?? ''))
+      columns.filter((column) => isComparableColumn(dialect, column))
     ),
     unique: false,
   }

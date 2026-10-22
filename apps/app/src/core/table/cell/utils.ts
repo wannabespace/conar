@@ -188,6 +188,16 @@ export const getColumnKind = (dialect: Dialect, column: Column): ColumnKind => {
   return 'text'
 }
 
+// A write finds a row by `col = value`; these reject `=`, compare something else, or arrive as bytes that may not bind back.
+export const isComparableColumn = (
+  dialect: Dialect,
+  column: Pick<Column, 'isArray' | 'type'>
+) => {
+  const { bytes, incomparable } = getCapabilities(dialect).columnTypes
+  const type = column.type ?? ''
+  return !(column.isArray || bytes?.test(type) || incomparable?.test(type))
+}
+
 export const hasTabularFigures = (column: Column) =>
   column.uiType !== 'raw' || isNumericColumn(column)
 
