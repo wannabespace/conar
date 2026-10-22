@@ -57,6 +57,7 @@ export const shares = {
       TOO_MANY_ATTEMPTS: {
         message: 'Too many wrong passwords. Try again in a few minutes.',
       },
+      WRONG_PASSWORD: { message: 'That password is not right.' },
     })
     .handler(async ({ errors, input }) => {
       const share = await db.query.shares.findFirst({
@@ -119,7 +120,7 @@ export const shares = {
           throw errors.TOO_MANY_ATTEMPTS()
         }
         if (!(await Bun.password.verify(unlock.password, share.passwordHash))) {
-          throw errors.LOCKED()
+          throw errors.WRONG_PASSWORD()
         }
       }
 

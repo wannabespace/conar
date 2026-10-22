@@ -13,10 +13,12 @@ import { unlockToken } from './share.server'
 export const SHARE_LOCKED = 'This table needs a password'
 
 const UNAVAILABLE = 'This table cannot be loaded right now.'
-const WRONG_PASSWORD = 'That password is not right.'
-const REFUSED_CODES = new Set(['BAD_REQUEST', 'LOCKED'])
 // The API words these for viewers; any other failure's message is a server's own.
-const WORDED_CODES = new Set(['NOT_FOUND', 'TOO_MANY_ATTEMPTS'])
+const VIEWER_CODES = new Set([
+  'NOT_FOUND',
+  'TOO_MANY_ATTEMPTS',
+  'WRONG_PASSWORD',
+])
 
 // Thrown, never returned: a failure cached as data would outlive invalidation under `staleTime: 'static'`. A fresh error, so no proxy message reaches the viewer.
 const failure = (cause: unknown) => {
@@ -95,12 +97,9 @@ export const unlockShare = async (data: { id: string; password: string }) => {
 
   if (result.isErr()) {
     const { cause } = result.error
-    if (cause instanceof ORPCError && WORDED_CODES.has(cause.code)) {
-      return Result.err(cause.message)
-    }
     return Result.err(
-      cause instanceof ORPCError && REFUSED_CODES.has(cause.code)
-        ? WRONG_PASSWORD
+      cause instanceof ORPCError && VIEWER_CODES.has(cause.code)
+        ? cause.message
         : UNAVAILABLE
     )
   }

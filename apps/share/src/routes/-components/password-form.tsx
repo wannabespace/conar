@@ -60,6 +60,7 @@ export const PasswordForm = () => {
               aria-describedby={error ? errorId : undefined}
               autoComplete="current-password"
               autoFocus
+              required
             />
             <Button type="submit" disabled={pending}>
               <LoadingContent loading={pending}>Open</LoadingContent>
