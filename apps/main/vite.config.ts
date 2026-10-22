@@ -22,6 +22,7 @@ export default defineConfig(({ command }) => ({
           physical('', '.'),
           physical('', '../modules/ai-usage/routes'),
           physical('', '../modules/billing/routes'),
+          physical('', '../modules/blog/routes'),
           physical('', '../modules/deep-link/routes'),
           physical('', '../modules/legal/routes'),
           physical('', '../modules/releases/routes'),

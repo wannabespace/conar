@@ -14,6 +14,7 @@
 - [Home](https://tamery.app/): Product overview, features, pricing and FAQ
 - [Download](https://tamery.app/download): Download links for macOS, Windows and Linux
 - [Releases](https://tamery.app/releases): Changelog and version history
+- [Blog](https://tamery.app/blog): Longer stories and reasoning behind Tamery
 - [Privacy Policy](https://tamery.app/privacy-policy): How Tamery handles your data
 - [Terms of Service](https://tamery.app/terms-of-service): Terms and conditions
 

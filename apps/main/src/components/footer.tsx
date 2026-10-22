@@ -41,6 +41,9 @@ export const Footer = () => {
             <Link to="/releases" className={linkClassName}>
               Releases
             </Link>
+            <Link to="/blog" className={linkClassName}>
+              Blog
+            </Link>
             <a href={DOCS_URL} className={linkClassName}>
               Docs
             </a>
