@@ -62,6 +62,8 @@ const isDesktopVersionOutdated = (
   !!parsedAppVersion?.minor &&
   parsedAppVersion.minor < env.MIN_DESKTOP_VERSION
 
+const TAMERY_ORIGIN = /^https:\/\/(?:[\w-]+\.)+tamery\.app$/u
+
 const app = new Hono<{
   Variables: AppVariables
 }>()
@@ -76,7 +78,7 @@ const app = new Hono<{
         ) {
           return origin
         }
-        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin)
+        return TAMERY_ORIGIN.test(origin) || allowedOrigins.includes(origin)
           ? origin
           : null
       },
