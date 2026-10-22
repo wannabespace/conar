@@ -1,7 +1,7 @@
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { Permissions } from '@tamery/shared/permissions'
 import { getPermissions } from '@tamery/shared/permissions'
-import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
+import { FREE_SHARE_LIMIT_MESSAGE } from '@tamery/shared/usage'
 import { Result } from 'better-result'
 import { createPermix } from 'permix'
 import { usePermix } from 'permix/react'
@@ -30,7 +30,7 @@ const SIGN_IN_HINTS: Partial<Record<keyof Permissions, string>> = {
 }
 
 const UPGRADE_HINTS: Record<string, string> = {
-  'share.create': `The Free plan keeps ${FREE_SHARE_LIMIT} shared links at a time. Stop sharing one in Manage shares, or upgrade to share as many as you need.`,
+  'share.create': FREE_SHARE_LIMIT_MESSAGE,
 }
 
 export const checkOrUpgrade = (...args: Parameters<typeof permix.check>) => {

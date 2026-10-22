@@ -2,7 +2,7 @@ import { db } from '@tamery/db'
 import { shares, users } from '@tamery/db/schema'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { shareSaveInput } from '@tamery/shared/share'
-import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
+import { FREE_SHARE_LIMIT_MESSAGE } from '@tamery/shared/usage'
 import { pick } from '@tamery/shared/utils'
 import { and, eq, gt, isNull, or, sql } from 'drizzle-orm'
 
@@ -13,9 +13,7 @@ export const save = orpc
   .input(shareSaveInput)
   .errors({
     ACCOUNT_REQUIRED: { message: 'Sign in with an account to share tables.' },
-    FORBIDDEN: {
-      message: `The free plan keeps up to ${FREE_SHARE_LIMIT} shared links. Upgrade to Pro to share more.`,
-    },
+    FORBIDDEN: { message: FREE_SHARE_LIMIT_MESSAGE },
     NOT_FOUND: { message: 'This share or its connection no longer exists.' },
     NOT_SYNCED: {
       message: 'Only a connection synced with Full can be shared.',
