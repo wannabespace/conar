@@ -40,13 +40,12 @@ export const create = orpc
 
     if (!inserted) {
       return db.query.connectionsResources.findFirst({
-        where:
-          input.name === null || input.name === undefined
+        where: {
+          connectionId: { eq: input.connectionId },
+          ...(input.name === null || input.name === undefined
             ? { id: { eq: input.id } }
-            : {
-                connectionId: { eq: input.connectionId },
-                name: { eq: input.name },
-              },
+            : { name: { eq: input.name } }),
+        },
       })
     }
 
