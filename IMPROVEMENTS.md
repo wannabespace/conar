@@ -285,6 +285,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Show a short code on both sides of the sign-in handoff.** The browser now asks before signing an app in, but a matching code would stop a phished link from being confirmed blindly.
 - **Limit which images AI answers load.** Markdown images load from any host, so a prompt-injected answer can send conversation text to a remote server in an image URL.
 - **Authenticate the Railway alert webhook.** Anyone can post to it and send email to the alerts inbox; a secret in the webhook URL would do.
+- **Pair the web app with `tamery proxy`.** The web app now ignores a local proxy that answers for another account, but a process that knows the user id can still claim the port; a secret the CLI shows once and the browser keeps would close it.
 - **Cap open sessions and transactions per user on the cloud proxy.** Each holds a database socket for up to 15 idle minutes with no per-user limit, so one account can run the shared proxy out of file descriptors.
 - **Longer share passwords.** The minimum is 4 characters against 1000 tries per 10 minutes per share, so a 4-digit PIN falls in under two hours and an attacker can spend the budget to lock real viewers out.
 - **Rate-limit by the real client IP.** The API and proxy sit behind Cloudflare and key their limits on `x-real-ip`; if that is the edge's address, every user behind one edge shares the email-code and share-unlock budgets. `cf-connecting-ip` is the client.
