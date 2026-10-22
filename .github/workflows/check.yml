@@ -39,3 +39,35 @@ jobs:
 
       - name: Check
         run: pnpm run check
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Scan for leaked secrets
+        uses: trufflesecurity/trufflehog@c85580b712841eda4c53bc28fc6ace6100e8c16c # v3.99.4
+        with:
+          extra_args: --results=verified,unknown
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 12.13.0
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level=critical
+
+      - name: Report all advisories
+        if: always()
+        run: pnpm audit || true
