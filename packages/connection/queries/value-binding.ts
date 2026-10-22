@@ -1,6 +1,6 @@
+import type { Dialect } from '@tamery/shared/enums/connection-type'
+import type { FilterValueBinding } from '@tamery/shared/filters'
 import { sql } from 'kysely'
-
-import type { FilterValueBinding } from './kysely'
 
 export type ColumnTypes = { id: string; type?: string }[]
 
@@ -15,23 +15,20 @@ export const clickhouseDateTime = (columnType: string, value: unknown) => {
     : value
 }
 
-export const clickhouseFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
-    clickhouseDateTime(
-      columns.find(({ id }) => id === column)?.type ?? '',
-      value
-    )
-
 export const SQLITE_BOOLEAN_TYPE = /^boolean$/iu
 
-// SQLite stores a boolean as 1 or 0, so the filter's `true` text never equals it.
-export const sqliteFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
+const getColumnType = (columns: ColumnTypes, column: string) =>
+  columns.find(({ id }) => id === column)?.type ?? ''
+
+export const filterValueBindings: Partial<
+  Record<Dialect, (columns: ColumnTypes) => FilterValueBinding>
+> = {
+  clickhouse: (columns) => (column, value) =>
+    clickhouseDateTime(getColumnType(columns, column), value),
+  // SQLite stores a boolean as 1 or 0, so the filter's `true` text never equals it.
+  sqlite: (columns) => (column, value) =>
     (value === 'true' || value === 'false') &&
-    SQLITE_BOOLEAN_TYPE.test(
-      columns.find(({ id }) => id === column)?.type ?? ''
-    )
+    SQLITE_BOOLEAN_TYPE.test(getColumnType(columns, column))
       ? Number(value === 'true')
-      : value
+      : value,
+}

@@ -1,13 +1,7 @@
-import type {
-  ActiveFilter,
-  ColumnTypes,
-  FilterValueBinding,
-} from '@tamery/shared/filters'
-import {
-  clickhouseFilterValues,
-  sqliteFilterValues,
-  toKyselyFilter,
-} from '@tamery/shared/filters'
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
+import { filterValueBindings } from '@tamery/connection/queries/value-binding'
+import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { Result } from 'better-result'
@@ -49,7 +43,7 @@ const countRows = async (
 
 export const resourceTableTotalQuery = memoize(
   ({
-    columns,
+    columns = [],
     table,
     schema,
     query: { filters, exact },
@@ -90,7 +84,7 @@ export const resourceTableTotalQuery = memoize(
             db,
             db.fn.countAll(),
             target,
-            clickhouseFilterValues(columns)
+            filterValueBindings.clickhouse?.(columns)
           )
         },
         mongodb: async (db) => {
@@ -165,7 +159,12 @@ export const resourceTableTotalQuery = memoize(
           return countRows(db, db.fn.countAll(), target)
         },
         sqlite: (db) =>
-          countRows(db, db.fn.countAll(), target, sqliteFilterValues(columns)),
+          countRows(
+            db,
+            db.fn.countAll(),
+            target,
+            filterValueBindings.sqlite?.(columns)
+          ),
       },
       type: type({
         count: 'number',

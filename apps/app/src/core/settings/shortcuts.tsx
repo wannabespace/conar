@@ -1,5 +1,6 @@
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import {
   SettingsGroup,
@@ -8,7 +9,6 @@ import {
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRef, useState } from 'react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import type { Shortcut } from '~/core/keyboard/shortcuts'
 import { isShortcutAvailable, SHORTCUTS } from '~/core/keyboard/shortcuts'
@@ -74,7 +74,7 @@ export const ShortcutsList = () => {
         end={!search && <ShortcutKbd shortcut="search" />}
       />
       {groups.length === 0 && (
-        <PaneEmpty
+        <IconEmpty
           icon={Search01Icon}
           title="No shortcuts found"
           description="Search by what it does, like copy, or by its key, like F."

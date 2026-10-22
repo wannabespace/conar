@@ -2,6 +2,7 @@ import { ORPCError, os } from '@orpc/server'
 import { db } from '@tamery/db'
 import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
+import { SESSION_NOT_FOUND_MESSAGE } from '@tamery/shared/constants'
 import { decrypt } from '@tamery/shared/crypto-node'
 import type { Permissions } from '@tamery/shared/permissions'
 import { getPermissions } from '@tamery/shared/permissions'
@@ -43,7 +44,7 @@ export const getWorkspaceSecret = memoize(
   { maxAge: 5 * 60 * 1000 }
 )
 
-const decryptConnectionString = async ({
+export const decryptConnectionString = async ({
   encryptedText,
   workspaceId,
 }: {
@@ -54,9 +55,7 @@ const decryptConnectionString = async ({
 const getSession = (headers: Headers) => auth.api.getSession({ headers })
 
 const sessionOrpc = orpc.errors({
-  UNAUTHORIZED: {
-    message: 'We could not find your session. Please sign in again.',
-  },
+  UNAUTHORIZED: { message: SESSION_NOT_FOUND_MESSAGE },
 })
 
 const logMiddleware = orpc.middleware(async ({ context, next }, input) => {

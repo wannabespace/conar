@@ -1,8 +1,8 @@
 import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { useObjectNames } from '~/core/catalog/names'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import { resolveTab } from '~/core/tabs/kinds'
@@ -19,13 +19,13 @@ const EmptyPane = () => {
   }, [router])
 
   return (
-    <PaneEmpty
+    <IconEmpty
       icon={LayoutTable02Icon}
       title="Nothing Open"
       description={`Choose a ${names.table} from the sidebar, or open a new query to get started.`}
     >
       <RecentTables />
-    </PaneEmpty>
+    </IconEmpty>
   )
 }
 

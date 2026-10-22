@@ -1,4 +1,4 @@
-import type { ColumnTypes } from '@tamery/shared/filters'
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
 import type { InsertQueryBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 

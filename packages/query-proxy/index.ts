@@ -1,13 +1,7 @@
 import type { BuilderWithMiddlewares, RouterClient } from '@orpc/server'
 import { type } from '@orpc/server'
 import type { QueryExecutor } from '@tamery/connection/queries'
-import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
-import * as mongodb from '@tamery/connection/queries/dialects/mongodb'
-import * as mssql from '@tamery/connection/queries/dialects/mssql'
-import * as mysql from '@tamery/connection/queries/dialects/mysql'
-import * as oracle from '@tamery/connection/queries/dialects/oracle'
-import * as pg from '@tamery/connection/queries/dialects/pg'
-import * as sqlite from '@tamery/connection/queries/dialects/sqlite'
+import { executors } from '@tamery/connection/queries/executors'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction, Prettify } from '@tamery/shared/utils'
 
@@ -114,13 +108,13 @@ export const createQueryRouter = <T extends AnyBuilder>(
   resolve: Resolvers<T>
 ) =>
   ({
-    clickhouse: createQueryDialect(clickhouse.query, orpc, resolve),
-    mongodb: createQueryDialect(mongodb.query, orpc, resolve),
-    mssql: createQueryDialect(mssql.query, orpc, resolve),
-    mysql: createQueryDialect(mysql.query, orpc, resolve),
-    oracle: createQueryDialect(oracle.query, orpc, resolve),
-    postgres: createQueryDialect(pg.query, orpc, resolve),
-    sqlite: createQueryDialect(sqlite.query, orpc, resolve),
+    clickhouse: createQueryDialect(executors.clickhouse, orpc, resolve),
+    mongodb: createQueryDialect(executors.mongodb, orpc, resolve),
+    mssql: createQueryDialect(executors.mssql, orpc, resolve),
+    mysql: createQueryDialect(executors.mysql, orpc, resolve),
+    oracle: createQueryDialect(executors.oracle, orpc, resolve),
+    postgres: createQueryDialect(executors.postgres, orpc, resolve),
+    sqlite: createQueryDialect(executors.sqlite, orpc, resolve),
   }) satisfies Record<Dialect, Record<keyof QueryExecutor, unknown>>
 
 export type ORPCRouter = RouterClient<ReturnType<typeof createQueryRouter>>

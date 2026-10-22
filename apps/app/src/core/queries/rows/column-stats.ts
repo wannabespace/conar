@@ -1,13 +1,7 @@
-import type {
-  ActiveFilter,
-  ColumnTypes,
-  FilterValueBinding,
-} from '@tamery/shared/filters'
-import {
-  clickhouseFilterValues,
-  sqliteFilterValues,
-  toKyselyFilter,
-} from '@tamery/shared/filters'
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
+import { filterValueBindings } from '@tamery/connection/queries/value-binding'
+import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { type } from 'arktype'
 import type { Kysely } from 'kysely'
 
@@ -64,7 +58,11 @@ export const columnStatsQuery = (params: ColumnStatsParams) =>
   createQuery({
     query: {
       clickhouse: (db) =>
-        selectStats(db, params, clickhouseFilterValues(params.columns)),
+        selectStats(
+          db,
+          params,
+          filterValueBindings.clickhouse?.(params.columns)
+        ),
       mongodb: async (db) => {
         const field = `$${params.column}`
         const [result] = await db.collection(params.table).aggregate<{
@@ -116,7 +114,7 @@ export const columnStatsQuery = (params: ColumnStatsParams) =>
       oracle: (db) => selectStats(db, params),
       postgres: (db) => selectStats(db, params),
       sqlite: (db) =>
-        selectStats(db, params, sqliteFilterValues(params.columns)),
+        selectStats(db, params, filterValueBindings.sqlite?.(params.columns)),
     },
     type: statsType,
   })

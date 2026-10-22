@@ -15,8 +15,17 @@ import {
 import { memoize } from 'memoza'
 
 import { prepareQuery } from './dialects/clickhouse/prepare-query'
+import { ClickhouseQueryCompiler } from './dialects/clickhouse/query-compiler'
 import { MssqlQueryCompiler } from './dialects/mssql/query-compiler'
 import { OracleQueryCompiler } from './dialects/oracle/query-compiler'
+
+const createBareAdapter = () => ({
+  acquireMigrationLock: () => Promise.resolve(),
+  releaseMigrationLock: () => Promise.resolve(),
+  supportsCreateIfNotExists: false,
+  supportsReturning: false,
+  supportsTransactionalDdl: false,
+})
 
 const createIntrospector = () => {
   throw new Error('Not implemented')
@@ -24,15 +33,9 @@ const createIntrospector = () => {
 
 export const kyselyDialects = {
   clickhouse: {
-    createAdapter: () => ({
-      acquireMigrationLock: () => Promise.resolve(),
-      releaseMigrationLock: () => Promise.resolve(),
-      supportsCreateIfNotExists: false,
-      supportsReturning: false,
-      supportsTransactionalDdl: false,
-    }),
+    createAdapter: createBareAdapter,
     createIntrospector,
-    createQueryCompiler: () => new MysqlQueryCompiler(),
+    createQueryCompiler: () => new ClickhouseQueryCompiler(),
   },
   mssql: {
     createAdapter: () => new MssqlAdapter(),
@@ -45,13 +48,7 @@ export const kyselyDialects = {
     createQueryCompiler: () => new MysqlQueryCompiler(),
   },
   oracle: {
-    createAdapter: () => ({
-      acquireMigrationLock: () => Promise.resolve(),
-      releaseMigrationLock: () => Promise.resolve(),
-      supportsCreateIfNotExists: false,
-      supportsReturning: false,
-      supportsTransactionalDdl: false,
-    }),
+    createAdapter: createBareAdapter,
     createIntrospector,
     createQueryCompiler: () => new OracleQueryCompiler(),
   },

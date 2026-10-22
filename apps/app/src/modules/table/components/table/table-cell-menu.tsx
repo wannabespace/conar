@@ -7,7 +7,11 @@ import {
   FilterAddIcon,
   Link01Icon,
 } from '@hugeicons/core-free-icons'
-import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
+import {
+  cellToFilterValues,
+  EQUAL_FILTER,
+  IS_NULL_FILTER,
+} from '@tamery/shared/filters'
 import { uppercaseFirst } from '@tamery/shared/utils'
 
 import type { AppMenuNode } from '~/components/app-menu'
@@ -149,18 +153,19 @@ export const tableCellMenu = ({
       {
         items: [
           {
-            disabled: storedValue === null || storedValue === undefined,
+            disabled: storedValue === undefined,
             icon: FilterAddIcon,
             label: 'Filter by Value',
             onSelect: () => {
+              const ref = storedValue === null ? IS_NULL_FILTER : EQUAL_FILTER
               store.set((state) => ({
                 ...state,
                 filters: [
                   ...state.filters,
                   {
                     column: column.id,
-                    ref: EQUAL_FILTER,
-                    values: cellToFilterValues(EQUAL_FILTER, storedValue),
+                    ref,
+                    values: cellToFilterValues(ref, storedValue),
                   },
                 ],
               }))

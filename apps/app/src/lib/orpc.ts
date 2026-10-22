@@ -13,6 +13,7 @@ import { memoize } from 'memoza'
 import { handleError } from '~/utils/error'
 
 import { bearerToken } from './auth'
+import { API_QUERY_KEY } from './query-client'
 import { apiUrl, proxyUrl } from './urls'
 
 export interface AppClientContext {
@@ -44,7 +45,8 @@ export const orpc = createTanstackQueryUtils(
       origin: apiUrl,
       url: '/rpc',
     })
-  ) satisfies apiOrpc.ORPCRouter
+  ) satisfies apiOrpc.ORPCRouter,
+  { prefix: API_QUERY_KEY }
 )
 
 export const orpcProxy = createORPCClient(

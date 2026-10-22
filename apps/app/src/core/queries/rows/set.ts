@@ -1,4 +1,4 @@
-import type { ColumnTypes } from '@tamery/shared/filters'
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
 import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'

@@ -3,35 +3,30 @@ import { type } from 'arktype'
 import { columnKind } from './column-kind'
 import { Dialect } from './enums/connection-type'
 import { ShareRefresh } from './enums/share-refresh'
-import { FILTER_OPERATORS } from './filters'
+import { activeFilter } from './filters'
 
 export const SHARE_PAGE_SIZE = 100
 export const SHARE_MAX_PAGES = 100
+export const SHARE_PASSWORD_MIN_LENGTH = 4
 
-export const sharePage = type('number.integer')
-  .atLeast(1)
-  .atMost(SHARE_MAX_PAGES)
+export const sharePage = type(`1 <= number.integer <= ${SHARE_MAX_PAGES}`)
 
 const orderDirection = type('"ASC" | "DESC"')
 
-// `operator` reaches SQL through `sql.raw`, so only a known one passes.
-const shareFilter = type({
-  column: 'string',
-  ref: {
-    'hasValue?': 'boolean',
-    'isArray?': 'boolean',
-    label: 'string',
-    operator: type.enumerated(...FILTER_OPERATORS),
-    symbol: 'string',
+export const shareToken = type('string.hex == 64')
+
+export const shareAccessErrors = {
+  LOCKED: { message: 'This table needs a password.' },
+  NOT_FOUND: { message: 'This table is not shared anymore.' },
+}
+
+export const shareUnlockErrors = {
+  NOT_FOUND: shareAccessErrors.NOT_FOUND,
+  TOO_MANY_ATTEMPTS: {
+    message: 'Too many wrong passwords. Try again in a few minutes.',
   },
-  values: 'unknown[]',
-  'via?': {
-    key: 'string',
-    schema: 'string',
-    table: 'string',
-    target: 'string',
-  },
-})
+  WRONG_PASSWORD: { message: 'That password is not right.' },
+}
 
 const shareView = type({
   /** The type of every column in the table, which ClickHouse and SQLite bind filter values by. */
@@ -40,7 +35,7 @@ const shareView = type({
   columns: type({ id: 'string', kind: columnKind, type: 'string | null' })
     .array()
     .atLeastLength(1),
-  filters: shareFilter.array(),
+  filters: activeFilter.array(),
   orderBy: { '[string]': orderDirection },
   schema: 'string',
   table: 'string',
@@ -66,6 +61,6 @@ export const shareSaveInput = shareView.merge({
   'id?': 'string.uuid',
   name: 'string > 0',
   /** Left out keeps the current password; `null` removes it. */
-  'password?': 'string > 0 | null',
+  'password?': `string >= ${SHARE_PASSWORD_MIN_LENGTH} | null`,
   refresh: type.valueOf(ShareRefresh),
 })

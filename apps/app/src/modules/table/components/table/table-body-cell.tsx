@@ -27,18 +27,15 @@ export const TableBodyCell = ({
 }) => {
   const sessionStore = useTableSessionStore()
   const key = entry.kind === 'saved' ? draftKey(entry.keys, column.id) : null
-  const draft = useSubscription(sessionStore, {
-    selector: (state) => (key ? state.drafts[key] : undefined),
-  })
-  const newRow = useSubscription(sessionStore, {
-    selector: (state) =>
-      entry.kind === 'new'
-        ? state.newRows.find((staged) => staged.id === entry.newRow.id)
-        : undefined,
-  })
-  const flash = useSubscription(sessionStore, {
-    selector: (state) =>
-      key && state.flash?.keys.has(key) ? state.flash.at : undefined,
+  const { draft, flash, newRow } = useSubscription(sessionStore, {
+    selector: (state) => ({
+      draft: key ? state.drafts[key] : undefined,
+      flash: key && state.flash?.keys.has(key) ? state.flash.at : undefined,
+      newRow:
+        entry.kind === 'new'
+          ? state.newRows.find((staged) => staged.id === entry.newRow.id)
+          : undefined,
+    }),
   })
   const value = draft ? draft.value : row[column.id]
 

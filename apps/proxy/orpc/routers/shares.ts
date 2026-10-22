@@ -1,9 +1,12 @@
 import { ORPCError } from '@orpc/server'
 import {
   SHARE_PAGE_SIZE,
+  shareAccessErrors,
   shareCheckInput,
   sharePage,
   shareSort,
+  shareToken,
+  shareUnlockErrors,
 } from '@tamery/shared/share'
 import { silently, toError } from '@tamery/shared/utils'
 import { type } from 'arktype'
@@ -11,13 +14,15 @@ import { Result } from 'better-result'
 
 import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'
-import { assertNoServerFiles, assertPublicHost } from '~/public-host'
-import { readShareRows, shareRows } from '~/share-rows'
+import { PRIVATE_HOST_MESSAGE } from '~/public-host'
+import { readCachedShareRows, readShareRows } from '~/share-rows'
 
-const assertReachable = async (connectionString: string) => {
-  assertNoServerFiles(connectionString)
-  await assertPublicHost(connectionString)
-}
+const proxyApi = createApiClient({})
+
+const shareAccess = type({
+  id: 'string.uuid',
+  token: shareToken.or('null'),
+})
 
 export const shares = {
   check: orpc
@@ -37,14 +42,6 @@ export const shares = {
         cookie: context.headers.get('cookie'),
       }).internal.proxy.resolveConnectionString({ resourceId })
 
-      const reachable = await Result.tryPromise(() =>
-        assertReachable(connectionString)
-      )
-
-      if (reachable.isErr()) {
-        throw errors.PRIVATE_HOST()
-      }
-
       const read = await Result.tryPromise(() =>
         readShareRows({
           connectionString,
@@ -57,35 +54,46 @@ export const shares = {
       )
 
       if (read.isErr()) {
-        throw errors.UNREACHABLE({
-          message: `Tamery’s servers could not read this table: ${toError(read.error.cause).message}`,
-        })
+        const { message } = toError(read.error.cause)
+        throw message === PRIVATE_HOST_MESSAGE
+          ? errors.PRIVATE_HOST()
+          : errors.UNREACHABLE({
+              message: `Tamery’s servers could not read this table: ${message}`,
+            })
+      }
+    }),
+  info: orpc
+    .input(shareAccess)
+    .errors(shareAccessErrors)
+    .handler(async ({ input }) => {
+      const share = await proxyApi.internal.shares.resolve({
+        ...input,
+        unlock: null,
+      })
+      return {
+        description: share.description,
+        filters: share.view.filters,
+        name: share.name,
       }
     }),
   rows: orpc
-    .input(
-      type({
-        id: 'string.uuid',
-        page: sharePage,
-        password: 'string | null',
-        sort: shareSort,
-        token: 'string | null',
-      })
-    )
+    .input(shareAccess.merge({ page: sharePage, sort: shareSort }))
     .errors({
+      ...shareAccessErrors,
       UNAVAILABLE: {
         message: 'This table cannot be loaded right now. Try again later.',
       },
     })
-    .handler(async ({ errors, input: { id, page, password, sort, token } }) => {
-      const api = createApiClient({})
-      const share = await api.internal.shares.resolve({ id, password, token })
+    .handler(async ({ errors, input: { page, sort, ...access } }) => {
+      const share = await proxyApi.internal.shares.resolve({
+        ...access,
+        unlock: null,
+      })
       const view = { ...share.view, schema: share.schema, table: share.table }
       const isShown = (column: string) =>
         view.columns.some((shown) => shown.id === column)
-      const read = await Result.tryPromise(async () => {
-        await assertReachable(share.connectionString)
-        return shareRows.read(share, {
+      const read = await Result.tryPromise(() =>
+        readCachedShareRows(share, {
           connectionString: share.connectionString,
           dialect: share.dialect,
           limit: SHARE_PAGE_SIZE + 1,
@@ -94,9 +102,13 @@ export const shares = {
           sort: sort && isShown(sort.column) ? sort : null,
           view,
         })
-      })
+      )
 
-      if (read.isErr() && read.error.cause instanceof ORPCError) {
+      if (
+        read.isErr() &&
+        read.error.cause instanceof ORPCError &&
+        read.error.cause.code === 'TOO_MANY_REQUESTS'
+      ) {
         throw read.error.cause
       }
 
@@ -108,7 +120,9 @@ export const shares = {
         sort === null &&
         failing !== (share.failingSince !== null)
       ) {
-        await silently(() => api.internal.shares.report({ failing, id }))
+        await silently(() =>
+          proxyApi.internal.shares.report({ failing, id: access.id })
+        )
       }
 
       if (read.isErr()) {
@@ -117,17 +131,28 @@ export const shares = {
 
       return {
         columns: view.columns,
-        description: share.description,
         fetchedAt: read.value.fetchedAt,
-        filters: view.filters,
         hasMore: read.value.rows.length > SHARE_PAGE_SIZE,
-        name: share.name,
         orderBy: Object.fromEntries(
           Object.entries(view.orderBy).filter(([column]) => isShown(column))
         ),
         refresh: share.refresh,
         rows: read.value.rows.slice(0, SHARE_PAGE_SIZE),
-        token: share.token,
       }
+    }),
+  unlock: orpc
+    .input(type({ id: 'string.uuid', password: 'string > 0' }))
+    .errors(shareUnlockErrors)
+    .handler(async ({ context, input: { id, password } }) => {
+      const { token } = await proxyApi.internal.shares.resolve({
+        id,
+        token: null,
+        unlock: {
+          // Only X-Real-IP is set by Railway's edge; any other client-IP header can be spoofed.
+          client: context.headers.get('x-real-ip') ?? 'unknown',
+          password,
+        },
+      })
+      return { token }
     }),
 }

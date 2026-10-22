@@ -1,3 +1,4 @@
+import '@tamery/shared/arktype-config'
 import { MutationCache, QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'

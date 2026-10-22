@@ -8,6 +8,7 @@ import { isSqlDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
+import { Dialog } from '@tamery/ui/components/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -210,12 +211,9 @@ export const TableToolbar = ({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <ShareDialog
-          open={shareOpen}
-          onOpenChange={setShareOpen}
-          schema={schema}
-          table={table}
-        />
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          <ShareDialog schema={schema} table={table} />
+        </Dialog>
         {isTable && (
           <>
             <ActionsSeed

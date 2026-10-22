@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { TopBar } from './top-bar'
+import { TopBar } from '~/components/top-bar'
 
 export const SharesFrame = ({
   children,

@@ -1,14 +1,8 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
+import { filterValueBindings } from '@tamery/connection/queries/value-binding'
 import { fromWire } from '@tamery/mongo/values'
-import type {
-  ActiveFilter,
-  ColumnTypes,
-  FilterValueBinding,
-} from '@tamery/shared/filters'
-import {
-  clickhouseFilterValues,
-  sqliteFilterValues,
-  toKyselyFilter,
-} from '@tamery/shared/filters'
+import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { type } from 'arktype'
 import type { Kysely } from 'kysely'
 
@@ -63,7 +57,7 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
           db,
           textContains.clickhouse,
           params,
-          clickhouseFilterValues(params.columns)
+          filterValueBindings.clickhouse?.(params.columns)
         ),
       mongodb: async (db) => {
         const field = `$${params.column}`
@@ -85,7 +79,7 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
           db,
           textContains.sqlite,
           params,
-          sqliteFilterValues(params.columns)
+          filterValueBindings.sqlite?.(params.columns)
         ),
     },
     type: valueCountsType,

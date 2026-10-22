@@ -2,6 +2,7 @@ import { AiChat01Icon } from '@hugeicons/core-free-icons'
 import type { AppUIMessage } from '@tamery/ai/message'
 import { textFromMessage } from '@tamery/ai/message'
 import { Bubble, BubbleContent } from '@tamery/ui/components/bubble'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { Message, MessageContent } from '@tamery/ui/components/message'
 import {
   MessageScroller,
@@ -13,12 +14,10 @@ import {
 } from '@tamery/ui/components/message-scroller'
 import { Spinner } from '@tamery/ui/components/spinner'
 
-import { PaneEmpty } from '~/components/pane-empty'
-
 import { MessagePart } from './chat-message-part'
 
 const ChatEmpty = () => (
-  <PaneEmpty
+  <IconEmpty
     icon={AiChat01Icon}
     title="Ask Anything"
     description="Questions about your schema, SQL help, or anything else."

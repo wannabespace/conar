@@ -1,9 +1,11 @@
 import { db } from '@tamery/db'
 import { shares, users } from '@tamery/db/schema'
+import { SHARE_ACCOUNT_MESSAGE } from '@tamery/shared/constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { shareSaveInput } from '@tamery/shared/share'
-import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
-import { and, eq } from 'drizzle-orm'
+import { FREE_SHARE_LIMIT_MESSAGE } from '@tamery/shared/usage'
+import { pick } from '@tamery/shared/utils'
+import { and, eq, gt, isNull, or, sql } from 'drizzle-orm'
 
 import { orpc, permissionsMiddleware } from '~/orpc'
 
@@ -11,32 +13,23 @@ export const save = orpc
   .use(permissionsMiddleware)
   .input(shareSaveInput)
   .errors({
-    FORBIDDEN: {
-      message: `The free plan keeps up to ${FREE_SHARE_LIMIT} shared links. Upgrade to Pro to share more.`,
-    },
+    ACCOUNT_REQUIRED: { message: SHARE_ACCOUNT_MESSAGE },
+    FORBIDDEN: { message: FREE_SHARE_LIMIT_MESSAGE },
     NOT_FOUND: { message: 'This share or its connection no longer exists.' },
     NOT_SYNCED: {
       message: 'Only a connection synced with Full can be shared.',
     },
   })
   .handler(async ({ context, errors, input }) => {
-    const {
-      connectionResourceId,
-      description,
-      expiresAt,
-      id,
-      name,
-      password,
-      refresh,
-      schema,
-      table,
-      ...view
-    } = input
+    if (context.user.isAnonymous) {
+      throw errors.ACCOUNT_REQUIRED()
+    }
+    const { id, password } = input
     const resource = await db.query.connectionsResources.findFirst({
       columns: { id: true },
       where: {
         connection: { userId: { eq: context.user.id } },
-        id: { eq: connectionResourceId },
+        id: { eq: input.connectionResourceId },
       },
       with: { connection: { columns: { syncType: true } } },
     })
@@ -49,12 +42,9 @@ export const save = orpc
     }
 
     const changes = {
-      description,
-      expiresAt,
+      ...pick(input, ['description', 'expiresAt', 'name', 'refresh']),
       failingSince: null,
-      name,
-      refresh,
-      view,
+      view: pick(input, ['columnTypes', 'columns', 'filters', 'orderBy']),
       ...(password !== undefined && {
         passwordHash: password && (await Bun.password.hash(password)),
       }),
@@ -64,7 +54,15 @@ export const save = orpc
       const [row] = await db
         .update(shares)
         .set(changes)
-        .where(and(eq(shares.id, id), eq(shares.userId, context.user.id)))
+        .where(
+          and(
+            eq(shares.id, id),
+            eq(shares.userId, context.user.id),
+            eq(shares.connectionResourceId, input.connectionResourceId),
+            eq(shares.schema, input.schema),
+            eq(shares.table, input.table)
+          )
+        )
         .returning({ id: shares.id })
       if (!row) {
         throw errors.NOT_FOUND()
@@ -80,7 +78,13 @@ export const save = orpc
         .where(eq(users.id, context.user.id))
         .for('update')
 
-      const count = await tx.$count(shares, eq(shares.userId, context.user.id))
+      const count = await tx.$count(
+        shares,
+        and(
+          eq(shares.userId, context.user.id),
+          or(isNull(shares.expiresAt), gt(shares.expiresAt, sql`now()`))
+        )
+      )
 
       if (!context.permissions.check('share.create', { count })) {
         throw errors.FORBIDDEN()
@@ -90,9 +94,7 @@ export const save = orpc
         .insert(shares)
         .values({
           ...changes,
-          connectionResourceId,
-          schema,
-          table,
+          ...pick(input, ['connectionResourceId', 'schema', 'table']),
           userId: context.user.id,
         })
         .returning({ id: shares.id })

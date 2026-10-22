@@ -6,7 +6,7 @@ const escapeSqlString = (v: string) => v.replace(escapeSqlStringRegex, '\\$&')
 
 // Quoted text is matched first so a `?` inside a literal or an identifier is not taken for a placeholder.
 const compiledSqlRegex =
-  /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`]|``)*`|\?/gu
+  /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.|``)*`|\?/gu
 const TABLE = '(?<table>(?:`(?:[^`]|``)+`\\.)*`(?:[^`]|``)+`)'
 const UPDATE = new RegExp(`^update ${TABLE} set`, 'iu')
 // ClickHouse before 22.8 has no `DELETE FROM`; the mutation form runs on every version.

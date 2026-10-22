@@ -31,7 +31,17 @@ for (const [network, prefix, family] of [
   NON_PUBLIC_NETWORKS.addSubnet(network, prefix, family)
 }
 
-const FORBIDDEN_HOST =
+/** The drivers read each of these as a path on the proxy's own disk. */
+const FILE_PARAMS = [
+  'sslca',
+  'sslcert',
+  'sslkey',
+  'sslrootcert',
+  'tlscafile',
+  'tlscertificatekeyfile',
+]
+
+export const PRIVATE_HOST_MESSAGE =
   'The cloud proxy reaches only public hosts. Run `tamery proxy` or open this connection in the desktop app.'
 
 const SRV_SCHEME = 'mongodb+srv'
@@ -42,7 +52,7 @@ const isPublic = ({ address, family }: LookupAddress) =>
 const publicAddresses = async (hostname: string) => {
   const addresses = await lookup(hostname, { all: true })
   if (addresses.length === 0 || !addresses.every(isPublic)) {
-    throw new ORPCError('FORBIDDEN', { message: FORBIDDEN_HOST })
+    throw new ORPCError('FORBIDDEN', { message: PRIVATE_HOST_MESSAGE })
   }
   return addresses
 }
@@ -69,34 +79,20 @@ export const publicLookup: LookupFunction = (hostname, options, respond) => {
  * The driver resolves the host again, so a DNS answer that changes between the two lookups still slips through.
  * An empty host is refused too: drivers fall back to localhost for it.
  */
-export const assertPublicHost = async (connectionString: string) => {
-  const { host, scheme } = readConnectionString(connectionString)
-  // An SRV name has no address of its own: the servers it lists are checked by `publicLookup` as the driver dials them.
-  if (host && scheme === SRV_SCHEME) {
-    return
-  }
-  if (!host) {
-    throw new ORPCError('FORBIDDEN', { message: FORBIDDEN_HOST })
-  }
-  await publicAddresses(host)
-}
-
-/** The drivers read each of these as a path on the proxy's own disk. */
-const FILE_PARAMS = [
-  'sslca',
-  'sslcert',
-  'sslkey',
-  'sslrootcert',
-  'tlscafile',
-  'tlscertificatekeyfile',
-]
-
-export const assertNoServerFiles = (connectionString: string) => {
-  const { searchParams } = readConnectionString(connectionString)
+export const assertReachable = async (connectionString: string) => {
+  const { host, scheme, searchParams } = readConnectionString(connectionString)
   if (FILE_PARAMS.some((param) => searchParams.has(param))) {
     throw new ORPCError('FORBIDDEN', {
       message:
         'The cloud proxy cannot read certificate files. Run `tamery proxy` or open this connection in the desktop app.',
     })
   }
+  // An SRV name has no address of its own: the servers it lists are checked by `publicLookup` as the driver dials them.
+  if (host && scheme === SRV_SCHEME) {
+    return
+  }
+  if (!host) {
+    throw new ORPCError('FORBIDDEN', { message: PRIVATE_HOST_MESSAGE })
+  }
+  await publicAddresses(host)
 }

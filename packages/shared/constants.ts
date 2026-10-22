@@ -45,6 +45,23 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = [
 
 export const GUEST_CONNECTIONS_MESSAGE = 'Guests can save one connection.'
 
+export const SHARE_ACCOUNT_MESSAGE = 'Sharing tables needs an account.'
+
+export const SESSION_NOT_FOUND_MESSAGE =
+  'We could not find your session. Please sign in again.'
+
+export const SESSION_EXPIRED_MESSAGE =
+  'Your session has expired. Please, sign in again.'
+
+export const UNKNOWN_ERROR_MESSAGE =
+  'Our server is practicing its meditation. Please, try again later.'
+
+export const SUPPORT_SENT_MESSAGE =
+  'Support message sent successfully! We will get back to you as soon as possible.'
+
+export const SUPPORT_FAILED_MESSAGE =
+  'Failed to send message. Please try again later.'
+
 export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol(
   'CONNECTION_RESOURCE_ROOT'
 )

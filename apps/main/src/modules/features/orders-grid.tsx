@@ -1,11 +1,11 @@
 import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 
+import { OrderCell } from '~/components/product/order-cell'
 import {
   ORDER_COLUMNS,
   orderCellClass,
 } from '~/components/product/order-columns'
-import { OrderStatusBadge } from '~/components/product/order-status-badge'
 import type { Order } from '~/components/product/orders'
 import { OrdersHeader } from '~/components/product/orders-header'
 
@@ -42,28 +42,18 @@ export const OrdersGrid = ({
           variants={rise(at + index * 0.05)}
           className="flex h-8 border-b"
         >
-          {COLUMNS.map(({ id, numeric, width }) => (
+          {COLUMNS.map(({ id, width }) => (
             <div
               key={id}
-              className={cn(
-                orderCellClass,
-                'relative isolate',
-                width,
-                numeric && 'tabular-nums'
-              )}
+              className={cn(orderCellClass, 'relative isolate', width)}
             >
               {flashed?.id === order.id && id === 'total' && (
                 <motion.span
-                  aria-hidden
                   variants={flash(flashed.at)}
                   className="bg-primary/20 absolute inset-0 -z-10"
                 />
               )}
-              {id === 'status' ? (
-                <OrderStatusBadge status={order.status} />
-              ) : (
-                order[id]
-              )}
+              <OrderCell id={id} order={order} />
             </div>
           ))}
         </motion.div>

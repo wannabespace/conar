@@ -2,6 +2,8 @@ import { Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ComponentProps } from 'react'
 
+import { chipSegmentVariants } from './filter-chip.utils'
+
 export const Chip = (props: ComponentProps<'div'>) => (
   <div
     {...props}
@@ -26,25 +28,23 @@ export const FilterChip = ({
   value: string | null
 }) => (
   <Chip>
-    <span className="flex items-center px-1.5 text-xs whitespace-nowrap">
-      {column}
-    </span>
+    <span className={chipSegmentVariants({ part: 'column' })}>{column}</span>
     <ChipDivider />
-    <span className="text-muted-foreground flex items-center px-1.5 text-xs whitespace-nowrap">
+    <span className={chipSegmentVariants({ part: 'operator' })}>
       {operator}
     </span>
     {value !== null && (
       <>
         <ChipDivider />
-        <span className="flex items-center px-1.5 text-xs whitespace-nowrap">
-          {value}
+        <span className={chipSegmentVariants({ part: 'value' })}>
+          <span className="truncate">{value}</span>
         </span>
       </>
     )}
     {removable && (
       <>
         <ChipDivider />
-        <span className="text-muted-foreground flex items-center px-1">
+        <span className={chipSegmentVariants({ part: 'icon' })}>
           <HugeiconsIcon
             icon={Cancel01Icon}
             strokeWidth={2}

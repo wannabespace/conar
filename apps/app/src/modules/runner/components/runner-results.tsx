@@ -9,6 +9,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
@@ -35,7 +36,6 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useDeferredValue, useState } from 'react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { getCapabilities } from '~/core/catalog/capabilities'
 import { useObjectNames } from '~/core/catalog/names'
 import type { ExportDataProps } from '~/core/export/export-data'
@@ -83,7 +83,7 @@ const ResultError = ({ result }: { result: FailedRunnerResult }) => {
   const isAnonymous = useIsAnonymous()
 
   return (
-    <PaneEmpty
+    <IconEmpty
       icon={Alert02Icon}
       title={ERROR_TITLES[result.error.kind]}
       description={result.error.message}
@@ -106,7 +106,7 @@ const ResultError = ({ result }: { result: FailedRunnerResult }) => {
           <TooltipContent>Rewrite the failed statement</TooltipContent>
         </Tooltip>
       )}
-    </PaneEmpty>
+    </IconEmpty>
   )
 }
 
@@ -142,7 +142,7 @@ const ResultBody = ({
   }
   if (result.skipped) {
     return (
-      <PaneEmpty
+      <IconEmpty
         icon={StopIcon}
         title="Not run"
         description="An earlier statement failed, so this one did not run"
@@ -151,7 +151,7 @@ const ResultBody = ({
   }
   if (result.stopped) {
     return (
-      <PaneEmpty
+      <IconEmpty
         icon={StopIcon}
         title="Stopped"
         description="The run was stopped before this statement finished"
@@ -164,7 +164,7 @@ const ResultBody = ({
   if (!result.set || result.set.columns.length === 0) {
     const affected = result.set?.affectedRows ?? null
     return (
-      <PaneEmpty
+      <IconEmpty
         icon={TableIcon}
         title={
           affected === null
@@ -177,7 +177,7 @@ const ResultBody = ({
   }
   if (rows.length === 0 && result.set.rows.length > 0) {
     return (
-      <PaneEmpty
+      <IconEmpty
         icon={TableIcon}
         title="Nothing matches"
         description={`No ${names.row} contains the search text`}
@@ -232,7 +232,7 @@ export const RunnerResults = () => {
   if (!result) {
     return (
       <div className="flex h-full flex-col">
-        <PaneEmpty
+        <IconEmpty
           icon={PlayIcon}
           title="No results yet"
           description={`Run a statement to see its ${names.row}s here`}

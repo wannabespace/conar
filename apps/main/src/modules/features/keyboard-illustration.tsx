@@ -59,7 +59,6 @@ export const KeyboardIllustration = () => (
           <div className="relative isolate flex h-8 items-center gap-2 rounded-md px-2">
             {table === PICKED_TABLE && (
               <motion.span
-                aria-hidden
                 variants={appear(PICKED_AT)}
                 className="bg-accent absolute inset-0 -z-10 rounded-md"
               />

@@ -1,14 +1,18 @@
+import { timingSafeEqual } from 'node:crypto'
+
 import { env } from '~/env'
 import { orpc } from '~/orpc'
+
+const secret = Buffer.from(env.PROXY_SHARED_SECRET)
 
 export const proxySecretMiddleware = orpc
   .errors({
     FORBIDDEN: { message: 'Invalid proxy token' },
   })
   .middleware(({ context, errors, next }) => {
-    const token = context.headers.get('x-proxy-token')
+    const token = Buffer.from(context.headers.get('x-proxy-token') ?? '')
 
-    if (token !== env.PROXY_SHARED_SECRET) {
+    if (token.length !== secret.length || !timingSafeEqual(token, secret)) {
       throw errors.FORBIDDEN()
     }
 

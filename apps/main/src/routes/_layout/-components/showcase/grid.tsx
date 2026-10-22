@@ -8,11 +8,11 @@ import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
 
+import { OrderCell } from '~/components/product/order-cell'
 import {
   ORDER_COLUMNS,
   orderCellClass,
 } from '~/components/product/order-columns'
-import { OrderStatusBadge } from '~/components/product/order-status-badge'
 import { ORDERS } from '~/components/product/orders'
 import { OrdersHeader } from '~/components/product/orders-header'
 
@@ -38,21 +38,16 @@ export const Grid = () => (
         <div className="flex w-10 shrink-0 items-center justify-center border-r">
           <Checkbox checked={SELECTED_ROWS.has(order.id)} />
         </div>
-        {ORDER_COLUMNS.map(({ id, numeric, width }) => (
+        {ORDER_COLUMNS.map(({ id, width }) => (
           <div
             key={id}
             className={cn(
               orderCellClass,
               width,
-              numeric && 'tabular-nums',
               id === 'status' && order.id === EDITED_ROW && 'bg-warning/15'
             )}
           >
-            {id === 'status' ? (
-              <OrderStatusBadge status={order.status} />
-            ) : (
-              order[id]
-            )}
+            <OrderCell id={id} order={order} />
             {id === 'user_id' && (
               <Button variant="ghost-faint" size="icon-2xs" className="ml-auto">
                 <HugeiconsIcon

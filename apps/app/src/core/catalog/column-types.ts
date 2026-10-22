@@ -1,5 +1,5 @@
+import { SQLITE_BOOLEAN_TYPE } from '@tamery/connection/queries/value-binding'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import { SQLITE_BOOLEAN_TYPE } from '@tamery/shared/filters'
 
 import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 

@@ -22,7 +22,8 @@
     "nitro": "catalog:",
     "posthog-js": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "sonner": "catalog:"
   },
   "devDependencies": {
     "@orpc/server": "catalog:",
