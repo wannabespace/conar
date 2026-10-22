@@ -88,7 +88,7 @@ const formatEnumType = (
   if (dialect === Dialect.MSSQL) {
     return enumName
   }
-  return `"${enumName}"${c.isArray ? '[]' : ''}`
+  return `${quoteIdentifier(enumName, dialect)}${c.isArray ? '[]' : ''}`
 }
 
 const formatScalarType = (c: Column, dialect: Dialect) => {
@@ -261,7 +261,7 @@ export const generateSchemaSQL = ({
   const enumStatements = Array.from(
     usedEnums,
     ([name, values]) =>
-      `CREATE TYPE "${name}" AS ENUM (${values.map((v) => formatValue(v, dialect)).join(', ')});`
+      `CREATE TYPE ${quoteIdentifier(name, dialect)} AS ENUM (${values.map((v) => formatValue(v, dialect)).join(', ')});`
   )
   const indexStatements = explicitIndexes({
     columns,
