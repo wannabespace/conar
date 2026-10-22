@@ -58,32 +58,42 @@ const sessionOrpc = orpc.errors({
   UNAUTHORIZED: { message: SESSION_NOT_FOUND_MESSAGE },
 })
 
-const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
-  // oxlint-disable-next-line node/callback-return -- middleware post-processes next()
-  const result = await next()
+// Every other procedure carries what a user typed or what is encrypted at rest: connection strings, SQL, chat text, share passwords.
+const LOGGED_PAYLOADS = new Set([
+  'banner',
+  'connectionsResources',
+  'releases',
+  'repo',
+  'usage',
+  'userCount',
+  'workspaces',
+])
 
-  if (
-    !context.request.url.endsWith('/sync') &&
-    !context.request.url.endsWith('/resolveConnectionString')
-  ) {
-    context.addLogData({
-      input,
-      output:
-        (Array.isArray(result.output) && result.output.length > 0) ||
-        (typeof result.output === 'object' &&
-          result.output !== null &&
-          Object.keys(result.output).length > 0) ||
-        (!Array.isArray(result.output) &&
-          typeof result.output !== 'object' &&
-          result.output !== null &&
-          !!result.output)
-          ? result.output
-          : undefined,
-    })
+const logMiddleware = orpc.middleware(
+  async ({ context, next, path }, input) => {
+    // oxlint-disable-next-line node/callback-return -- middleware post-processes next()
+    const result = await next()
+
+    if (LOGGED_PAYLOADS.has(path[0] ?? '') && path.at(-1) !== 'sync') {
+      context.addLogData({
+        input,
+        output:
+          (Array.isArray(result.output) && result.output.length > 0) ||
+          (typeof result.output === 'object' &&
+            result.output !== null &&
+            Object.keys(result.output).length > 0) ||
+          (!Array.isArray(result.output) &&
+            typeof result.output !== 'object' &&
+            result.output !== null &&
+            !!result.output)
+            ? result.output
+            : undefined,
+      })
+    }
+
+    return result
   }
-
-  return result
-})
+)
 
 export const authMiddleware = logMiddleware.use(
   sessionOrpc.middleware(async ({ context, errors, next }) => {
