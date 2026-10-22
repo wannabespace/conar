@@ -1,5 +1,6 @@
-import { ORPCError } from '@orpc/client'
+import { safe } from '@orpc/client'
 import type { ColumnKind } from '@tamery/shared/column-kind'
+import type { shareAccessErrors } from '@tamery/shared/share'
 import { sharePage, shareSort, shareToken } from '@tamery/shared/share'
 import { valueToText } from '@tamery/shared/value-text'
 import { notFound } from '@tanstack/react-router'
@@ -13,23 +14,15 @@ import { unlockToken } from './share.server'
 export const SHARE_LOCKED = 'This table needs a password'
 
 const UNAVAILABLE = 'This table cannot be loaded right now.'
-// The API words these for viewers; any other failure's message is a server's own.
-const VIEWER_CODES = new Set([
-  'NOT_FOUND',
-  'TOO_MANY_ATTEMPTS',
-  'WRONG_PASSWORD',
-])
 
 // Thrown, never returned: a failure cached as data would outlive invalidation under `staleTime: 'static'`. A fresh error, so no proxy message reaches the viewer.
-const failure = (cause: unknown) => {
-  if (cause instanceof ORPCError && cause.code === 'NOT_FOUND') {
+const failure = (
+  error: { code: keyof typeof shareAccessErrors | 'UNAVAILABLE' } | null
+) => {
+  if (error?.code === 'NOT_FOUND') {
     return notFound()
   }
-  return new Error(
-    cause instanceof ORPCError && cause.code === 'LOCKED'
-      ? SHARE_LOCKED
-      : UNAVAILABLE
-  )
+  return new Error(error?.code === 'LOCKED' ? SHARE_LOCKED : UNAVAILABLE)
 }
 
 // Engines hand booleans back as 1 and 0 too (SQLite), which read as text would never check the box.
@@ -43,18 +36,18 @@ const cellText = (value: unknown, kind: ColumnKind | null) => {
 export const getShare = createServerFn({ method: 'GET' })
   .validator(type({ id: 'string', page: sharePage, sort: shareSort }))
   .handler(async ({ data }) => {
-    const result = await Result.tryPromise(() =>
+    const { data: share, definedError } = await safe(
       proxy.shares.rows({ ...data, token: unlockToken.get(data.id) })
     )
 
-    if (result.isErr()) {
-      throw failure(result.error.cause)
+    if (!share) {
+      throw failure(definedError)
     }
 
-    const { columns, rows } = result.value
+    const { columns, rows } = share
 
     return {
-      ...result.value,
+      ...share,
       rows: rows.map((row) =>
         row.map((value, index) => cellText(value, columns[index]?.kind ?? null))
       ),
@@ -64,17 +57,17 @@ export const getShare = createServerFn({ method: 'GET' })
 export const getShareInfo = createServerFn({ method: 'GET' })
   .validator(type({ id: 'string' }))
   .handler(async ({ data }) => {
-    const result = await Result.tryPromise(() =>
+    const { data: info, definedError } = await safe(
       proxy.shares.info({ id: data.id, token: unlockToken.get(data.id) })
     )
 
-    if (result.isErr()) {
-      throw failure(result.error.cause)
+    if (!info) {
+      throw failure(definedError)
     }
 
     return {
-      ...result.value,
-      filters: result.value.filters.map(({ column, ref, values, via }) => ({
+      ...info,
+      filters: info.filters.map(({ column, ref, values, via }) => ({
         column: via ? `${via.table}.${via.target}` : column,
         operator: ref.label,
         value:
@@ -93,19 +86,14 @@ const rememberUnlock = createServerFn({ method: 'POST' })
 
 // The password goes from the browser straight to the proxy, which locks out wrong guesses by the viewer's own address.
 export const unlockShare = async (data: { id: string; password: string }) => {
-  const result = await Result.tryPromise(() => proxy.shares.unlock(data))
+  const { data: unlocked, definedError } = await safe(proxy.shares.unlock(data))
 
-  if (result.isErr()) {
-    const { cause } = result.error
-    return Result.err(
-      cause instanceof ORPCError && VIEWER_CODES.has(cause.code)
-        ? cause.message
-        : UNAVAILABLE
-    )
+  if (!unlocked) {
+    return Result.err(definedError?.message ?? UNAVAILABLE)
   }
 
-  if (result.value.token) {
-    await rememberUnlock({ data: { id: data.id, token: result.value.token } })
+  if (unlocked.token) {
+    await rememberUnlock({ data: { id: data.id, token: unlocked.token } })
   }
   return Result.ok()
 }

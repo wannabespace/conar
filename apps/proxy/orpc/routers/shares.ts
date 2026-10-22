@@ -1,10 +1,12 @@
 import { ORPCError } from '@orpc/server'
 import {
   SHARE_PAGE_SIZE,
+  shareAccessErrors,
   shareCheckInput,
   sharePage,
   shareSort,
   shareToken,
+  shareUnlockErrors,
 } from '@tamery/shared/share'
 import { silently, toError } from '@tamery/shared/utils'
 import { type } from 'arktype'
@@ -60,20 +62,24 @@ export const shares = {
             })
       }
     }),
-  info: orpc.input(shareAccess).handler(async ({ input }) => {
-    const share = await proxyApi.internal.shares.resolve({
-      ...input,
-      unlock: null,
-    })
-    return {
-      description: share.description,
-      filters: share.view.filters,
-      name: share.name,
-    }
-  }),
+  info: orpc
+    .input(shareAccess)
+    .errors(shareAccessErrors)
+    .handler(async ({ input }) => {
+      const share = await proxyApi.internal.shares.resolve({
+        ...input,
+        unlock: null,
+      })
+      return {
+        description: share.description,
+        filters: share.view.filters,
+        name: share.name,
+      }
+    }),
   rows: orpc
     .input(shareAccess.merge({ page: sharePage, sort: shareSort }))
     .errors({
+      ...shareAccessErrors,
       UNAVAILABLE: {
         message: 'This table cannot be loaded right now. Try again later.',
       },
@@ -136,6 +142,7 @@ export const shares = {
     }),
   unlock: orpc
     .input(type({ id: 'string.uuid', password: 'string > 0' }))
+    .errors(shareUnlockErrors)
     .handler(async ({ context, input: { id, password } }) => {
       const { token } = await proxyApi.internal.shares.resolve({
         id,

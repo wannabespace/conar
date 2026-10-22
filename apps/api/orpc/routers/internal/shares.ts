@@ -7,7 +7,11 @@ import { db } from '@tamery/db'
 import { shares as sharesTable } from '@tamery/db/schema'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { shareToken } from '@tamery/shared/share'
+import {
+  shareAccessErrors,
+  shareToken,
+  shareUnlockErrors,
+} from '@tamery/shared/share'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 
@@ -51,14 +55,7 @@ export const shares = {
         unlock: type({ client: 'string', password: 'string > 0' }).or('null'),
       })
     )
-    .errors({
-      LOCKED: { message: 'This table needs a password.' },
-      NOT_FOUND: { message: 'This table is not shared anymore.' },
-      TOO_MANY_ATTEMPTS: {
-        message: 'Too many wrong passwords. Try again in a few minutes.',
-      },
-      WRONG_PASSWORD: { message: 'That password is not right.' },
-    })
+    .errors({ ...shareAccessErrors, ...shareUnlockErrors })
     .handler(async ({ errors, input }) => {
       const share = await db.query.shares.findFirst({
         columns: { connectionResourceId: false, userId: false },

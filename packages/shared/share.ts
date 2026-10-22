@@ -15,6 +15,19 @@ const orderDirection = type('"ASC" | "DESC"')
 
 export const shareToken = type('string.hex == 64')
 
+export const shareAccessErrors = {
+  LOCKED: { message: 'This table needs a password.' },
+  NOT_FOUND: { message: 'This table is not shared anymore.' },
+}
+
+export const shareUnlockErrors = {
+  NOT_FOUND: shareAccessErrors.NOT_FOUND,
+  TOO_MANY_ATTEMPTS: {
+    message: 'Too many wrong passwords. Try again in a few minutes.',
+  },
+  WRONG_PASSWORD: { message: 'That password is not right.' },
+}
+
 const shareView = type({
   /** The type of every column in the table, which ClickHouse and SQLite bind filter values by. */
   columnTypes: type({ id: 'string', type: 'string' }).array(),
