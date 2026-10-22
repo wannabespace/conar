@@ -1,5 +1,6 @@
 import { Delete02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import {
   AlertDialog,
@@ -21,7 +22,7 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -31,7 +32,10 @@ import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
-import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
+import {
+  keyedRowsCountQuery,
+  resourceTableTotalQueryKey,
+} from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { PrimaryKeys } from '~/core/table/session'
 import { primaryKeysKey, useTableSessionStore } from '~/core/table/session'
@@ -63,7 +67,7 @@ export const DeleteRowsDialog = ({
   table: string
   schema: string
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState<PrimaryKeys[]>([])
   const store = useTablePageStore()
@@ -77,8 +81,20 @@ export const DeleteRowsDialog = ({
     },
   }))
 
-  const only = rows.length === 1 ? rows[0] : undefined
-  const noun = only ? 'row' : `${rows.length} rows`
+  const { data: matched, isPending: isCounting } = useQuery({
+    enabled: open && dialect === Dialect.ClickHouse,
+    queryFn: async () =>
+      keyedRowsCountQuery({ columns, primaryKeys: rows, schema, table }).run(
+        await connectionResourceToQueryParams(connectionResource)
+      ),
+    queryKey: ['keyed-rows-count', connectionResource.id, schema, table, rows],
+  })
+  const counting = dialect === Dialect.ClickHouse && isCounting
+  const sharedKeyRows =
+    matched !== undefined && matched > rows.length ? matched : undefined
+
+  const only = rows.length === 1 && !sharedKeyRows ? rows[0] : undefined
+  const noun = only ? 'row' : plural(sharedKeyRows ?? rows.length, 'row')
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     meta: { event: 'rows_deleted' },
@@ -142,6 +158,8 @@ export const DeleteRowsDialog = ({
               {table}
             </span>
             . This cannot be undone.
+            {sharedKeyRows !== undefined &&
+              ` ClickHouse keys are not unique: the selected ${rows.length === 1 ? 'row shares its key' : 'rows share their keys'} with other rows, so all ${sharedKeyRows} are removed.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {!only && (
@@ -163,8 +181,14 @@ export const DeleteRowsDialog = ({
         )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogCancel variant="destructive" onClick={() => deleteRows()}>
-            <LoadingContent loading={isDeleting}>Delete {noun}</LoadingContent>
+          <AlertDialogCancel
+            variant="destructive"
+            disabled={counting}
+            onClick={() => deleteRows()}
+          >
+            <LoadingContent loading={isDeleting || counting}>
+              Delete {noun}
+            </LoadingContent>
           </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
