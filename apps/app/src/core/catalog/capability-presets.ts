@@ -112,6 +112,8 @@ export interface ConnectionCapabilities {
   setDefault: boolean
   systemSchemas: readonly string[]
   triggers: TriggerCapabilities
+  // ClickHouse's primary key is its sorting key and repeats, so a write by key can reach rows the user never picked.
+  uniqueKeys: boolean
 }
 
 export const ROW_EVENTS = TRIGGER_EVENTS.filter((event) => event !== 'TRUNCATE')

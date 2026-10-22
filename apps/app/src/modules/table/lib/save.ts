@@ -1,4 +1,3 @@
-import { Dialect } from '@tamery/shared/enums/connection-type'
 import { toError } from '@tamery/shared/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -6,6 +5,7 @@ import { Result } from 'better-result'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { insertQuery } from '~/core/queries/rows/insert'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { setQuery } from '~/core/queries/rows/set'
@@ -163,7 +163,7 @@ export const useSaveStaged = ({
       getUpdates(submitted.drafts),
       ({ primaryKeys }) => primaryKeys
     )
-    if (dialect !== Dialect.ClickHouse || keys.length === 0) {
+    if (getCapabilities(dialect).uniqueKeys || keys.length === 0) {
       mutation.mutate(submitted)
       return
     }
@@ -196,7 +196,7 @@ export const useSaveStaged = ({
         void submit({ drafts: Object.values(drafts), newRows })
       }
     },
-    /** ClickHouse keys are not unique: the edited rows' keys also match other rows, which the save would change too. */
+    /** The edited rows' keys also match other rows, which the save would change too. */
     sharedKeys: sharedKeys && {
       cancel: () => setSharedKeys(null),
       confirm: () => {

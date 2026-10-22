@@ -1,6 +1,5 @@
 import { Delete02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Dialect } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import {
   AlertDialog,
@@ -28,6 +27,7 @@ import { createRef, useImperativeHandle, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
@@ -81,15 +81,16 @@ export const DeleteRowsDialog = ({
     },
   }))
 
+  const { uniqueKeys } = getCapabilities(dialect)
   const { data: matched, isPending: isCounting } = useQuery({
-    enabled: open && dialect === Dialect.ClickHouse,
+    enabled: open && !uniqueKeys,
     queryFn: async () =>
       keyedRowsCountQuery({ columns, primaryKeys: rows, schema, table }).run(
         await connectionResourceToQueryParams(connectionResource)
       ),
     queryKey: ['keyed-rows-count', connectionResource.id, schema, table, rows],
   })
-  const counting = dialect === Dialect.ClickHouse && isCounting
+  const counting = !uniqueKeys && isCounting
   const sharedKeyRows =
     matched !== undefined && matched > rows.length ? matched : undefined
 
@@ -159,7 +160,7 @@ export const DeleteRowsDialog = ({
             </span>
             . This cannot be undone.
             {sharedKeyRows !== undefined &&
-              ` ClickHouse keys are not unique: the selected ${rows.length === 1 ? 'row shares its key' : 'rows share their keys'} with other rows, so all ${sharedKeyRows} are removed.`}
+              ` Keys are not unique here: the selected ${rows.length === 1 ? 'row shares its key' : 'rows share their keys'} with other rows, so all ${sharedKeyRows} are removed.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {!only && (
