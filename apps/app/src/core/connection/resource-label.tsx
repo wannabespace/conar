@@ -7,7 +7,7 @@ import { connectionCurrentDatabaseQueryOptions } from '~/core/queries/connection
 import { useFetchingConfig } from './fetching'
 import type { Connection } from './sync'
 
-/** A resource whose string names no database shows the one the server opens; `prefix` renders only beside a name, so nothing is left behind where the server has none (MySQL). */
+/** A resource whose string names no database shows the one the server opens, or All databases where the server opens none (MySQL); `prefix` renders only beside a label, so nothing is left behind while the server can't be asked. */
 export const ResourceLabel = ({
   connection,
   name,
@@ -22,12 +22,13 @@ export const ResourceLabel = ({
     ...connectionCurrentDatabaseQueryOptions(connection),
     enabled: canSend && !name,
   })
+  const serverDatabase = data === null ? 'All databases' : data
   const label =
     name ||
     (canSend && isPending ? (
       <Skeleton className="inline-block h-3 w-16 align-middle" />
     ) : (
-      data
+      serverDatabase
     ))
 
   return label ? (
