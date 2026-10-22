@@ -16,6 +16,7 @@ import { redis } from '~/lib/redis'
 import { getSubscription } from '~/lib/subscription'
 
 import type { Context } from './context'
+import type { router } from './routers'
 
 export { getSubscription } from '~/lib/subscription'
 
@@ -59,7 +60,7 @@ const sessionOrpc = orpc.errors({
 })
 
 // Every other procedure carries what a user typed or what is encrypted at rest: connection strings, SQL, chat text, share passwords.
-const LOGGED_PAYLOADS = new Set([
+const LOGGED_PAYLOADS: ReadonlySet<string> = new Set([
   'banner',
   'connectionsResources',
   'releases',
@@ -67,7 +68,7 @@ const LOGGED_PAYLOADS = new Set([
   'usage',
   'userCount',
   'workspaces',
-])
+] satisfies (keyof typeof router)[])
 
 const logMiddleware = orpc.middleware(
   async ({ context, next, path }, input) => {
