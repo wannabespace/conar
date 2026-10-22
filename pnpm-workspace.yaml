@@ -179,4 +179,6 @@ allowBuilds:
   ssh2: false
 # @types/ssh2 pins Node 18 types, which clash with Electron's in any workspace compiling the SSH tunnel.
 overrides:
+  compression: ^1.8.2
+  dompurify: ^3.4.17
   '@types/ssh2>@types/node': ^24.13.3
