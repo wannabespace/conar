@@ -1,6 +1,7 @@
 import '@tamery/shared/arktype-config'
 import path from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import type { UpdatesStatus } from '@tamery/shared/updates'
@@ -24,7 +25,24 @@ if (
   app.exit(1)
 }
 
-initElectronEvents()
+const RENDERER_INDEX = path.join(import.meta.dirname, './renderer/index.html')
+
+// The preload runs in whatever page a window navigates to, so anything that is not the app itself must never reach it or IPC.
+const isAppUrl = (url: string) => {
+  const parsed = URL.parse(url)
+  if (!parsed) {
+    return false
+  }
+  if (!app.isPackaged) {
+    return parsed.origin === URL.parse(`${process.env.WEB_URL}`)?.origin
+  }
+  return (
+    parsed.protocol === 'file:' &&
+    path.relative(fileURLToPath(parsed), RENDERER_INDEX) === ''
+  )
+}
+
+initElectronEvents(isAppUrl)
 
 export const store = new Store<{
   bounds?: Rectangle
@@ -109,6 +127,12 @@ export const createWindow = (route?: string) => {
     }
   }
 
+  win.webContents.on('will-navigate', (event) => {
+    if (!isAppUrl(event.url)) {
+      event.preventDefault()
+    }
+  })
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (EXTERNAL_PROTOCOLS.has(new URL(url).protocol)) {
       void openExternal(win, url)
@@ -187,10 +211,7 @@ export const createWindow = (route?: string) => {
   })
 
   if (app.isPackaged) {
-    win.loadFile(
-      path.join(import.meta.dirname, './renderer/index.html'),
-      route ? { hash: route } : undefined
-    )
+    win.loadFile(RENDERER_INDEX, route ? { hash: route } : undefined)
   } else {
     win.webContents.openDevTools()
     win.loadURL(`${process.env.WEB_URL}${route ? `#${route}` : ''}`)
