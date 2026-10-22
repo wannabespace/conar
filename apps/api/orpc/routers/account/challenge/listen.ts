@@ -2,16 +2,12 @@ import { type } from 'arktype'
 
 import { orpc } from '~/orpc'
 
-import {
-  codeChallengePublisher,
-  codeChallengeRedis,
-  codeChallengeSchema,
-} from './code-challenge'
+import { codeChallengePublisher, codeChallengeRedis } from './code-challenge'
 
 export const listen = orpc
   .input(
     type({
-      codeChallenge: codeChallengeSchema,
+      codeChallenge: 'string',
     })
   )
   .handler(async function* listen({ input, signal }) {

@@ -1,5 +1,4 @@
 import { RedisPublisher } from '@orpc/publisher/redis'
-import { type } from 'arktype'
 
 import { redis, redisSubscriber } from '~/lib/redis'
 
@@ -9,8 +8,6 @@ export const codeChallengePublisher = new RedisPublisher<
   prefix: 'orpc:publisher:code-challenge:',
   subscriber: redisSubscriber,
 })
-
-export const codeChallengeSchema = type('/^[\\w-]{43,86}$/')
 
 const key = (codeChallenge: string) => `code-challenge:${codeChallenge}`
 

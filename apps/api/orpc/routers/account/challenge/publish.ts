@@ -2,17 +2,13 @@ import { type } from 'arktype'
 
 import { accountMiddleware, orpc } from '~/orpc'
 
-import {
-  codeChallengePublisher,
-  codeChallengeRedis,
-  codeChallengeSchema,
-} from './code-challenge'
+import { codeChallengePublisher, codeChallengeRedis } from './code-challenge'
 
 export const publish = orpc
   .use(accountMiddleware)
   .input(
     type({
-      codeChallenge: codeChallengeSchema,
+      codeChallenge: 'string',
       'newUser?': 'boolean',
     })
   )
