@@ -1,5 +1,6 @@
 import { db } from '@tamery/db'
 import { shares, users } from '@tamery/db/schema'
+import { SHARE_ACCOUNT_MESSAGE } from '@tamery/shared/constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { shareSaveInput } from '@tamery/shared/share'
 import { FREE_SHARE_LIMIT_MESSAGE } from '@tamery/shared/usage'
@@ -12,7 +13,7 @@ export const save = orpc
   .use(permissionsMiddleware)
   .input(shareSaveInput)
   .errors({
-    ACCOUNT_REQUIRED: { message: 'Sign in with an account to share tables.' },
+    ACCOUNT_REQUIRED: { message: SHARE_ACCOUNT_MESSAGE },
     FORBIDDEN: { message: FREE_SHARE_LIMIT_MESSAGE },
     NOT_FOUND: { message: 'This share or its connection no longer exists.' },
     NOT_SYNCED: {

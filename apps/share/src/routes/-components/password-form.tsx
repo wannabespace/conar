@@ -8,7 +8,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useActionState, useId, useRef } from 'react'
 
 import { posthog } from '~/lib/posthog'
-import { unlockShare } from '~/lib/share'
+import { SHARE_LOCKED, unlockShare } from '~/lib/share'
 
 const route = getRouteApi('/$shareId')
 
@@ -39,7 +39,7 @@ export const PasswordForm = () => {
       <IconEmpty
         size="default"
         icon={SquareLock02Icon}
-        title="This table needs a password"
+        title={SHARE_LOCKED}
         description={
           error ? (
             <span id={errorId} role="alert" className="text-destructive">

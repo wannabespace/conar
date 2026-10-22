@@ -1,4 +1,8 @@
 import { Message01Icon } from '@hugeicons/core-free-icons'
+import {
+  SUPPORT_FAILED_MESSAGE,
+  SUPPORT_SENT_MESSAGE,
+} from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -29,12 +33,10 @@ export const SupportButton = () => {
       meta: { event: 'support_message_sent' },
       onError: (err) => {
         console.error(err)
-        toast.error('Failed to send message. Please try again later.')
+        toast.error(SUPPORT_FAILED_MESSAGE)
       },
       onSuccess: () => {
-        toast.success(
-          'Support message sent successfully! We will get back to you as soon as possible.'
-        )
+        toast.success(SUPPORT_SENT_MESSAGE)
         setOpen(false)
         setMessage('')
       },

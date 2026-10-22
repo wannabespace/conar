@@ -1,4 +1,7 @@
-import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
+import {
+  GUEST_CONNECTIONS_MESSAGE,
+  SHARE_ACCOUNT_MESSAGE,
+} from '@tamery/shared/constants'
 import type { Permissions } from '@tamery/shared/permissions'
 import { getPermissions } from '@tamery/shared/permissions'
 import { FREE_SHARE_LIMIT_MESSAGE } from '@tamery/shared/usage'
@@ -26,7 +29,7 @@ const SIGN_IN_HINTS: Partial<Record<keyof Permissions, string>> = {
   ai: 'AI features need an account.',
   connection: GUEST_CONNECTIONS_MESSAGE,
   mcp: 'Unlimited agent queries need an account and Tamery Pro.',
-  share: 'Sharing tables needs an account.',
+  share: SHARE_ACCOUNT_MESSAGE,
 }
 
 const UPGRADE_HINTS: Record<string, string> = {

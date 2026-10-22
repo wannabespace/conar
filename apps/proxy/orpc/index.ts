@@ -1,4 +1,5 @@
 import { os } from '@orpc/server'
+import { SESSION_NOT_FOUND_MESSAGE } from '@tamery/shared/constants'
 import { type } from 'arktype'
 
 import { env } from '~/env'
@@ -27,9 +28,7 @@ const getSession = async (headers: Headers) => {
 
 export const authMiddleware = orpc
   .errors({
-    UNAUTHORIZED: {
-      message: 'We could not find your session. Please sign in again.',
-    },
+    UNAUTHORIZED: { message: SESSION_NOT_FOUND_MESSAGE },
   })
   .middleware(async ({ context, errors, next }) => {
     const session = await getSession(context.headers)
