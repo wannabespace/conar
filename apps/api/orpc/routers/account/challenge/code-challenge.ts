@@ -1,4 +1,5 @@
 import { RedisPublisher } from '@orpc/publisher/redis'
+import { type } from 'arktype'
 
 import { redis, redisSubscriber } from '~/lib/redis'
 
@@ -9,12 +10,16 @@ export const codeChallengePublisher = new RedisPublisher<
   subscriber: redisSubscriber,
 })
 
+export const codeChallengeSchema = type('/^[\\w-]{43,86}$/')
+
+const key = (codeChallenge: string) => `code-challenge:${codeChallenge}`
+
 export const codeChallengeRedis = {
   delete: async (codeChallenge: string) => {
-    await redis.del(codeChallenge)
+    await redis.del(key(codeChallenge))
   },
   get: async (codeChallenge: string) => {
-    const value = await redis.get(codeChallenge)
+    const value = await redis.get(key(codeChallenge))
     return value
       ? (JSON.parse(value) as { userId: string; newUser?: boolean })
       : null
@@ -23,6 +28,6 @@ export const codeChallengeRedis = {
     codeChallenge: string,
     value: { userId: string; newUser?: boolean }
   ) => {
-    await redis.setEx(codeChallenge, 60 * 5, JSON.stringify(value))
+    await redis.setEx(key(codeChallenge), 60 * 5, JSON.stringify(value))
   },
 }

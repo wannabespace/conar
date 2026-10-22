@@ -15,7 +15,7 @@ import { auth } from '~/lib/auth'
 import { ensureDefaultWorkspace } from '~/lib/workspace'
 import { getWorkspaceSecret, orpc } from '~/orpc'
 
-import { codeChallengeRedis } from './code-challenge'
+import { codeChallengeRedis, codeChallengeSchema } from './code-challenge'
 
 const adoptAnonymousUser = async (anonymousUserId: string, userId: string) => {
   const workspaceId = await ensureDefaultWorkspace(userId)
@@ -86,7 +86,7 @@ const adoptAnonymousUser = async (anonymousUserId: string, userId: string) => {
 export const exchange = orpc
   .input(
     type({
-      codeChallenge: 'string',
+      codeChallenge: codeChallengeSchema,
       verifier: 'string',
     })
   )
