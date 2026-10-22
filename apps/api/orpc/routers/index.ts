@@ -18,6 +18,7 @@ import * as internal from './internal'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
+import * as shares from './shares'
 import * as usage from './usage'
 import { userCount } from './user-count'
 import * as webhooks from './webhooks'
@@ -38,6 +39,7 @@ export const router = {
   queries,
   releases,
   repo,
+  shares,
   usage,
   userCount,
   webhooks,

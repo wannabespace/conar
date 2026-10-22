@@ -1,5 +1,5 @@
+import type { ColumnKind } from '@tamery/shared/column-kind'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { format, isValid, parseISO } from 'date-fns'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
@@ -104,30 +104,6 @@ export const INTERNAL_COLUMN_IDS = {
 
 export const rowSelectId = (rowIndex: number) => `row-select-${rowIndex}`
 
-const columnsSizeMap: Record<string, number> = {
-  bigint: 170,
-  boolean: 160,
-  datetime: 210,
-  decimal: 160,
-  float: 170,
-  function: 180,
-  int: 150,
-  integer: 150,
-  multirange: 200,
-  number: 170,
-  nvarchar: 180,
-  timestamp: 240,
-  tinyint: 150,
-  uint: 150,
-  uuid: 290,
-  variant: 200,
-}
-
-export const getColumnSize = (type: string): number =>
-  Object.entries(columnsSizeMap).find(([key]) =>
-    type.toLowerCase().includes(key.toLowerCase())
-  )?.[1] ?? DEFAULT_COLUMN_WIDTH
-
 export const getColumnUiType = (
   dialect: Dialect,
   column: typeof columnType.infer
@@ -172,6 +148,45 @@ const NUMERIC_TYPE_REGEX =
 
 export const isNumericColumn = (column: Column) =>
   column.uiType === 'raw' && NUMERIC_TYPE_REGEX.test(column.type ?? '')
+
+const UI_TYPE_KINDS: Partial<Record<Column['uiType'], ColumnKind>> = {
+  boolean: 'boolean',
+  date: 'date',
+  datetime: 'date',
+  list: 'list',
+  select: 'select',
+  time: 'time',
+}
+
+const BINARY_TYPE_REGEX = /blob|binary|bytea/u
+
+export const getColumnKind = (dialect: Dialect, column: Column): ColumnKind => {
+  if (column.primaryKey) {
+    return 'key'
+  }
+  if (column.foreign) {
+    return 'link'
+  }
+  const uiTypeKind = UI_TYPE_KINDS[column.uiType]
+  if (uiTypeKind) {
+    return uiTypeKind
+  }
+  if (isNumericColumn(column)) {
+    return 'number'
+  }
+  const { json, xml } = getCapabilities(dialect).columnTypes
+  const type = column.type?.toLowerCase() ?? ''
+  if (json.test(type) || xml?.test(type)) {
+    return 'json'
+  }
+  if (type.includes('uuid') || type.includes('uniqueidentifier')) {
+    return 'uuid'
+  }
+  if (BINARY_TYPE_REGEX.test(type)) {
+    return 'binary'
+  }
+  return 'text'
+}
 
 export const hasTabularFigures = (column: Column) =>
   column.uiType !== 'raw' || isNumericColumn(column)

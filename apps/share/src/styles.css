@@ -1,0 +1,6 @@
+@import '@tamery/ui/globals.css';
+
+/* Unlayered so it beats the kit's layered `cursor-default` on link-rendered components. */
+a[href] {
+  cursor: pointer;
+}

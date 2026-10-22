@@ -2,7 +2,7 @@
 import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { GridHeaderProps } from '@tamery/table'
-import { isHeaderPress } from '@tamery/table'
+import { ARIA_SORT, isHeaderPress } from '@tamery/table'
 import { Button } from '@tamery/ui/components/button'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import { cn } from '@tamery/ui/lib/utils'
@@ -25,7 +25,6 @@ import { getLabelColumn } from '../../lib/labels'
 import { columnLayout, columnsOrder, useTablePageStore } from '../../lib/store'
 import { ColumnHeading } from './column-type'
 
-const ARIA_SORT = { ASC: 'ascending', DESC: 'descending' } as const
 const MIN_WIDTH = 100
 
 const useColumnMenu = (

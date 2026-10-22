@@ -5,12 +5,14 @@ import { authRelations } from './schema/auth'
 import { chatsRelations } from './schema/chats'
 import { connectionsRelations } from './schema/connections'
 import { queriesRelations } from './schema/queries'
+import { sharesRelations } from './schema/shares'
 
 export const relations = {
   ...authRelations,
   ...chatsRelations,
   ...connectionsRelations,
   ...queriesRelations,
+  ...sharesRelations,
 }
 
 export const db = drizzle(env.DATABASE_URL, {

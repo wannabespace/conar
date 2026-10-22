@@ -22,6 +22,7 @@
     "build:main": "turbo run @tamery/main#build",
     "build:app": "turbo run @tamery/app#build",
     "build:docs": "turbo run @tamery/docs#build",
+    "build:share": "turbo run @tamery/share#build",
     "build:todesktop": "turbo run @tamery/desktop#build:todesktop",
     "build:cli": "turbo run tamery#build",
     "publish:cli": "cd apps/cli && pnpm publish --access public --no-git-checks",

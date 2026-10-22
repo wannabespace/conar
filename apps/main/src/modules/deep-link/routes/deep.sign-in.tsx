@@ -1,7 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 
-import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/deep/sign-in')({
@@ -10,22 +9,19 @@ export const Route = createFileRoute('/deep/sign-in')({
     'newUser?': 'boolean',
     type: '"web" | "desktop" | "cli" = "desktop"',
   }),
-  loaderDeps: ({ search }) => search,
-  loader: async ({ deps }) => {
-    const { codeChallenge, newUser } = deps
+  beforeLoad: async ({ context, search }) => {
+    const { codeChallenge, newUser } = search
 
-    const { data } = await authClient.getSession()
-
-    if (data) {
+    if (context.session) {
       await orpc.account.challenge.publish.call({ codeChallenge, newUser })
 
-      throw redirect({ to: '/open', search: { type: deps.type } })
+      throw redirect({ to: '/open', search: { type: search.type } })
     }
 
     throw redirect({
       to: '/sign-in',
       search: {
-        redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}&type=${deps.type}`,
+        redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}&type=${search.type}`,
       },
     })
   },

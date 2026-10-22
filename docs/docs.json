@@ -28,6 +28,7 @@
           "features/ai-assistant",
           "features/schema-visualizer",
           "features/definitions",
+          "features/sharing",
           "features/workspaces",
           "features/command-palette"
         ]

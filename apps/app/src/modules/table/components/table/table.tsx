@@ -1,13 +1,14 @@
 import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
 import { enabledFilters } from '@tamery/shared/filters'
 import { pick } from '@tamery/shared/utils'
+import { TableSkeleton } from '@tamery/table'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { DataGrid } from '~/core/table/data-grid'
@@ -39,7 +40,7 @@ import {
 } from './table-chrome'
 import { TableFieldLabel, TableHeaderCell } from './table-header-cell'
 import { keysInRange } from './table-selection'
-import { DocumentsSkeleton, TableSkeleton } from './table-skeleton'
+import { DocumentsSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -167,7 +168,7 @@ export const Table = ({
   }
   if (visible.length === 0) {
     return (
-      <PaneEmpty
+      <IconEmpty
         icon={LayoutThreeColumnIcon}
         title="No columns to show"
         description="Every column is hidden. Show some from the Columns menu."

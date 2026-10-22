@@ -1,5 +1,9 @@
 import { COMMON_ERROR_STATUS_MAP, ORPCError } from '@orpc/client'
-import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
+import {
+  PROXY_ERROR_MESSAGE,
+  SESSION_EXPIRED_MESSAGE,
+  UNKNOWN_ERROR_MESSAGE,
+} from '@tamery/shared/constants'
 import { toast } from 'sonner'
 
 import { fullSignOut, isAnonymous } from '~/lib/auth'
@@ -9,7 +13,7 @@ import { promptSignIn } from '~/store'
 const getErrorMessage = (error: unknown) =>
   (error instanceof ORPCError && error.message) ||
   (error as Error)?.message ||
-  'Our server is practicing its meditation. Please, try again later.'
+  UNKNOWN_ERROR_MESSAGE
 
 export const isUnauthorizedError = (error: unknown) =>
   error instanceof ORPCError && error.code === 'UNAUTHORIZED'
@@ -58,7 +62,7 @@ export const handleError = async (
       return
     }
 
-    toast.info('Your session has expired. Please, sign in again.', {
+    toast.info(SESSION_EXPIRED_MESSAGE, {
       id: 'session-expired',
     })
     await fullSignOut()

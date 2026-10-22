@@ -1,3 +1,4 @@
+import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
 
@@ -10,7 +11,6 @@ import {
   quoteIdentifier,
 } from '~/core/codegen/utils'
 import { referentialActionClauses } from '~/core/queries/constraints/shape'
-import { coldDialects } from '~/core/runtime/dialects'
 import type { Column } from '~/core/table/cell/utils'
 import { formatSql } from '~/utils/formatter'
 
@@ -54,7 +54,7 @@ export const generateQuerySQL = ({
   filters,
   dialect,
 }: QueryParams) => {
-  const db = coldDialects[dialect]()
+  const db = coldDialect(dialect)
   const base = db
     .withSchema(schema)
     .$extendTables<{ [table]: Record<string, unknown> }>()

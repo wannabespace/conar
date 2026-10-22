@@ -1,3 +1,5 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
+import { filterValueBindings } from '@tamery/connection/queries/value-binding'
 import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { queryOptions } from '@tanstack/react-query'
@@ -12,9 +14,6 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
-
-import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues, sqliteFilterValues } from './shape'
 
 interface CountTarget {
   filters: ActiveFilter[]
@@ -42,7 +41,7 @@ const countRows = async (
 
 export const resourceTableTotalQuery = memoize(
   ({
-    columns,
+    columns = [],
     table,
     schema,
     query: { filters, exact },
@@ -83,7 +82,7 @@ export const resourceTableTotalQuery = memoize(
             db,
             db.fn.countAll(),
             target,
-            clickhouseFilterValues(columns)
+            filterValueBindings.clickhouse?.(columns)
           )
         },
         mssql: (db) => countRows(db, sql`count_big(*)`, target),
@@ -144,7 +143,12 @@ export const resourceTableTotalQuery = memoize(
           return countRows(db, db.fn.countAll(), target)
         },
         sqlite: (db) =>
-          countRows(db, db.fn.countAll(), target, sqliteFilterValues(columns)),
+          countRows(
+            db,
+            db.fn.countAll(),
+            target,
+            filterValueBindings.sqlite?.(columns)
+          ),
       },
       type: type({
         count: 'number',
