@@ -36,6 +36,7 @@ export const create = orpc
               .onConflictDoUpdate({
                 target: chatsMessages.id,
                 set: item,
+                setWhere: eq(chatsMessages.chatId, item.chatId),
               })
               .returning(),
           ),

@@ -11,7 +11,7 @@ import { publisher } from './events'
 export const update = orpc
   .use(subscriptionMiddleware)
   .input(
-    type.and(chatsMessagesUpdateSchema.omit('id'), chatsMessagesUpdateSchema.pick('id').required()),
+    type.and(chatsMessagesUpdateSchema.omit('id', 'chatId'), chatsMessagesUpdateSchema.pick('id').required()),
   )
   .handler(async ({ context, input }) => {
     const [found] = await db

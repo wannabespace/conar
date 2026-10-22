@@ -24,7 +24,7 @@ export const create = orpc
       .from(connections)
       .where(and(inArray(connections.id, connectionIds), eq(connections.userId, context.user.id)))
 
-    if (foundConnections.length === 0) {
+    if (foundConnections.length !== new Set(connectionIds).size) {
       throw new ORPCError('NOT_FOUND', { message: 'Connections not found' })
     }
 
