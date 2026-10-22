@@ -277,3 +277,11 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Keep the share page's header when the first rows fail.** A failure on the first page shows the full-page status; keeping the title, filters and column headers with an inline Try again in the grid would say less loudly that only the rows are missing.
 - **Horizontal-only scroll for the grid's cell scroll.** Home/End on a read-only grid's header row scrolls back to the top when the target column is not mounted, since the shared scroll-to-cell always scrolls both axes.
 - **Count the free share limit when an expired link is renewed.** Only creating a link checks the limit, so giving an expired link a new date or no expiry can leave a Free user with more than 3 live links.
+
+## Security
+
+- **Keep the API session token out of plain localStorage on desktop.** Chromium stores localStorage unencrypted on disk, and the token resolves every Full-sync connection string through `connections.resolve`; wrapping it with `safeStorage` in main, like the device key, would close that. The MCP token in `mcp.json` has the same gap.
+- **Run agent reads on Postgres over the extended protocol.** It refuses a second statement outright, so a future tokenizer mismatch could not reach past the read-only transaction.
+- **Show a short code on both sides of the sign-in handoff.** The browser now asks before signing an app in, but a matching code would stop a phished link from being confirmed blindly.
+- **Limit which images AI answers load.** Markdown images load from any host, so a prompt-injected answer can send conversation text to a remote server in an image URL.
+- **Authenticate the Railway alert webhook.** Anyone can post to it and send email to the alerts inbox; a secret in the webhook URL would do.
