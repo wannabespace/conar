@@ -15,9 +15,9 @@ import { getDriverConfig } from '@tamery/connection/parse-connection-string'
 import { getPool } from '@tamery/connection/queries/dialects/pg/client'
 import type { Forwarding } from '@tamery/connection/ssh/forwarding'
 import { sshForwarding } from '@tamery/connection/ssh/forwarding'
+import { getLibpqSslMode } from '@tamery/connection/ssl/pg'
 import { silently, toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
-import type { PoolConfig } from 'pg'
 
 export interface CopyDatabaseRequest {
   id: string
@@ -38,19 +38,7 @@ const TRANSACTION_TIMEOUT = Buffer.from('SET transaction_timeout = 0;')
 const HEADER_BYTES = 4096
 const COMMIT = Buffer.from('COMMIT;\n')
 
-const LIBPQ_VERIFY_MODES = new Set(['verify-ca', 'verify-full'])
-
 const quoteIdentifier = (name: string) => `"${name.replaceAll('"', '""')}"`
-
-const getSslMode = (ssl: PoolConfig['ssl'], sslMode: string | null) => {
-  if (ssl === false) {
-    return 'disable'
-  }
-  if (typeof ssl === 'object' && ssl.rejectUnauthorized === false) {
-    return 'require'
-  }
-  return sslMode && LIBPQ_VERIFY_MODES.has(sslMode) ? sslMode : 'verify-full'
-}
 
 /** libpq dials a TCP port, while a tunnel opens none, so the copy gets a loopback listener for its length. */
 const listenLocally = async (forwarding: Forwarding) => {
@@ -66,17 +54,32 @@ const listenLocally = async (forwarding: Forwarding) => {
 
 /** The app's own pool connects first: it opens the tunnel, asks about an unknown host key and settles the TLS fallback the tools then reuse. */
 const openEndpoint = async (connectionString: string) => {
+  const { database, host, password, port, searchParams, user } =
+    getDriverConfig(connectionString)
+  // libpq takes a key's passphrase only from a connection string or a service file, which would put it in argv or on disk.
+  if (searchParams.get('sslpassword')) {
+    throw new Error(
+      'Copy database cannot use a client key protected by a passphrase yet.'
+    )
+  }
   const pool = await getPool(connectionString)
   const { rows } = await pool.query<{ server_version_num: string }>(
     'SHOW server_version_num'
   )
-  const { database, host, password, port, searchParams, user } =
-    getDriverConfig(connectionString)
+  // pg_control_system() is 9.6+, and a provider may revoke it.
+  const identity = await Result.tryPromise(() =>
+    pool.query<{ database: string }>(
+      "SELECT system_identifier || '/' || current_database() AS database FROM pg_control_system()"
+    )
+  )
   const forwarding = await sshForwarding.of(connectionString)
   const local = forwarding ? await listenLocally(forwarding) : null
-  const sslMode = getSslMode(pool.options.ssl, searchParams.get('sslmode'))
+  const sslMode = getLibpqSslMode(pool.options.ssl, searchParams.get('sslmode'))
   return {
     close: () => local?.close(),
+    database: identity.isOk()
+      ? (identity.value.rows[0]?.database ?? null)
+      : null,
     env: {
       ...Object.fromEntries(
         Object.entries(process.env).filter(([key]) => !key.startsWith('PG'))
@@ -183,6 +186,11 @@ export const copyDatabase = async (
   try {
     const to = await openEndpoint(target)
     try {
+      if (from.database !== null && from.database === to.database) {
+        throw new Error(
+          'The target is the source database, reached through another connection. Choose another one.'
+        )
+      }
       const dump = spawn(
         toolPath('pg_dump'),
         [
@@ -193,7 +201,7 @@ export const copyDatabase = async (
           '--verbose',
           ...(tables ?? []).map(
             ({ schema, table }) =>
-              `--table=${quoteIdentifier(schema)}.${quoteIdentifier(table)}`
+              `--table-and-children=${quoteIdentifier(schema)}.${quoteIdentifier(table)}`
           ),
         ],
         { env: from.env, signal, stdio: ['ignore', 'pipe', 'pipe'] }

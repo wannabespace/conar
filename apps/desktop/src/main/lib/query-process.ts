@@ -10,10 +10,7 @@ import type { QueryProcessReply, QueryProcessRequest } from '../query'
 import { confirmHostKey } from './ssh-host-key'
 
 const pending = new Map<number, PromiseWithResolvers<unknown>>()
-const copies = new Map<
-  string,
-  { done: PromiseWithResolvers<null>; log: (line: string) => void }
->()
+const copyLogs = new Map<number, (line: string) => void>()
 let nextId = 0
 let child: UtilityProcess | null = null
 
@@ -37,17 +34,7 @@ const start = () => {
       return
     }
     if (reply.type === 'copyLog') {
-      copies.get(reply.copyId)?.log(reply.line)
-      return
-    }
-    if (reply.type === 'copied') {
-      const copy = copies.get(reply.copyId)
-      copies.delete(reply.copyId)
-      if (reply.error === null) {
-        copy?.done.resolve(null)
-      } else {
-        copy?.done.reject(new Error(reply.error))
-      }
+      copyLogs.get(reply.id)?.(reply.line)
       return
     }
     const request = pending.get(reply.id)
@@ -68,27 +55,27 @@ const start = () => {
       request.reject(new Error('The database process stopped'))
     }
     pending.clear()
-    for (const copy of copies.values()) {
-      copy.done.reject(new Error('The database process stopped'))
-    }
-    copies.clear()
   })
   return forked
+}
+
+const request = (build: (id: number) => QueryProcessRequest) => {
+  child ??= start()
+  const id = nextId
+  nextId += 1
+  const answer = Promise.withResolvers<unknown>()
+  pending.set(id, answer)
+  send(child, build(id))
+  return { id, promise: answer.promise }
 }
 
 const call = <M extends keyof QueryExecutor>(
   dialect: Dialect,
   method: M,
   args: Parameters<QueryExecutor[M]>[0]
-) => {
-  child ??= start()
-  const id = nextId
-  nextId += 1
-  const request = Promise.withResolvers<unknown>()
-  pending.set(id, request)
-  send(child, { args, dialect, id, method, type: 'call' })
-  return request.promise as ReturnType<QueryExecutor[M]>
-}
+) =>
+  request((id) => ({ args, dialect, id, method, type: 'call' }))
+    .promise as ReturnType<QueryExecutor[M]>
 
 export const queryProcess = {
   cancelCopy: (copyId: string) => {
@@ -96,12 +83,10 @@ export const queryProcess = {
       send(child, { copyId, type: 'cancelCopy' })
     }
   },
-  copyDatabase: (request: CopyDatabaseRequest, log: (line: string) => void) => {
-    child ??= start()
-    const done = Promise.withResolvers<null>()
-    copies.set(request.id, { done, log })
-    send(child, { request, type: 'copyDatabase' })
-    return done.promise
+  copyDatabase: (copy: CopyDatabaseRequest, log: (line: string) => void) => {
+    const sent = request((id) => ({ id, request: copy, type: 'copyDatabase' }))
+    copyLogs.set(sent.id, log)
+    return sent.promise.finally(() => copyLogs.delete(sent.id))
   },
   executor: (dialect: Dialect): QueryExecutor => ({
     beginTransaction: (args) => call(dialect, 'beginTransaction', args),

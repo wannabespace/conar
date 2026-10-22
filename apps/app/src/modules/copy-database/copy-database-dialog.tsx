@@ -1,4 +1,4 @@
-import { toError } from '@tamery/shared/utils'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,10 @@ import {
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { useMutation } from '@tanstack/react-query'
-import { Result } from 'better-result'
 import { createRef, useImperativeHandle, useState } from 'react'
 import { v7 as uuidv7 } from 'uuid'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { refreshCatalog } from '~/core/connection/refresh-after-run'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 
@@ -24,6 +24,7 @@ import { CopyEndLabel } from './target-select'
 interface CopyRun {
   id: string
   source: CopyEnd
+  stop: AbortController
   tables: TableSelection
   target: CopyEnd
 }
@@ -32,19 +33,40 @@ export const copyDatabaseDialogRef = createRef<{
   open: (source: CopyEnd) => void
 }>()
 
+export const getCopyDatabaseAction = (source: CopyEnd | null) =>
+  window.electron &&
+  source &&
+  getCapabilities(getDialect(source.connection.type)).copyDatabase
+    ? () => copyDatabaseDialogRef.current?.open(source)
+    : null
+
+const startCopy = async (run: CopyRun) => {
+  const [from, to] = await Promise.all([
+    connectionResourceToQueryParams(run.source.resource),
+    connectionResourceToQueryParams(run.target.resource),
+  ])
+  run.stop.signal.throwIfAborted()
+  run.stop.signal.addEventListener('abort', () => {
+    void window.electron?.copyDatabase.cancel(run.id)
+  })
+  await window.electron?.copyDatabase.start({
+    id: run.id,
+    source: from.connectionString,
+    tables: run.tables && [...run.tables.values()],
+    target: to.connectionString,
+  })
+}
+
 export const CopyDatabaseDialog = () => {
   const [open, setOpen] = useState(false)
   const [source, setSource] = useState<CopyEnd | null>(null)
   const [target, setTarget] = useState<CopyEnd | null>(null)
   const [selection, setSelection] = useState<TableSelection>(null)
   const [lines, setLines] = useState<string[]>([])
-  const [stopped, setStopped] = useState(false)
 
   const copy = useMutation({
     meta: { event: 'database_copied' },
-    mutationFn: async (run: CopyRun) => {
-      setLines([])
-      setStopped(false)
+    mutationFn: (run: CopyRun) => {
       const unsubscribe = window.electron?.copyDatabase.onLog(
         ({ copyId, line }) => {
           if (copyId === run.id) {
@@ -52,23 +74,9 @@ export const CopyDatabaseDialog = () => {
           }
         }
       )
-      const copied = await Result.tryPromise(async () => {
-        const [from, to] = await Promise.all([
-          connectionResourceToQueryParams(run.source.resource),
-          connectionResourceToQueryParams(run.target.resource),
-        ])
-        await window.electron?.copyDatabase.start({
-          id: run.id,
-          source: from.connectionString,
-          tables: run.tables && [...run.tables.values()],
-          target: to.connectionString,
-        })
-      })
-      unsubscribe?.()
-      if (copied.isErr()) {
-        throw toError(copied.error.cause)
-      }
+      return startCopy(run).finally(() => unsubscribe?.())
     },
+    onMutate: () => setLines([]),
     onSuccess: (_, run) => refreshCatalog(run.target.resource),
   })
 
@@ -82,18 +90,13 @@ export const CopyDatabaseDialog = () => {
     },
   }))
 
-  const stop = () => {
-    if (copy.variables) {
-      setStopped(true)
-      void window.electron?.copyDatabase.cancel(copy.variables.id)
-    }
-  }
+  const stop = () => copy.variables?.stop.abort()
 
   let status: CopyStatus = 'copying'
   if (copy.isSuccess) {
     status = 'copied'
   } else if (copy.isError) {
-    status = stopped ? 'stopped' : 'failed'
+    status = copy.variables?.stop.signal.aborted ? 'stopped' : 'failed'
   }
 
   return (
@@ -143,6 +146,7 @@ export const CopyDatabaseDialog = () => {
                 copy.mutate({
                   id: uuidv7(),
                   source,
+                  stop: new AbortController(),
                   tables: selection,
                   target: picked,
                 })

@@ -1,7 +1,6 @@
 import { connectionSecrets } from '@tamery/connection/secrets'
 import { resourceConnectionString } from '@tamery/connection/utils'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { copy } from '@tamery/ui/lib/copy'
@@ -14,7 +13,6 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
-import { getCapabilities } from '~/core/catalog/capabilities'
 import { useCollections } from '~/core/collections'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import { useFetchingConfig } from '~/core/connection/fetching'
@@ -22,7 +20,7 @@ import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { connectionResourcesQueryOptions } from '~/core/queries/connection/resources'
 import { posthog } from '~/lib/posthog'
-import { copyDatabaseDialogRef } from '~/modules/copy-database/copy-database-dialog'
+import { getCopyDatabaseAction } from '~/modules/copy-database/copy-database-dialog'
 import { openNewWindow } from '~/utils/new-window'
 
 import { ConnectionCardMeta } from './connection-card-meta'
@@ -140,16 +138,9 @@ export const ConnectionCard = ({
     connection,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
-    onCopyDatabase:
-      window.electron &&
-      selectedResource &&
-      getCapabilities(getDialect(connection.type)).copyDatabase
-        ? () =>
-            copyDatabaseDialogRef.current?.open({
-              connection,
-              resource: selectedResource,
-            })
-        : null,
+    onCopyDatabase: getCopyDatabaseAction(
+      selectedResource ? { connection, resource: selectedResource } : null
+    ),
     onEdit: () => {
       posthog.capture('connection_edit_opened')
       void router.navigate({

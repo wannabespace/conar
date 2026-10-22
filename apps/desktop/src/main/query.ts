@@ -8,8 +8,6 @@ import type { ConfirmHostKey } from '@tamery/connection/ssh/host-key'
 import { tunnelForwarding } from '@tamery/connection/ssh/tunnel'
 import { isConnectionError } from '@tamery/shared/connections'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { toError } from '@tamery/shared/utils'
-import { Result } from 'better-result'
 
 import type { CopyDatabaseRequest } from './copy-database'
 import { copyDatabase } from './copy-database'
@@ -24,7 +22,7 @@ export type QueryProcessRequest =
     }
   | { type: 'hostKey'; hostKeyId: number; trusted: boolean }
   | { type: 'resetTransactions' }
-  | { type: 'copyDatabase'; request: CopyDatabaseRequest }
+  | { type: 'copyDatabase'; id: number; request: CopyDatabaseRequest }
   | { type: 'cancelCopy'; copyId: string }
 
 export type QueryProcessReply =
@@ -35,8 +33,7 @@ export type QueryProcessReply =
       hostKeyId: number
       prompt: Parameters<ConfirmHostKey>[0]
     }
-  | { type: 'copyLog'; copyId: string; line: string }
-  | { type: 'copied'; copyId: string; error: string | null }
+  | { type: 'copyLog'; id: number; line: string }
 
 const dialects: Record<Dialect, () => Promise<{ query: QueryExecutor }>> = {
   clickhouse: () => import('@tamery/connection/queries/dialects/clickhouse'),
@@ -53,6 +50,28 @@ const reply = (message: QueryProcessReply) =>
 const hostKeyAnswers = new Map<number, (trusted: boolean) => void>()
 const copies = new Map<string, AbortController>()
 let nextHostKeyId = 0
+
+const perform = async (
+  data: Extract<QueryProcessRequest, { type: 'call' | 'copyDatabase' }>
+) => {
+  if (data.type === 'call') {
+    const { query } = await dialects[data.dialect]()
+    const run = query[data.method] as (args: unknown) => Promise<unknown>
+    return run(data.args)
+  }
+  const controller = new AbortController()
+  copies.set(data.request.id, controller)
+  try {
+    await copyDatabase(
+      data.request,
+      (line) => reply({ id: data.id, line, type: 'copyLog' }),
+      controller.signal
+    )
+    return null
+  } finally {
+    copies.delete(data.request.id)
+  }
+}
 
 sshForwarding.use((connectionString) =>
   tunnelForwarding(connectionString, (prompt) => {
@@ -76,34 +95,13 @@ process.parentPort.on(
       copies.get(data.copyId)?.abort()
       return
     }
-    if (data.type === 'copyDatabase') {
-      const copyId = data.request.id
-      const controller = new AbortController()
-      copies.set(copyId, controller)
-      const copied = await Result.tryPromise(() =>
-        copyDatabase(
-          data.request,
-          (line) => reply({ copyId, line, type: 'copyLog' }),
-          controller.signal
-        )
-      )
-      copies.delete(copyId)
-      reply({
-        copyId,
-        error: copied.isErr() ? toError(copied.error.cause).message : null,
-        type: 'copied',
-      })
-      return
-    }
     if (data.type === 'hostKey') {
       hostKeyAnswers.get(data.hostKeyId)?.(data.trusted)
       hostKeyAnswers.delete(data.hostKeyId)
       return
     }
     try {
-      const { query } = await dialects[data.dialect]()
-      const run = query[data.method] as (args: unknown) => Promise<unknown>
-      reply({ id: data.id, result: await run(data.args), type: 'result' })
+      reply({ id: data.id, result: await perform(data), type: 'result' })
     } catch (error) {
       reply({
         error: error instanceof Error ? error.message : String(error),

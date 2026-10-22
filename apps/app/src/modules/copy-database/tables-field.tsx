@@ -58,7 +58,7 @@ export const TablesField = ({
     } else {
       next.set(key, { schema, table })
     }
-    onSelectionChange(next.size === tables.length ? null : next)
+    onSelectionChange(next)
   }
 
   return (

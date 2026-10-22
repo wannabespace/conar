@@ -1,27 +1,24 @@
 import { DatabaseExportIcon } from '@hugeicons/core-free-icons'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 
-import { getCapabilities } from '~/core/catalog/capabilities'
 import type {
   CommandContext,
   CommandEntry,
 } from '~/modules/actions-center/types'
 
-import { copyDatabaseDialogRef } from './copy-database-dialog'
+import { getCopyDatabaseAction } from './copy-database-dialog'
 
 export const copyDatabaseCommands = ({
   current,
-}: CommandContext): CommandEntry[] =>
-  window.electron &&
-  current &&
-  getCapabilities(getDialect(current.connection.type)).copyDatabase
+}: CommandContext): CommandEntry[] => {
+  const action = getCopyDatabaseAction(
+    current
+      ? { connection: current.connection, resource: current.connectionResource }
+      : null
+  )
+  return action
     ? [
         {
-          action: () =>
-            copyDatabaseDialogRef.current?.open({
-              connection: current.connection,
-              resource: current.connectionResource,
-            }),
+          action,
           group: 'Database',
           icon: DatabaseExportIcon,
           keywords: ['copy', 'sync', 'migrate', 'clone', 'dump', 'restore'],
@@ -30,3 +27,4 @@ export const copyDatabaseCommands = ({
         },
       ]
     : []
+}

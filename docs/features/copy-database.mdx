@@ -20,7 +20,7 @@ The log shows each step while it runs. Press **Stop** or Escape to cancel.
 | Choice | Copies |
 | --- | --- |
 | **Everything** | Schemas, tables with their data, indexes and constraints, types, functions, views, extensions. |
-| Some tables | Those tables with their data, indexes, constraints and sequences. Their schema is created if the target lacks it. |
+| Some tables | Those tables with their data, indexes, constraints and sequences. A partitioned table brings its partitions. Their schema is created if the target lacks it. |
 
 Owners and grants are left out, so the copy works on a server where your roles do not exist.
 
@@ -32,8 +32,10 @@ Everything the copy brings replaces the object of the same name in the target. O
 
 The copy runs in one transaction. If anything fails, or you stop it, nothing changes in the target. A common failure is an object in the target that depends on a table being replaced, such as a view: the error names it, and you can drop it and copy again.
 
+The target can't be the source itself. Two connections can reach the same database, so Tamery checks the server before copying and stops if they match.
+
 ## Versions and connections
 
-Tamery runs `pg_dump` and `psql` 18 on your computer, so the source can be PostgreSQL 9.2 to 18. The target can run an older version than the source; an object it cannot create fails the copy like any other error. On Linux, Tamery uses the PostgreSQL client tools you have installed.
+Tamery runs `pg_dump` and `psql` 18 on your computer, so the source can be PostgreSQL 9.2 to 18. The target can run an older version than the source; an object it cannot create fails the copy like any other error. On Linux, Tamery uses the PostgreSQL client tools you have installed, version 16 or newer.
 
-Connections over SSH tunnels and TLS work the same as everywhere else in Tamery.
+Connections over SSH tunnels and TLS work the same as everywhere else in Tamery. The one exception is a client key protected by a passphrase: the copy can't use it yet.
