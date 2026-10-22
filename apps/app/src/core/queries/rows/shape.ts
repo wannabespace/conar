@@ -151,16 +151,13 @@ type IdentityColumn = Pick<
 const ids = (columns: IdentityColumn[]) => columns.map((column) => column.id)
 
 /**
- * The columns a write finds a row by: its primary key, else a unique key with no nullable column, else every column `=` can compare.
- * `unique: false` means the match can reach other rows too (duplicates, or ClickHouse's repeating sorting key), so writes count first.
+ * The columns a write finds a row by: its primary key where keys are unique, else a unique key with no nullable column, else every column `=` can compare.
+ * `unique: false` means the match can reach identical rows too, so writes count first.
  */
 export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
   const primary = columns.filter((column) => column.primaryKey)
-  if (primary.length > 0) {
-    return {
-      columns: ids(primary),
-      unique: getCapabilities(dialect).uniqueKeys,
-    }
+  if (primary.length > 0 && getCapabilities(dialect).uniqueKeys) {
+    return { columns: ids(primary), unique: true }
   }
   const uniqueKey = Object.values(
     Object.groupBy(columns, (column) => column.unique ?? '')

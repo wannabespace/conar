@@ -86,10 +86,13 @@ test('a row without a primary key is found by a NOT NULL unique key, else by eve
   ).toEqual({ columns: ['id'], unique: true })
   expect(
     rowIdentity(
-      [{ id: 'ts', primaryKey: 'pk', type: 'DateTime' }],
+      [
+        { id: 'ts', primaryKey: 'pk', type: 'DateTime' },
+        { id: 'name', type: 'String' },
+      ],
       Dialect.ClickHouse
     )
-  ).toEqual({ columns: ['ts'], unique: false })
+  ).toEqual({ columns: ['ts', 'name'], unique: false })
   expect(
     rowIdentity(
       [

@@ -1,6 +1,7 @@
 import { Delete02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { enabledFilters } from '@tamery/shared/filters'
+import type { GridRow } from '@tamery/table'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -44,6 +45,7 @@ import { queryClient } from '~/lib/query-client'
 import { plural } from '~/utils/plural'
 
 import { useTableColumnsContext } from '../../lib/columns'
+import { tickedRowCount } from '../../lib/row-selection'
 import { useTablePageStore } from '../../lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -84,6 +86,8 @@ export const DeleteRowsDialog = ({
   const { unique } = rowIdentity(columns, dialect)
   const { data: matched, isPending: isCounting } = useQuery({
     enabled: open && !unique,
+    // The global keepPreviousData would show the last delete's count for these rows.
+    placeholderData: undefined,
     queryFn: async () =>
       keyedRowsCountQuery({ columns, primaryKeys: rows, schema, table }).run(
         await connectionResourceToQueryParams(connectionResource)
@@ -93,6 +97,7 @@ export const DeleteRowsDialog = ({
   const counting = !unique && isCounting
   const sharedKeyRows =
     matched !== undefined && matched > rows.length ? matched : undefined
+  const sameValueRows = (sharedKeyRows ?? rows.length) - rows.length
 
   const only = rows.length === 1 && !sharedKeyRows ? rows[0] : undefined
   const noun = only ? 'row' : plural(sharedKeyRows ?? rows.length, 'row')
@@ -112,7 +117,9 @@ export const DeleteRowsDialog = ({
     },
     onSuccess: () => {
       const { filters, orderBy } = store.get()
-      toast.success(`${plural(rows.length, 'row')} successfully deleted`)
+      toast.success(
+        `${plural(sharedKeyRows ?? rows.length, 'row')} successfully deleted`
+      )
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
@@ -159,8 +166,8 @@ export const DeleteRowsDialog = ({
               {table}
             </span>
             . This cannot be undone.
-            {sharedKeyRows !== undefined &&
-              ` The table can't tell ${rows.length === 1 ? 'this row' : 'these rows'} apart from others, so all ${sharedKeyRows} are removed.`}
+            {sameValueRows > 0 &&
+              ` ${plural(sameValueRows, 'other row')} with the same values ${sameValueRows === 1 ? 'goes' : 'go'} too.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {!only && (
@@ -197,11 +204,18 @@ export const DeleteRowsDialog = ({
   )
 }
 
-export const ActionsDelete = () => {
+export const ActionsDelete = ({
+  keys,
+  rows,
+}: {
+  keys: string[]
+  rows: GridRow[]
+}) => {
   const sessionStore = useTableSessionStore()
   const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
   })
+  const ticked = tickedRowCount(selected, rows, keys)
   const openDialog = () => deleteRowsDialogRef.current?.open(selected)
 
   useShortcut('deleteRows', openDialog, { ignoreInputs: true })
@@ -213,7 +227,7 @@ export const ActionsDelete = () => {
           <Button
             variant="destructive"
             size="sm"
-            aria-label={`Delete (${selected.length})`}
+            aria-label={`Delete (${ticked})`}
             onClick={openDialog}
           />
         }
@@ -221,7 +235,7 @@ export const ActionsDelete = () => {
         <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
         <span>
           Delete (
-          <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />)
+          <NumberFlow spinTiming={{ duration: 200 }} value={ticked} />)
         </span>
       </TooltipTrigger>
       <TooltipContent>Delete selected rows</TooltipContent>

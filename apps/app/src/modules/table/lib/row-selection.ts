@@ -1,5 +1,17 @@
 import type { PrimaryKeys, TableSessionState } from '~/core/table/session'
-import { primaryKeysKey } from '~/core/table/session'
+import { getRowKeyByPrimaryKeys, primaryKeysKey } from '~/core/table/session'
+
+/** Identical rows share one key, so one selected key can tick several rows. */
+export const tickedRowCount = (
+  selected: PrimaryKeys[],
+  rows: Record<string, unknown>[],
+  keys: string[]
+) => {
+  const selectedKeys = new Set(selected.map(primaryKeysKey))
+  return rows.filter((row) =>
+    selectedKeys.has(getRowKeyByPrimaryKeys(row, keys))
+  ).length
+}
 
 type SelectionState = TableSessionState['selectionState']
 
