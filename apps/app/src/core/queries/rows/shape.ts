@@ -5,6 +5,7 @@ import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import type { Column } from '~/core/table/cell/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
 type Eb = ExpressionBuilder<any, any>
@@ -137,9 +138,59 @@ export const matchesPrimaryKeys = (
 ) =>
   eb.and(
     Object.entries(bindRow(bind, columns, primaryKeys)).map(([id, value]) =>
-      eb(id, '=', value)
+      value === null ? eb(id, 'is', null) : eb(id, '=', value)
     )
   )
+
+// `=` is missing for these, compares something else (a Postgres box compares areas) or misses after a JS number round trip (4-byte floats).
+const UNMATCHABLE_TYPES: Record<Dialect, RegExp | null> = {
+  [Dialect.ClickHouse]:
+    /\b(?:Float32|JSON|Object|AggregateFunction|SimpleAggregateFunction|Dynamic|Variant)\b/u,
+  [Dialect.MSSQL]: /^(?:text|ntext|image|xml|geography|geometry|real)$/iu,
+  [Dialect.MySQL]:
+    /^(?:float|json|geometry|point|linestring|polygon|multi\w+|geom(?:etry)?collection)$/iu,
+  [Dialect.Oracle]:
+    /^(?:n?clob|blob|bfile|long(?: raw)?|xmltype|binary_float|sdo_geometry)$/iu,
+  [Dialect.Postgres]:
+    /^(?:json|xml|real|float4|point|line|lseg|box|path|polygon|circle)$/iu,
+  [Dialect.SQLite]: null,
+}
+
+type IdentityColumn = Pick<
+  Column,
+  'id' | 'isNullable' | 'primaryKey' | 'type' | 'unique'
+>
+
+const ids = (columns: IdentityColumn[]) => columns.map((column) => column.id)
+
+/**
+ * The columns a write finds a row by: its primary key, else a unique key with no nullable column, else every column `=` can compare.
+ * `unique: false` means the match can reach other rows too (duplicates, or ClickHouse's repeating sorting key), so writes count first.
+ */
+export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
+  const primary = columns.filter((column) => column.primaryKey)
+  if (primary.length > 0) {
+    return {
+      columns: ids(primary),
+      unique: getCapabilities(dialect).uniqueKeys,
+    }
+  }
+  const uniqueKey = Object.values(
+    Object.groupBy(columns, (column) => column.unique ?? '')
+  ).find(
+    (group) => group?.[0]?.unique && group.every((column) => !column.isNullable)
+  )
+  if (uniqueKey) {
+    return { columns: ids(uniqueKey), unique: true }
+  }
+  const unmatchable = UNMATCHABLE_TYPES[dialect]
+  return {
+    columns: ids(
+      columns.filter((column) => !unmatchable?.test(column.type ?? ''))
+    ),
+    unique: false,
+  }
+}
 
 // SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
 const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {

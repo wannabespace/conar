@@ -5,10 +5,10 @@ import { Result } from 'better-result'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { getCapabilities } from '~/core/catalog/capabilities'
 import { insertQuery } from '~/core/queries/rows/insert'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { setQuery } from '~/core/queries/rows/set'
+import { rowIdentity } from '~/core/queries/rows/shape'
 import {
   keyedRowsCountQuery,
   resourceTableTotalQueryKey,
@@ -163,7 +163,7 @@ export const useSaveStaged = ({
       getUpdates(submitted.drafts),
       ({ primaryKeys }) => primaryKeys
     )
-    if (getCapabilities(dialect).uniqueKeys || keys.length === 0) {
+    if (rowIdentity(columns, dialect).unique || keys.length === 0) {
       mutation.mutate(submitted)
       return
     }
@@ -177,6 +177,11 @@ export const useSaveStaged = ({
     if (matched.isErr()) {
       toast.error('Failed to save changes', {
         description: toError(matched.error.cause).message,
+      })
+    } else if (matched.value < keys.length) {
+      toast.error('Failed to save changes', {
+        description:
+          'Some edited rows are no longer in the table. Refresh it and try again.',
       })
     } else if (matched.value > keys.length) {
       setSharedKeys({ edited: keys.length, matched: matched.value, submitted })

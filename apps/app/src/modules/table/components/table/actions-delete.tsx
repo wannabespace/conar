@@ -27,11 +27,11 @@ import { createRef, useImperativeHandle, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { getCapabilities } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import { rowIdentity } from '~/core/queries/rows/shape'
 import {
   keyedRowsCountQuery,
   resourceTableTotalQueryKey,
@@ -81,16 +81,16 @@ export const DeleteRowsDialog = ({
     },
   }))
 
-  const { uniqueKeys } = getCapabilities(dialect)
+  const { unique } = rowIdentity(columns, dialect)
   const { data: matched, isPending: isCounting } = useQuery({
-    enabled: open && !uniqueKeys,
+    enabled: open && !unique,
     queryFn: async () =>
       keyedRowsCountQuery({ columns, primaryKeys: rows, schema, table }).run(
         await connectionResourceToQueryParams(connectionResource)
       ),
     queryKey: ['keyed-rows-count', connectionResource.id, schema, table, rows],
   })
-  const counting = !uniqueKeys && isCounting
+  const counting = !unique && isCounting
   const sharedKeyRows =
     matched !== undefined && matched > rows.length ? matched : undefined
 
@@ -160,7 +160,7 @@ export const DeleteRowsDialog = ({
             </span>
             . This cannot be undone.
             {sharedKeyRows !== undefined &&
-              ` Keys are not unique here: the selected ${rows.length === 1 ? 'row shares its key' : 'rows share their keys'} with other rows, so all ${sharedKeyRows} are removed.`}
+              ` The table can't tell ${rows.length === 1 ? 'this row' : 'these rows'} apart from others, so all ${sharedKeyRows} are removed.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {!only && (

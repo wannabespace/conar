@@ -9,6 +9,7 @@ import {
   bindValue,
   clickhouseWrite,
   matchesPrimaryKeys,
+  rowIdentity,
 } from './shape'
 
 const clickhouse = coldDialect(Dialect.ClickHouse).withTables<
@@ -70,5 +71,55 @@ test('a ClickHouse write without format() runs again with JSONExtract', async ()
 
   expect(sent.at(-1)).toBe(
     `alter table \`events\` update \`tags\` = CAST(JSONExtractKeysAndValues('{"v":{"a":1}}', 'v', 'UInt8'), 'Map(String, UInt8)') where \`id\` = 1 settings mutations_sync = 1`
+  )
+})
+
+test('a row without a primary key is found by a NOT NULL unique key, else by every comparable column', () => {
+  expect(
+    rowIdentity(
+      [
+        { id: 'id', primaryKey: 'pk', type: 'integer' },
+        { id: 'name', type: 'text' },
+      ],
+      Dialect.Postgres
+    )
+  ).toEqual({ columns: ['id'], unique: true })
+  expect(
+    rowIdentity(
+      [{ id: 'ts', primaryKey: 'pk', type: 'DateTime' }],
+      Dialect.ClickHouse
+    )
+  ).toEqual({ columns: ['ts'], unique: false })
+  expect(
+    rowIdentity(
+      [
+        { id: 'email', isNullable: false, type: 'text', unique: 'users_email' },
+        { id: 'name', type: 'text' },
+      ],
+      Dialect.Postgres
+    )
+  ).toEqual({ columns: ['email'], unique: true })
+  expect(
+    rowIdentity(
+      [
+        { id: 'email', isNullable: true, type: 'text', unique: 'users_email' },
+        { id: 'doc', type: 'json' },
+        { id: 'score', type: 'real' },
+        { id: 'name', type: 'text' },
+      ],
+      Dialect.Postgres
+    )
+  ).toEqual({ columns: ['email', 'name'], unique: false })
+})
+
+test('a NULL in a row identity matches with IS NULL', () => {
+  const query = postgres
+    .deleteFrom('events')
+    .where((eb) =>
+      matchesPrimaryKeys(eb, bindValue.postgres, [], { name: null, id: 1 })
+    )
+    .compile()
+  expect(query.sql).toBe(
+    'delete from "events" where ("name" is null and "id" = $1)'
   )
 })

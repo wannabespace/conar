@@ -140,12 +140,12 @@ export const DraftsActions = ({
                 Change {plural(shownSharedKeys.matched, 'row')}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Keys are not unique here: the{' '}
+                The table can&apos;t tell the{' '}
                 {shownSharedKeys.edited === 1
-                  ? 'row you edited shares its key'
-                  : `${shownSharedKeys.edited} rows you edited share their keys`}{' '}
-                with other rows, so saving changes all {shownSharedKeys.matched}{' '}
-                of them.
+                  ? 'row you edited'
+                  : `${shownSharedKeys.edited} rows you edited`}{' '}
+                apart from others, so saving changes all{' '}
+                {shownSharedKeys.matched} of them.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
