@@ -12,12 +12,23 @@ import {
 } from '@tamery/table'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { ReactNode } from 'react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+
+import { posthog } from '~/lib/posthog'
 
 const CURSOR_CLASS =
   'pointer-events-none absolute inset-0 group-focus-within/grid:inset-ring-3 group-focus-within/grid:inset-ring-ring/50'
+
+interface Peek {
+  column: string
+  row: number
+  value: string
+}
 
 export const ShareGrid = ({
   columns,
@@ -35,6 +46,7 @@ export const ShareGrid = ({
   rows: GridRow[]
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const peekAnchor = useRef<HTMLDivElement>(null)
   const kinds = new Map(columns.map(({ id, kind }) => [id, kind]))
   const gridColumns = columns.map((column) => ({
     id: column.id,
@@ -47,6 +59,35 @@ export const ShareGrid = ({
   })
   const isCursor = (row: number, column: string) =>
     cursor.row === row && gridColumns[cursor.column]?.id === column
+
+  const [peek, setPeek] = useState<Peek | null>(null)
+  const [shown, setShown] = useState(peek)
+  if (peek && peek !== shown) {
+    setShown(peek)
+  }
+  const isPeek = (row: number, column: string) =>
+    shown?.row === row && shown.column === column
+
+  const openPeek = (next: Peek) => {
+    setPeek(next)
+    void posthog.capture('share_cell_opened', { kind: kinds.get(next.column) })
+  }
+
+  const openCursorPeek = () => {
+    const column = gridColumns[cursor.column]?.id
+    const value = column ? rows[cursor.row]?.[column] : undefined
+    if (column && typeof value === 'string') {
+      openPeek({ column, row: cursor.row, value })
+    }
+  }
+
+  useHotkeys(
+    [
+      { callback: openCursorPeek, hotkey: 'Enter' },
+      { callback: openCursorPeek, hotkey: 'Space' },
+    ],
+    { target: scrollRef }
+  )
 
   return (
     <div className="min-h-0 flex-1">
@@ -96,7 +137,9 @@ export const ShareGrid = ({
           const kind = kinds.get(column.id)
           return (
             <div
+              ref={isPeek(rowIndex, column.id) ? peekAnchor : undefined}
               role="gridcell"
+              tabIndex={-1}
               data-cursor={isCursor(rowIndex, column.id) || undefined}
               style={style}
               className={cn(
@@ -104,6 +147,10 @@ export const ShareGrid = ({
                 typeof value !== 'string' && 'text-muted-foreground/60'
               )}
               onPointerDown={() => place(rowIndex, gridColumns.indexOf(column))}
+              onDoubleClick={() =>
+                typeof value === 'string' &&
+                openPeek({ column: column.id, row: rowIndex, value })
+              }
             >
               {typeof value !== 'string' && 'null'}
               {typeof value === 'string' &&
@@ -135,6 +182,34 @@ export const ShareGrid = ({
           )
         }}
       />
+      <Popover
+        open={!!peek}
+        onOpenChange={(open) => !open && setPeek(null)}
+        onOpenChangeComplete={(open) => !open && setShown(null)}
+      >
+        {shown && (
+          <PopoverContent
+            anchor={peekAnchor}
+            align="start"
+            padding="none"
+            className="w-md overflow-hidden"
+          >
+            <div className="flex h-9 shrink-0 items-center border-b px-4 text-xs">
+              <span data-mask className="truncate font-medium">
+                {shown.column}
+              </span>
+            </div>
+            <ScrollArea className="scroll-fade max-h-[min(32rem,60vh)] min-h-0">
+              <div
+                data-mask
+                className="px-4 py-3 text-xs wrap-break-word whitespace-pre-wrap select-text"
+              >
+                {shown.value}
+              </div>
+            </ScrollArea>
+          </PopoverContent>
+        )}
+      </Popover>
     </div>
   )
 }
