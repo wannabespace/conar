@@ -1,44 +1,45 @@
 import { defineIconsConfig } from '@tamery/icons'
 
 export default defineIconsConfig({
-  sources: {
-    cyan: 'brand/cyan/source.png',
-    'cyan-inverse': 'brand/cyan-inverse/source.png',
-    'dark-cyan': 'brand/dark-cyan/source.png',
-    'dark-white': 'brand/dark-white/source.png',
-  },
-  sourceMarkSize: 0.6,
-  importPrefix: 'tamery-avatar-',
-  sets: {
-    'apps/app/public': { preset: 'web', source: 'cyan' },
-    'apps/docs/public': { preset: 'web', source: 'cyan' },
-    'apps/main/public': { preset: 'web', source: 'cyan' },
-    'apps/share/public': { preset: 'web', source: 'cyan' },
-    'brand/cyan': { preset: 'brand', source: 'cyan' },
-    'brand/cyan-inverse': { preset: 'brand', source: 'cyan-inverse' },
-    'brand/dark-cyan': { preset: 'brand', source: 'dark-cyan' },
-    'brand/dark-white': { preset: 'brand', source: 'dark-white' },
-  },
-  files: {
-    'apps/app/public/logo.png': {
-      shape: 'rounded',
-      size: 256,
-      source: 'cyan-inverse',
+  importPattern: 'tamery-avatar-{image}-{size}.png',
+  images: {
+    cyan: {
+      file: 'brand/cyan/source.png',
+      markSize: 0.6,
+      to: {
+        'apps/app/public': 'web',
+        'apps/desktop/resources/icon-1024x1024.png': {
+          shape: 'rounded',
+          size: 1024,
+        },
+        'apps/desktop/resources/macos-icon.icon/Assets/icon.png': {
+          shape: 'square',
+          size: 1024,
+        },
+        'apps/docs/public': 'web',
+        'apps/main/public': 'web',
+        'apps/share/public': 'web',
+        'brand/cyan': 'all',
+      },
     },
-    'apps/desktop/resources/icon-1024x1024.png': {
-      shape: 'rounded',
-      size: 1024,
-      source: 'cyan',
+    'cyan-inverse': {
+      file: 'brand/cyan-inverse/source.png',
+      markSize: 0.6,
+      to: {
+        'apps/app/public/logo.png': { shape: 'rounded', size: 256 },
+        'apps/main/public/logo.png': { shape: 'rounded', size: 256 },
+        'brand/cyan-inverse': 'all',
+      },
     },
-    'apps/desktop/resources/macos-icon.icon/Assets/icon.png': {
-      shape: 'square',
-      size: 1024,
-      source: 'cyan',
+    'dark-cyan': {
+      file: 'brand/dark-cyan/source.png',
+      markSize: 0.6,
+      to: { 'brand/dark-cyan': 'all' },
     },
-    'apps/main/public/logo.png': {
-      shape: 'rounded',
-      size: 256,
-      source: 'cyan-inverse',
+    'dark-white': {
+      file: 'brand/dark-white/source.png',
+      markSize: 0.6,
+      to: { 'brand/dark-white': 'all' },
     },
   },
 })

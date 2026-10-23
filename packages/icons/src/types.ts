@@ -8,37 +8,58 @@ export interface Shape {
    * continuous-corner superellipse macOS and iOS use; omit for square corners.
    */
   corners?: number | 'squircle'
-  /** Width of the mark as a fraction of the icon size. */
+  /** How wide the mark is in the icon, as a fraction of the icon size. */
   markSize: number
 }
 
-export type PresetName = 'brand' | 'web'
+/** `web`: favicons, apple-touch and manifest icons. `all`: `web` plus 1024 px tiles and a logo. */
+export type PresetName = 'all' | 'web'
 
-interface PngFile<Source extends string> {
+export interface PngIcon {
   shape: ShapeName
   size: number
-  source: Source
 }
 
-interface IcoFile<Source extends string> {
+export interface IcoIcon {
   shape: ShapeName
-  sizes: [IcoSize, ...IcoSize[]]
-  source: Source
+  sizes: readonly [IcoSize, ...IcoSize[]]
 }
 
-export type IconFile<Source extends string> = IcoFile<Source> | PngFile<Source>
+export type Icon = IcoIcon | PngIcon
 
-export type IconFiles<Source extends string, Path extends string> = {
-  [File in Path]: File extends `${string}.ico`
-    ? IcoFile<Source>
-    : PngFile<Source>
+export interface ImageConfig {
+  /** Where the image is kept; `pnpm icons <folder>` replaces it with a newer export. */
+  file: `${string}.png`
+  /** How wide the mark is in this image, as a fraction of the image size. */
+  markSize: number
+  /**
+   * Where the image is converted to. A folder gets a preset set of icons;
+   * a `.png` file takes `{ shape, size }`, an `.ico` file `{ shape, sizes }`.
+   */
+  to: Record<string, Icon | PresetName>
 }
 
-export interface IconsConfig<Source extends string> {
-  files: Record<string, IconFile<Source>>
-  importPrefix: string
-  sets: Record<string, { preset: PresetName; source: Source }>
-  shapes: Record<ShapeName, Shape>
-  sourceMarkSize: number
-  sources: Record<Source, `${string}.png`>
+export interface IconsConfig {
+  /** The artwork every icon is cut from, each with the places it goes. */
+  images: Record<string, ImageConfig>
+  /** File name of a new export `pnpm icons <folder>` looks for; the largest `{size}` wins. */
+  importPattern: `${string}{image}${string}{size}${string}`
+  /** Overrides for the built-in `square`, `rounded`, `squircle` and `maskable`. */
+  shapes?: Partial<Record<ShapeName, Shape>>
+}
+
+type CheckedTargets<Targets> = {
+  [Target in keyof Targets]: Target extends `${string}.ico`
+    ? IcoIcon
+    : Target extends `${string}.png`
+      ? PngIcon
+      : PresetName
+}
+
+export interface CheckedIconsConfig<Config extends IconsConfig> {
+  images: {
+    [Name in keyof Config['images']]: {
+      to: CheckedTargets<Config['images'][Name]['to']>
+    }
+  }
 }

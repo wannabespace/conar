@@ -2,8 +2,9 @@ export { defineIconsConfig } from './define'
 export { generateIcons } from './generate'
 export type {
   IcoSize,
-  IconFile,
+  Icon,
   IconsConfig,
+  ImageConfig,
   PresetName,
   Shape,
   ShapeName,

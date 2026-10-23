@@ -1,7 +1,7 @@
 import sharp from 'sharp'
 
 import { toIco } from './ico'
-import type { IconFile, Shape } from './types'
+import type { Icon, Shape } from './types'
 
 export const CANVAS = 1024
 
@@ -62,7 +62,7 @@ export const renderShape = async (
     .toBuffer()
 }
 
-export const encode = async (icon: Buffer, file: IconFile<string>) => {
+export const encode = async (icon: Buffer, file: Icon) => {
   if ('size' in file) {
     return toPng(icon, file.size)
   }
