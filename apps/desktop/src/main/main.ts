@@ -1,9 +1,8 @@
 import '@tamery/shared/arktype-config'
 import path from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
-import { resetTransactions } from '@tamery/connection/queries/transactions'
-import { isConnectionError } from '@tamery/shared/connections'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import { Result } from 'better-result'
@@ -11,11 +10,11 @@ import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
 
-import { keepsServingAfterClose, sendToBackground } from './lib/background'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
 import { buildMenu } from './lib/menu'
+import { queryProcess } from './lib/query-process'
 import { autoUpdater } from './lib/todesktop'
 
 const DEBUGGING_SWITCHES = ['remote-debugging-port', 'remote-debugging-pipe']
@@ -26,26 +25,24 @@ if (
   app.exit(1)
 }
 
-initElectronEvents()
+const RENDERER_INDEX = path.join(import.meta.dirname, './renderer/index.html')
 
-process.on('uncaughtException', (error) => {
-  if (isConnectionError(error)) {
-    console.error('[Suppressed Connection Error]', error.message)
-    return
+// The preload runs in whatever page a window navigates to, so anything that is not the app itself must never reach it or IPC.
+const isAppUrl = (url: string) => {
+  const parsed = URL.parse(url)
+  if (!parsed) {
+    return false
   }
-  throw error
-})
+  if (!app.isPackaged) {
+    return parsed.origin === URL.parse(`${process.env.WEB_URL}`)?.origin
+  }
+  return (
+    parsed.protocol === 'file:' &&
+    path.relative(fileURLToPath(parsed), RENDERER_INDEX) === ''
+  )
+}
 
-process.on('unhandledRejection', (reason) => {
-  if (isConnectionError(reason)) {
-    console.error(
-      '[Suppressed Connection Rejection]',
-      reason instanceof Error ? reason.message : reason
-    )
-    return
-  }
-  throw reason
-})
+initElectronEvents(isAppUrl)
 
 export const store = new Store<{
   bounds?: Rectangle
@@ -130,6 +127,12 @@ export const createWindow = (route?: string) => {
     }
   }
 
+  win.webContents.on('will-navigate', (event) => {
+    if (!isAppUrl(event.url)) {
+      event.preventDefault()
+    }
+  })
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (EXTERNAL_PROTOCOLS.has(new URL(url).protocol)) {
       void openExternal(win, url)
@@ -175,17 +178,11 @@ export const createWindow = (route?: string) => {
 
   win.webContents.on('did-start-navigation', (details) => {
     if (details.isMainFrame && !details.isSameDocument) {
-      void resetTransactions()
+      queryProcess.resetTransactions()
     }
   })
 
-  win.on('close', (event) => {
-    if (keepsServingAfterClose()) {
-      event.preventDefault()
-      sendToBackground(win)
-      return
-    }
-
+  win.on('close', () => {
     if (saveBoundsTimeout) {
       clearTimeout(saveBoundsTimeout)
     }
@@ -214,10 +211,7 @@ export const createWindow = (route?: string) => {
   })
 
   if (app.isPackaged) {
-    win.loadFile(
-      path.join(import.meta.dirname, './renderer/index.html'),
-      route ? { hash: route } : undefined
-    )
+    win.loadFile(RENDERER_INDEX, route ? { hash: route } : undefined)
   } else {
     win.webContents.openDevTools()
     win.loadURL(`${process.env.WEB_URL}${route ? `#${route}` : ''}`)

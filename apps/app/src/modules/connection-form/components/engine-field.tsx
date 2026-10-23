@@ -3,7 +3,9 @@ import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
@@ -13,6 +15,17 @@ import type { ConnectionForm } from '../lib/connection-form'
 import { switchEngine } from '../lib/connection-form'
 
 type Engine = (typeof engines)[number]
+
+const engineGroups = [
+  {
+    label: 'Databases',
+    engines: engines.filter(({ provider }) => !provider),
+  },
+  {
+    label: 'Providers',
+    engines: engines.filter(({ provider }) => provider),
+  },
+]
 
 const EngineLabel = ({ label, provider, type }: Engine) => (
   <>
@@ -57,10 +70,15 @@ export const EngineField = ({
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {engines.map((item) => (
-                <SelectItem key={item.label} value={item}>
-                  <EngineLabel {...item} />
-                </SelectItem>
+              {engineGroups.map((group) => (
+                <SelectGroup key={group.label}>
+                  <SelectLabel>{group.label}</SelectLabel>
+                  {group.engines.map((item) => (
+                    <SelectItem key={item.label} value={item}>
+                      <EngineLabel {...item} />
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               ))}
             </SelectContent>
           </Select>

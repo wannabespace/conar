@@ -1,0 +1,20 @@
+{
+  "extends": "@tamery/configs/ts/react.json",
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./src/*"]
+    },
+    "noEmit": true,
+    "strictNullChecks": true
+  },
+  "references": [
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../proxy"
+    }
+  ],
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

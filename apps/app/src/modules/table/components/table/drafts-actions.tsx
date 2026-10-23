@@ -1,5 +1,14 @@
 import { FileDiffIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@tamery/ui/components/alert-dialog'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
@@ -34,11 +43,15 @@ export const DraftsActions = ({
     selector: (state) => state.newRows,
   })
   const [isReviewOpen, setIsReviewOpen] = useState(false)
-  const { isSaving, save } = useSaveStaged({
+  const { isSaving, save, sharedKeys } = useSaveStaged({
     onSaved: () => setIsReviewOpen(false),
     schema,
     table,
   })
+  const [shownSharedKeys, setShownSharedKeys] = useState(sharedKeys)
+  if (sharedKeys && sharedKeys.matched !== shownSharedKeys?.matched) {
+    setShownSharedKeys(sharedKeys)
+  }
 
   useSaveHotkey(save, isSaving)
 
@@ -54,15 +67,15 @@ export const DraftsActions = ({
           render={
             <Button
               variant="ghost-muted"
-              size="icon-sm"
+              size="sm"
               className="relative overflow-visible"
-              aria-label="Review changes"
               onClick={() => setIsReviewOpen(true)}
               disabled={isSaving}
             />
           }
         >
           <HugeiconsIcon icon={FileDiffIcon} strokeWidth={2} />
+          Review
           {errorCount > 0 && (
             <span
               aria-hidden
@@ -85,7 +98,14 @@ export const DraftsActions = ({
       </Tooltip>
       <Tooltip shortcut={!isSaving && <ShortcutKbd shortcut="saveChanges" />}>
         <TooltipTrigger
-          render={<Button size="sm" onClick={save} disabled={isSaving} />}
+          render={
+            <Button
+              size="sm"
+              aria-label={`Save (${changeCount})`}
+              onClick={save}
+              disabled={isSaving}
+            />
+          }
         >
           <LoadingContent loading={isSaving}>
             <span>
@@ -108,6 +128,39 @@ export const DraftsActions = ({
           setIsReviewOpen(false)
         }}
       />
+      <AlertDialog
+        open={!!sharedKeys}
+        onOpenChange={(open) => !open && sharedKeys?.cancel()}
+        onOpenChangeComplete={(open) => !open && setShownSharedKeys(null)}
+      >
+        {shownSharedKeys && (
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Change {plural(shownSharedKeys.matched, 'row')}?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Saving also changes{' '}
+                {plural(
+                  shownSharedKeys.matched - shownSharedKeys.edited,
+                  'other row'
+                )}{' '}
+                with the same values as the{' '}
+                {shownSharedKeys.edited === 1 ? 'row' : 'rows'} you edited.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel
+                variant="destructive"
+                onClick={() => sharedKeys?.confirm()}
+              >
+                Change {plural(shownSharedKeys.matched, 'row')}
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </>
   )
 }

@@ -2,6 +2,7 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely, OnModifyForeignAction } from 'kysely'
 import { sql } from 'kysely'
 
+import { suggestedName } from '~/core/catalog/engine-name'
 import { identifiers } from '~/core/queries/shared/sql-fragments'
 
 export const CONSTRAINT_KINDS = [
@@ -38,6 +39,19 @@ const foreignActions: Record<ReferentialAction, OnModifyForeignAction> = {
   'SET NULL': 'set null',
 }
 
+// Every engine defaults to NO ACTION, and Oracle rejects it spelled out, so the default is spelled by omission.
+export const referentialActionClauses = ({
+  onDelete,
+  onUpdate,
+}: {
+  onDelete?: string | null
+  onUpdate?: string | null
+}) =>
+  [
+    onDelete && onDelete !== 'NO ACTION' ? ` ON DELETE ${onDelete}` : '',
+    onUpdate && onUpdate !== 'NO ACTION' ? ` ON UPDATE ${onUpdate}` : '',
+  ].join('')
+
 export interface ConstraintShape {
   columns: string[]
   expression: string
@@ -57,11 +71,12 @@ export interface ConstraintTarget {
 }
 
 export const foreignKeyName = (
+  dialect: Dialect,
   table: string,
   column: string,
   taken: Set<string>
 ) => {
-  const base = `${table}_${column}_fkey`
+  const base = suggestedName(dialect, [table, column, 'fkey'])
   let name = base
   for (let suffix = 2; taken.has(name); suffix += 1) {
     name = `${base}_${suffix}`
@@ -89,16 +104,19 @@ export const addConstraint = (
 
   return {
     check: () => alter.addCheckConstraint(name, sql.raw(expression)),
-    foreignKey: () =>
-      alter
-        .addForeignKeyConstraint(
-          name,
-          columns,
-          `${foreignSchema}.${foreignTable}`,
-          foreignColumns
-        )
-        .onDelete(foreignActions[onDelete])
-        .onUpdate(foreignActions[onUpdate]),
+    foreignKey: () => {
+      const key = alter.addForeignKeyConstraint(
+        name,
+        columns,
+        `${foreignSchema}.${foreignTable}`,
+        foreignColumns
+      )
+      const deleting =
+        onDelete === 'NO ACTION' ? key : key.onDelete(foreignActions[onDelete])
+      return onUpdate === 'NO ACTION'
+        ? deleting
+        : deleting.onUpdate(foreignActions[onUpdate])
+    },
     primaryKey: () => alter.addPrimaryKeyConstraint(name, columns),
     unique: () => alter.addUniqueConstraint(name, columns),
   }[kind]()
@@ -136,7 +154,7 @@ export const constraintClause = ({
     return constraint
   }
 
-  return sql`${constraint} REFERENCES ${sql.id(foreignSchema, foreignTable)} (${identifiers(foreignColumns)}) ON DELETE ${sql.raw(onDelete)} ON UPDATE ${sql.raw(onUpdate)}`
+  return sql`${constraint} REFERENCES ${sql.id(foreignSchema, foreignTable)} (${identifiers(foreignColumns)})${sql.raw(referentialActionClauses({ onDelete, onUpdate }))}`
 }
 
 export const mysqlDropKey = (kind: ConstraintKind, name: string) =>

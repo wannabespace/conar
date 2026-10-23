@@ -71,19 +71,19 @@ export const TriggerInspector = ({
               mode: item.enabledMode,
               name: item.name,
               schema: item.schema,
-              shape: getShape(draft),
+              shape: getShape(draft, dialect, item),
               table: item.table,
             })
           : createTriggerQuery({
               schema: draft.schema,
-              shape: getShape(draft),
+              shape: getShape(draft, dialect, item),
               table: draft.table,
             })
       ),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Trigger "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+        `Trigger "${getShape(draft, dialect, item).name}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },
@@ -119,8 +119,9 @@ export const TriggerInspector = ({
   const timings = options.timings.filter(
     (timing) => !item || targetsFor(timing).includes(item.table)
   )
-  const saved = item && getShape(getDraft(item, draft.schema, dialect))
-  const changed = !saved || !sameShape(getShape(draft), saved)
+  const saved =
+    item && getShape(getDraft(item, draft.schema, dialect), dialect, item)
+  const changed = !saved || !sameShape(getShape(draft, dialect, item), saved)
 
   return (
     <Inspector

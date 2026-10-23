@@ -4,6 +4,7 @@ import { useQueries } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
 import type { ConnectionResource } from '~/core/connection/sync'
+import { DEFAULT_PAGE_LIMIT } from '~/core/connection/utils'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import type { RowsQueryProps } from '~/core/queries/rows/list'
 import {
@@ -34,7 +35,24 @@ const keysIn = (rows: GridRow[], column: string) =>
 
 const byColumn = (
   results: { data?: readonly [string, Map<string, string>] }[]
-) => new Map(results.flatMap(({ data }) => (data ? [data] : [])))
+) => {
+  const merged = new Map<string, Map<string, string>>()
+  for (const { data } of results) {
+    if (data) {
+      const [id, labels] = data
+      merged.set(id, new Map([...(merged.get(id) ?? []), ...labels]))
+    }
+  }
+  return merged
+}
+
+// Chunked like the grid's pages, so a newly loaded page fetches only its own labels and the loaded ones stay cached.
+const rowChunks = (rows: GridRow[]) =>
+  Array.from(
+    { length: Math.ceil(rows.length / DEFAULT_PAGE_LIMIT) },
+    (_, index) =>
+      rows.slice(index * DEFAULT_PAGE_LIMIT, (index + 1) * DEFAULT_PAGE_LIMIT)
+  )
 
 const LABEL_CHARS = 60
 const LABEL_NAMES_BY_PREFERENCE = [
@@ -155,20 +173,23 @@ export const useReferenceLabels = (
 
   return useQueries({
     combine: byColumn,
-    queries: labeled.map(({ foreign, id, label }) => {
-      const keys = keysIn(rows, id)
-      return {
-        ...referenceLabelsQueryOptions({
-          connectionResource,
-          foreign,
-          id,
-          keys,
-          label,
-          referenced: referenced.get(id),
-        }),
-        enabled: keys.length > 0,
-      }
-    }),
+    queries: labeled.flatMap(({ foreign, id, label }) =>
+      rowChunks(rows).flatMap((chunk) => {
+        const keys = keysIn(chunk, id)
+        return keys.length > 0
+          ? [
+              referenceLabelsQueryOptions({
+                connectionResource,
+                foreign,
+                id,
+                keys,
+                label,
+                referenced: referenced.get(id),
+              }),
+            ]
+          : []
+      })
+    ),
   })
 }
 

@@ -195,12 +195,15 @@ const getGuessedEngine = (
 
 const BARE_HOST = /^[\w.:%[\]-]+$/u
 
-const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
+const fill = (form: ConnectionForm, { format, parts }: ConnectionGuess) => {
   const { values } = form.state
   if (parts.host && BARE_HOST.test(values.host) && parts.host !== values.host) {
     clearFields(form)
   }
   switchEngine(form, getGuessedEngine(values, parts))
+  if (format === 'jdbc' || format === 'url') {
+    form.setFieldValue('options', parts.options ?? '')
+  }
   for (const field of SERVER_FIELDS) {
     const value = parts[field]
     if (value) {

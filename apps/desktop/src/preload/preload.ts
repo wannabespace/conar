@@ -27,9 +27,13 @@ export type ElectronPreload = Promisified<typeof electron> & {
       callback: (isFullscreen: boolean) => void
     ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
-    onKeptRunningOnQuit: (callback: () => void) => () => void
     onUrlOpened: (callback: () => void) => () => void
     openWindow: (route: string) => Promise<void>
+  }
+  copyDatabase: {
+    onLog: (
+      callback: (params: { copyId: string; line: string }) => void
+    ) => () => void
   }
   mcp: {
     serve: (source: McpSource) => () => void
@@ -141,8 +145,6 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     onFocusChange: (onMessage) => onEvent('focus-changed', onMessage),
     onFullscreenChange: (onMessage) => onEvent('fullscreen-changed', onMessage),
-    onKeptRunningOnQuit: (onMessage) =>
-      onEvent('kept-running-on-quit', onMessage),
     onSendToast: (onMessage) => onEvent('toast', onMessage),
     onUpdatesStatus: (onMessage) => onEvent('updates-status', onMessage),
     onUrlOpened: (onMessage) => onEvent('url-opened', onMessage),
@@ -165,6 +167,15 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.invoke('connectionLinks.setDefault', arg)
     ),
     take: handleElectronError(() => ipcRenderer.invoke('connectionLinks.take')),
+  },
+  copyDatabase: {
+    cancel: handleElectronError((copyId: string) =>
+      ipcRenderer.invoke('copyDatabase.cancel', copyId)
+    ),
+    onLog: (onMessage) => onEvent('copyDatabase.log', onMessage),
+    start: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('copyDatabase.start', arg)
+    ),
   },
   deviceEncryption: {
     createKey: handleElectronError(() =>
@@ -195,9 +206,6 @@ contextBridge.exposeInMainWorld('electron', {
     forgetClient: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.forgetClient', arg)
     ),
-    keepRunning: handleElectronError(() =>
-      ipcRenderer.invoke('mcp.keepRunning')
-    ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
     ),
@@ -212,9 +220,6 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)
-    ),
-    setKeepRunning: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('mcp.setKeepRunning', arg)
     ),
     status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
   },
@@ -238,6 +243,7 @@ contextBridge.exposeInMainWorld('electron', {
     clickhouse: dialectQueryBridge('clickhouse'),
     mssql: dialectQueryBridge('mssql'),
     mysql: dialectQueryBridge('mysql'),
+    oracle: dialectQueryBridge('oracle'),
     postgres: dialectQueryBridge('postgres'),
     sqlite: dialectQueryBridge('sqlite'),
   },

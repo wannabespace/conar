@@ -26,6 +26,7 @@ import { Route as LayoutTermsOfServiceRouteImport } from './modules/legal/routes
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as AccountAiUsageRouteImport } from './modules/ai-usage/routes/account/ai-usage'
 import { Route as AccountBillingRouteImport } from './modules/billing/routes/account/billing'
+import { Route as DeepDotshareRouteImport } from './modules/deep-link/routes/deep.share'
 import { Route as DeepDotsignInRouteImport } from './modules/deep-link/routes/deep.sign-in'
 import { Route as AccountSettingsIndexRouteImport } from './modules/settings/routes/account/settings/index'
 
@@ -112,6 +113,11 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AccountRoute,
 } as any)
+const DeepDotshareRoute = DeepDotshareRouteImport.update({
+  id: '/deep/share',
+  path: '/deep/share',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DeepDotsignInRoute = DeepDotsignInRouteImport.update({
   id: '/deep/sign-in',
   path: '/deep/sign-in',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/account/ai-usage': typeof AccountAiUsageRoute
   '/account/billing': typeof AccountBillingRoute
+  '/deep/share': typeof DeepDotshareRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account/': typeof AccountIndexRoute
   '/account/settings/': typeof AccountSettingsIndexRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/account/ai-usage': typeof AccountAiUsageRoute
   '/account/billing': typeof AccountBillingRoute
+  '/deep/share': typeof DeepDotshareRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account': typeof AccountIndexRoute
   '/account/settings': typeof AccountSettingsIndexRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/account/ai-usage': typeof AccountAiUsageRoute
   '/account/billing': typeof AccountBillingRoute
+  '/deep/share': typeof DeepDotshareRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/account/ai-usage'
     | '/account/billing'
+    | '/deep/share'
     | '/deep/sign-in'
     | '/account/'
     | '/account/settings/'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/account/ai-usage'
     | '/account/billing'
+    | '/deep/share'
     | '/deep/sign-in'
     | '/account'
     | '/account/settings'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/_layout/terms-of-service'
     | '/account/ai-usage'
     | '/account/billing'
+    | '/deep/share'
     | '/deep/sign-in'
     | '/_layout/'
     | '/account/'
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
   AccountRoute: typeof AccountRouteWithChildren
   OpenRoute: typeof OpenRoute
+  DeepDotshareRoute: typeof DeepDotshareRoute
   DeepDotsignInRoute: typeof DeepDotsignInRoute
 }
 
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof AccountRoute
     }
+    '/deep/share': {
+      id: '/deep/share'
+      path: '/deep/share'
+      fullPath: '/deep/share'
+      preLoaderRoute: typeof DeepDotshareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/deep/sign-in': {
       id: '/deep/sign-in'
       path: '/deep/sign-in'
@@ -448,6 +468,7 @@ const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   AccountRoute: AccountRouteWithChildren,
   OpenRoute: OpenRoute,
+  DeepDotshareRoute: DeepDotshareRoute,
   DeepDotsignInRoute: DeepDotsignInRoute,
 }
 export const routeTree = rootRouteImport

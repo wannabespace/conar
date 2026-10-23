@@ -47,7 +47,7 @@ export const BentoCard = ({
         onTap={play}
         className={cn(
           pageCardClass,
-          'relative isolate flex min-h-80 flex-1 flex-col overflow-hidden'
+          'group relative isolate flex min-h-80 flex-1 flex-col overflow-hidden'
         )}
       >
         <header className="relative z-10 flex flex-col gap-1 p-6 pb-0">

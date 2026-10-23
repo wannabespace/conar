@@ -1,6 +1,7 @@
 import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
+import { plsqlUnit } from '~/core/queries/shared/plsql'
 import { createQuery } from '~/core/runtime/query'
 
 import type { TriggerShape, TriggerTarget } from './shape'
@@ -75,6 +76,26 @@ export const recreateTriggerQuery = ({
           }
           throw error
         }
+      },
+      oracle: async (db) => {
+        await plsqlUnit.save(db, {
+          body: shape.body,
+          create: (replace) =>
+            createTriggerStatements({ replace, schema, shape, table }).oracle,
+          original: { name, schema, type: 'TRIGGER' },
+          restored:
+            enabled === false
+              ? setTriggerEnabledStatements({
+                  enabled,
+                  mode,
+                  name,
+                  schema,
+                  table,
+                }).oracle
+              : undefined,
+          unit: { name: shape.name, schema, type: 'TRIGGER' },
+        })
+        await restore?.oracle.execute(db)
       },
       postgres: (db) =>
         db.transaction().execute(async (tx) => {

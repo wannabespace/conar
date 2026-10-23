@@ -28,7 +28,7 @@ const predicate = (
   { ref, values }: ActiveFilter,
   bind: FilterValueBinding
 ) => {
-  const comparison = sql`${sql.ref(column)} ${sql.raw(SQL_OPERATORS[ref.operator])}`
+  const comparison = sql`${sql.id(column)} ${sql.raw(SQL_OPERATORS[ref.operator])}`
   if (ref.hasValue === false) {
     return comparison
   }
@@ -52,7 +52,7 @@ export const toKyselyFilter = <E extends ExpressionBuilder<any, any>>(
   (concatOperator === 'AND' ? eb.and : eb.or)(
     filters.map(({ via, ...filter }) =>
       via
-        ? sql`${sql.ref(filter.column)} in (select ${sql.ref(via.key)} from ${sql.id(via.schema, via.table)} where ${predicate(via.target, filter, unbound)})`
+        ? sql`${sql.id(filter.column)} in (select ${sql.id(via.key)} from ${sql.id(via.schema, via.table)} where ${predicate(via.target, filter, unbound)})`
         : predicate(filter.column, filter, bind)
     )
   )

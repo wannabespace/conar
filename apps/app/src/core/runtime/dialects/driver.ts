@@ -1,4 +1,5 @@
 import { rowObjects } from '@tamery/connection/queries'
+import { toQueryPayload } from '@tamery/connection/queries/kysely'
 import { describeConnectionString } from '@tamery/connection/utils'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
@@ -172,11 +173,7 @@ export const createDialectProvider = (
 
 export const createKyselyDriver = (
   dialect: Dialect,
-  options: DialectOptions,
-  transformQuery = (compiledQuery: CompiledQuery): QueryPayload => ({
-    query: compiledQuery.sql,
-    values: compiledQuery.parameters as unknown[],
-  })
+  options: DialectOptions
 ) => {
   const provider = createDialectProvider(dialect, options)
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
@@ -185,7 +182,7 @@ export const createKyselyDriver = (
     const { signal } = options
     signal?.throwIfAborted()
     const { queryId } = compiledQuery.queryId
-    const payload = { ...transformQuery(compiledQuery), queryId }
+    const payload = { ...toQueryPayload(dialect, compiledQuery), queryId }
     const cancel = () => silently(() => provider.cancel(queryId))
     signal?.addEventListener('abort', cancel, { once: true })
     const promise = (

@@ -115,6 +115,12 @@ const HOST_HINTS: HostHint[] = [
     suffixes: ['.altinity.cloud'],
     type: ConnectionType.ClickHouse,
   },
+  {
+    label: 'Oracle Autonomous Database',
+    port: '1522',
+    suffixes: ['.oraclecloud.com'],
+    type: ConnectionType.Oracle,
+  },
   { label: 'Aiven', suffixes: ['.aivencloud.com'] },
   {
     label: 'DigitalOcean',

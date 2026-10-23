@@ -14,20 +14,22 @@ mysql://user:password@localhost:3306/mydb
 mariadb://user:password@localhost:3306/mydb
 ```
 
-The default port is **3306**. An `.env` file or a `mysql` / `mariadb` command works too.
+The default port is **3306**. An `.env` file, a Go DSN like `user:pass@tcp(host:3306)/mydb`, or a `mysql` command works too.
 
 ## SSL
 
-Use your provider's connection string with its SSL options. To require encryption and verify the certificate:
+Use your provider's connection string with its SSL options. `ssl=true` encrypts the connection and verifies the certificate:
 
 ```text
-mysql://user:password@db.example.com:3306/mydb?ssl=true&sslrejectunauthorized=true
+mysql://user:password@db.example.com:3306/mydb?ssl=true
 ```
 
-With no SSL option, Tamery tries an encrypted connection without certificate verification. It uses an unencrypted connection only if the server reports that SSL is unavailable. `ssl=false` turns encryption off explicitly.
+Add `sslrejectunauthorized=false` to keep encryption but skip the certificate check. `ssl=false` turns encryption off.
+
+With no SSL option, Tamery tries an encrypted connection without certificate verification. It drops to an unencrypted one only if the server itself says SSL is unavailable.
 
 ## MariaDB
 
-You can browse and edit rows, run SQL, and manage the schema as with MySQL. System-versioned tables show current rows; query their history with SQL. Sequences are available through SQL rather than the Navigator.
+Everything works as with MySQL: rows, SQL, schema. System-versioned tables show their current rows; query the history with SQL. Sequences are available through SQL rather than the Navigator.
 
 For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

@@ -30,14 +30,12 @@ const store = new Store<{
   access: Record<string, McpAccess>
   clients: Record<string, Omit<McpClient, 'name'>>
   enabled: boolean
-  keepRunning: boolean
   token: string
 }>({
   defaults: {
     access: {},
     clients: {},
     enabled: true,
-    keepRunning: true,
     token: newToken(),
   },
   name: 'mcp',
@@ -95,6 +93,11 @@ const jsonRpcError = (res: ServerResponse, status: number, message: string) => {
 const handle = async (req: IncomingMessage, res: ServerResponse) => {
   if (req.url !== '/mcp') {
     res.writeHead(404).end()
+    return
+  }
+  // A website rebinding its own domain to 127.0.0.1 arrives with its own Host.
+  if (!/^(?:127\.0\.0\.1|localhost)(?::\d+)?$/u.test(req.headers.host ?? '')) {
+    res.writeHead(403).end()
     return
   }
   if (req.headers.authorization !== `Bearer ${store.get('token')}`) {
@@ -228,7 +231,6 @@ export const mcp = {
     store.set('clients', omit(store.get('clients'), [name]))
     return clients()
   },
-  keepRunning: () => store.get('keepRunning'),
   regenerateToken: () => {
     store.set('token', newToken())
     store.set('clients', {})
@@ -255,10 +257,6 @@ export const mcp = {
     store.set('enabled', enabled)
     await (enabled ? start() : stop())
     return status()
-  },
-  setKeepRunning: (enabled: boolean) => {
-    store.set('keepRunning', enabled)
-    return enabled
   },
   status,
 }

@@ -23,6 +23,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 5. **Schema notes (semantic layer).** Per-table and per-column descriptions ("status 3 = refunded", "amounts in cents"), AI-drafted, user-edited, synced per workspace. Added to every AI prompt so filters, completion and chat all get more accurate.
 6. **Explain plan plus "why is this slow".** Visual plan for slow queries (already detected); AI suggests an index that lands as a visualizer draft.
 7. **Schema diff between connections** (e.g. staging vs prod). Output a migration in SQL, Drizzle or Prisma, reusing codegen.
+   - **Copy database beyond PostgreSQL.** Postgres ships (`pg_dump | psql` in the desktop database process). Left: MySQL and MariaDB through `mysqldump`, which also needs bundling; copying into a database that does not exist yet (typed in the target picker, created first); table sizes in the list, as TablePlus shows; a subset that brings the enums and functions its tables use, which `pg_dump --table` leaves out, so a fresh target fails on them today; a step bar (connect, dump, restore) over the raw log; scheduled copies; client keys protected by a passphrase (`sslpassword`), which libpq reads only from a connection string or a service file, so the copy would need the passphrase in argv or on disk; a dropped network still leaves pg_dump's locks and snapshot on the source until its server notices (pg_dump runs no SQL of ours, and the startup `options` parameter breaks PgBouncer), and a target behind an SSH bastion keeps its transaction until the bastion's sshd notices the dead session; a dump stalled with data in flight hangs on TCP retransmission rather than keepalive, since `tcp_user_timeout` is Linux-only, so Stop is the way out.
 8. **Auto-charts on results.** Pick a chart from result shape (time + number = line, category + number = bar). Toggle in the results pane, no chart builder.
 9. **PII masking.** Mark columns sensitive; their values are masked before anything reaches the model or MCP. Build together with 2.
 
@@ -36,6 +37,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Name the ClickHouse error when a read fails mid-stream.** A table whose rows no longer fit its column type (an enum value dropped outside Tamery) fails every read, but ClickHouse has already sent HTTP 200, so the client rejects with a bare `aborted` and the grid's error view says nothing useful; one QA pass on an older server even showed `This table is empty.` The column form now refuses dropping a value rows still hold.
 - **Column form gaps.** MySQL `SET` columns could take the same values list as `enum`; **References** always writes `NO ACTION` for ON DELETE / ON UPDATE and only on a column without a foreign key, so changing or dropping a column's reference still means the Schema page or the visualizer; ClickHouse lists enum values by their stored number, so dragging them in the list changes nothing and the grip could hide there. The visualizer applies one statement per draft, so renaming a MySQL enum value there is still refused in strict mode; the table grid's form moves the rows.
+- **New visualizer tables land on top of others.** **+ Table** places the node at the viewport centre whatever is there. Moving it clear of the cards it covers can push it off screen, and panning to it is computed before the inspector opens and narrows the canvas, so it needs the pane's size after that render.
 - **Hold-⌘ hints for shortcuts without a control.** Tooltips with a shortcut reveal on ⌘; undo/redo (⌘Z/⇧⌘Z), the grid's copy/paste/fill (⌘C/⌘V/⌘D, listed only in the cell menu) and the Schema pages' ⌘D drop have no control to carry a hint, so they stay undiscoverable until something on screen names them.
 - **Esc hints on dialog and drawer closes.** Every `Cancel`/`Close` that Esc fires (dialogs, drawers, the seed panel) carries no hint while ⌘ is held; a kit-level `shortcut` on the close components would cover all of them at once. The editable list's reorder keys (`⌥↑ ⌥↓`) are still unicode in its tooltip text rather than a `shortcut` glyph.
 - **Referenced columns on the columns context.** Each header still calls `useReferencedColumns` for its own column; the fetch is shared through the query cache, but one lookup on `ColumnsContext` would drop the per-header hook.
@@ -86,7 +88,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
   The first type that lacks something its dialect offers moves the capability gates (about 120 calls) to its type. Check each candidate's limits on a live server first: they shift between releases.
 
-- **Pin the cloud proxy's resolved address.** `assertPublicHost` resolves the host, then the driver resolves it again, so a DNS answer that changes between the two (rebinding) still reaches a private address. Passing the checked IP to each driver (pg `host` plus `ssl.servername`, mysql2 `host`, tedious `server` plus `serverName`, a `lookup` on the ClickHouse agent) closes it.
+- **Pin the cloud proxy's resolved address.** `assertReachable` resolves the host, then the driver resolves it again, so a DNS answer that changes between the two (rebinding) still reaches a private address. Passing the checked IP to each driver (pg `host` plus `ssl.servername`, mysql2 `host`, tedious `server` plus `serverName`, a `lookup` on the ClickHouse agent) closes it.
 - **Refuse redirects from a libSQL server on the cloud proxy.** `@libsql/hrana-client` fetches with the default `redirect: 'follow'`, so a public libSQL host could send the proxy on to an internal URL the host check never saw.
 
 - **Hosted Postgres and MySQL as providers.** Turso and Cloudflare D1 are providers (`Provider`); Supabase, Neon, PlanetScale, ClickHouse Cloud and the rest of `HOST_HINTS` (`hosts.ts`) could join them, so the Engine select offers them with their own placeholders and the list shows their marks. Their host suffixes change, so the form saves the provider the user picked, and a paste only guesses it from `HOST_HINTS`; a suffix the list lacks leaves the plain type until it is added.
@@ -103,6 +105,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## SSH tunnels
 
 - **Honor more of `~/.ssh/config`.** `UserKnownHostsFile` and `StrictHostKeyChecking` are ignored and a `ProxyJump` host is refused: host keys always go to `~/.ssh/known_hosts`, a new key always asks, and a bastion behind another bastion can't be reached.
+- **Docker beyond Linux bridge networks.** A container host resolves to its bridge address, which only the SSH host's own network stack reaches: rootless Docker, a container on `network_mode: host`, and Docker Desktop on the user's own Mac need another route (`docker exec` into a relay, or the published port).
 
 ## Connection form
 
@@ -124,12 +127,22 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Secrets from a password manager.** Accept `op://vault/item/password` (1Password) and Keychain references in the password field, resolved at connect time, so a synced connection string never holds the secret itself.
 - **A bare host pasted on a SQLite engine moves to a server.** With SQLite, Turso or D1 chosen, a paste that names only a host with no telling port (`db.example.com`) names no engine, so it stays on that engine and fills nothing visible. A host with no scheme is almost never a SQLite location, so the form could switch to a server engine.
 
+## Desktop app
+
+- **Find local databases off the main thread.** The first `localDatabases.find` loads the finders and the keyring addon in main and stalls every window for up to 1.5 s on a cold start. Running the finders in the database utility process would fix it, but Keychain reads must stay in a process whose prompt names Tamery (`architecture.md` → Device key), so `unlock` stays in main.
+- **Attach the SSH host-key dialog to the window that asked.** With no focused window it opens app-modal, which pauses main's event loop until it is answered.
+- **Record a trace from the Help menu.** Diagnosing a freeze took a shell script that relaunches the app with Chromium's startup tracing. A Help → Record performance trace item on Electron's `contentTracing` would let anyone send one.
+
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
 - **Name the missing AI key in dev.** `OPENROUTER_API_KEY` and `MISTRAL_API_KEY` are dev-optional in `apps/api/env.ts`, so a worktree whose `.env` predates them boots fine and every AI call answers an opaque `INTERNAL_SERVER_ERROR`. A startup warning listing the unset AI keys would point straight at the `.env`.
 - **Close the kit sidebar's gaps.** Navigator call sites still restyle `@tamery/ui` sidebar parts: five pass `text-muted-foreground` to a `SidebarMenuButton` icon, `schema-row.tsx` turns `SidebarGroupLabel` into a hoverable row, and two use `size-3.5!` against the button's `[&_svg]:size-4`. A muted-icon default, an interactive group-label variant and a small trailing-icon size would move those into the kit (`tamery-ui` rule 11). Its `variant` is a `variant === 'muted' &&` switch inside `sidebar.tsx`; with those additions it becomes a `cva` in `sidebar.utils.ts` like every other kit variant.
 - **Unpin `@shadcn/lint`.** 0.2.1 sees through wrapper components and flags about 40 call sites that restyle a kit part through `AppContextMenu` (it forwards `className` to `ContextMenuTrigger`), `SidebarGroupLabel`, `SidebarMenuButton` and `Item`, mostly in the visualizer inspector, table header cells and the navigator. The plugin is pinned to 0.2.0 until those move into kit variants or plain wrappers.
+- **Check the oldest supported engine versions automatically.** Nothing runs the app's catalog, row and DDL queries against real servers, so a statement a 5-year-old engine lacks (ClickHouse 21.12's missing `format()` and Map `JSONExtract`, its plain-text mid-stream errors) ships unnoticed. A manual job that starts the oldest supported image of each engine in Docker (Postgres 14, MySQL 8.0, MariaDB 10.6, SQL Server 2022, ClickHouse 21.12, Oracle 21c, TimescaleDB 2.5) and runs every `createQuery` plus the runner's transaction, session and cancel calls would catch it before release.
+- **Move every query into `@tamery/connection/queries`.** The app's catalog, row and DDL queries live in `apps/app/src/core/queries`, so the CLI, the proxy or an MCP server can only run raw SQL (`tamery query`) and `selectPage` is the one builder they share. Each file is already a per-dialect builder map plus a result `type`, tied to the app only by `createQuery`. Move those maps into the package with a thin runner over the `dialects/*` executors, and keep the app's `createQuery` as the wrapper that adds IPC or the proxy, the query log, reconnect retries, toasts and collections.
+- **A kit empty state with an icon.** `PaneEmpty` (`apps/app/src/components/pane-empty.tsx`) and the share site's `EmptyState` are the same `Empty` composite (muted icon, title, description, optional action), and the site's deep-link status builds it by hand again; one `packages/ui` custom component would serve all three.
+- **A kit switch field.** An `OptionField` holding a `Switch` bound to a form field is written out in the share form, three times in `column-dialog.tsx` and in `drop-dialog.tsx`; a `field.Switch` on the kit's form hook would save about eight lines a use.
 - **Keep `todesktop.json` formatted on install.** `scripts/sync-pnpm-versions.ts` rewrites it with `JSON.stringify`, which expands the one-line arrays oxfmt keeps inline, so every pnpm bump leaves formatting churn until `pnpm fix` runs. Writing only the `pnpmVersion` line (as it already does for the workflow YAML) would avoid it.
 
 ## AI
@@ -148,8 +161,15 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Re-verify before deleting an account.** better-auth only deletes a passwordless account from a session younger than `freshAge` (a day), so anyone signed in longer gets a bare "session expired" error. Asking for a fresh email code inside the delete dialog would keep the protection without the dead end.
 - **One support dialog for both apps.** The site's support dialog body is a near-copy of the app's; moving one version into `packages/ui` (like the auth side panel and `SettingsGroup`) would end the drift.
 - **The deep-link status is a hand-built `Empty`.** `deep-link/open-status.tsx` stacks logo, title, description and action by hand; the kit `Empty` the error page uses covers it, at the cost of a small visual change.
+- **One chat header for the product shots.** The ask bento card copies the showcase chat panel's header (title plus History, New chat and Close buttons) and its two-column answer table; both could come from `components/product`.
 - **Redirect conar.app to tamery.app.** Search Console still lists `conar.app` as a page linking to the home page and gets "conar app" searches; a 301 from every legacy Conar URL to its Tamery counterpart would move that traffic and link weight over instead of splitting it.
 - **`/email-code` without an email answers 500.** Opening the page bare (a crawler or a stale bookmark) throws on search validation instead of sending the visitor back to `/sign-in`.
+- **Track docs search.** `apps/docs` has no PostHog, so nobody sees which questions the docs fail to answer. Counting searches and empty results (no query text) would show the gaps.
+- **Shortcuts in the docs as keycaps.** Pages spell shortcuts as bold text (`Cmd+Enter` / `Ctrl+Enter` in two columns); a `<Shortcut keys="Mod+Enter" />` MDX component drawing the kit `KbdHotkey` for the reader's OS would show one shortcut instead of a platform table.
+- **Docs on-page bar names a section before you reach it.** On narrow screens Fumadocs' active-anchor fallback marks the first heading while the reader is still above it, so the bar reads "On this page · SSL" on the intro. Showing the label alone until a heading has scrolled past would be truthful.
+- **Docs sitemap with `lastmod`.** `apps/docs` lists URLs only; Bing leans on `lastmod` to decide what to recrawl. Fumadocs can read each page's git date, but the build needs the git history to do it.
+- **Docs descriptions sized for search results.** Many page descriptions are under 80 characters, so Google often writes its own snippet. Descriptions near 120 to 155 characters would control what searchers read; they also print under each page title, so the copy has to work there too.
+- **A docs social image.** Docs pages share the site's `og-image.png`; a per-page image with the page title would make shared links recognisable.
 
 ## Keyboard
 
@@ -216,3 +236,58 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Check ClickHouse row-policy rights up front.** Without the grant, **Add policy** fails only after submit with "Not enough privileges"; disabling it with the reason would save the form.
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
 - **Link straight to the Support form from emails.** The early-access email can only say "click your avatar and pick Support"; a deep link that opens the Support dialog would turn the feedback ask into one click.
+- **Non-blocking Paper shader compilation.** The library checks WebGL compilation synchronously. Adopt upstream asynchronous initialization when available so cold startup can avoid compilation stalls as well as keeping them out of entrance animations.
+- **SSH tunnels for Oracle.** node-oracledb opens its own socket and takes no stream, so an Oracle connection cannot use the SSH channel the other engines plug in; a driver hook (or a contribution upstream) would let it.
+- **Oracle wallets and TNS aliases.** Only `host:port/service` strings connect; Autonomous Database's wallet (`cwallet.sso`) and a `tnsnames.ora` alias would cover managed Oracle.
+- **Group an Oracle transaction in the runner.** Oracle has no `BEGIN` statement (it starts PL/SQL), so a runner script commits each statement as it runs; reading `SET TRANSACTION` as the opener on Oracle would let a script hold its changes until `COMMIT`.
+- **List an Oracle container's other PDBs.** A connection opens the one service its string names; a CDB login could list `V$PDBS` as resources.
+- **Microsecond Oracle timestamps.** node-oracledb hands a TIMESTAMP over as a JS `Date`, so the grid shows and writes back milliseconds; a `TIMESTAMP(6)` cell edited elsewhere loses its last three digits. Its thin decoder also drops a TIMESTAMP WITH TIME ZONE's offset, so the cell shows the UTC instant.
+- **Batch Oracle seed rows.** Before 23ai Oracle has no multi-row `VALUES`, so seeding inserts one row per statement; `INSERT ALL` would batch the rows that need no `DEFAULT`.
+- **Drop a non-empty Oracle schema.** `DROP USER … CASCADE` is wired, but `cascade` is off for Oracle because its table and view drops would need `CASCADE CONSTRAINTS`; turning both on would let **Drop schema** remove a schema that still holds objects.
+- **Row estimates for Oracle.** MCP approval shows no estimate on Oracle; `EXPLAIN PLAN FOR` and `PLAN_TABLE.CARDINALITY` in a rolled-back transaction could give one, with Oracle's own spelling for the runner's Explain.
+- **Hide New schema without CREATE USER on Oracle.** An Oracle schema is a user, so a login without the privilege sees ORA-01031 only after submitting the dialog.
+- **Oracle index definitions from `DBMS_METADATA`.** Function-based and descending Oracle indexes list as custom expressions; carrying `GET_DDL` as the definition would let codegen reproduce them exactly.
+- **Mark INVALID Oracle routines and triggers.** A unit created outside Tamery can sit INVALID; a badge from `ALL_OBJECTS.STATUS` in the Schema list would show it before something calls it.
+- **A DETERMINISTIC toggle for Oracle functions.** It saves through the header's extras today, so it can only be typed.
+- **List Oracle package members.** Functions and procedures inside a package are not listed; showing them read-only would cover most Oracle codebases.
+- **Paste Oracle TNS descriptors.** A `(DESCRIPTION=(ADDRESS=…)(CONNECT_DATA=…))` string or a `tnsnames.ora` entry is not read; a JDBC `@host:port:SID` saves the SID as a service name, which connects only where the SID is also a registered service.
+- **Turn on SSL for Oracle Autonomous hosts.** A `.oraclecloud.com` host on port 1522 always speaks TCPS, so the form could add `ssl=true` itself.
+- **Seed `NUMBER(1)` flags as booleans on Oracle.** Before 23ai a flag is a `NUMBER(1)`, which seeds as any digit.
+- **Per-engine type hints in the column dialog.** The Type placeholder reads `integer, varchar(255)…` on every engine; Oracle users would recognise `NUMBER, VARCHAR2(255)`.
+- **Drive native menus in desktop QA.** Row and column actions (drop index, rename or drop a column, drop a table) open native macOS menus that agents cannot click, so those Oracle paths were checked only against the database, not through the app.
+- **Rescan found databases each time the form opens.** The list is scanned once per window, so a Docker container started (or a Docker daemon that recovered) after the first scan stays missing until a reload.
+- **Show what TimescaleDB adds.** Hypertables read as plain tables and continuous aggregates as views; a mark on each, with chunk count, compression ratio and refresh policy in the table's details, would surface what users choose TimescaleDB for.
+- **One unknown connection type should not empty the whole list.** A synced row whose `type` or `provider` this build does not know (a newer engine, or another branch on the shared dev database) fails validation for the whole batch: the list shows no connections and an error toast repeats. Skipping the rows it cannot read, with one quiet "update Tamery to see N more" hint, would keep the rest usable on an older desktop build.
+- **Copy the address from the connection row.** The row's address tooltip shows the full host, but copying it still means the ⋯ menu's full string; the address itself could copy on ⌘C while the row has focus.
+- **Cancel the subscription when an account is deleted.** The delete hook removes only the Infisical secret, so an active Stripe subscription keeps billing, while the delete dialog says the subscription is removed.
+- **Include the last day of an AI usage range.** The filter compares `createdAt` to the end date at midnight, so a picked range drops its final day.
+- **Fix the Metadata only description in the Sync menu.** It says only the name and color sync; the label, engine and provider sync too.
+- **Stop the AUR package claiming the `tamery` binary.** `/usr/bin/tamery` points at the desktop app and the package `provides`/`conflicts` `tamery`, the same name as the npm CLI's binary, so Arch users cannot have both on the path.
+
+## Sharing
+
+- **Values rendered by type on the share page.** Cells are plain text today apart from booleans; enums, dates and JSON could reuse the grid's renderers once they live outside `apps/app`.
+- **Viewer filters.** Viewers can only sort and page; a search over the shown columns, narrowing on top of the owner's filters, would cover most "find my row" visits.
+- **A share cache shared across proxy instances.** Each proxy keeps its own bounded page cache and rate limit in memory; Redis would let a second instance reuse the first one's pages and count one limit.
+- **CSV download for viewers.** Left out of the first version; the proxy would need an export read capped well past a page, and the share site a server route turning it into CSV.
+- **Share a saved query.** A share is one table; a share of a saved runner query would cover joins and aggregates, with the same read-only and public-host checks.
+- **Say why Share is greyed out when the share list fails.** The ⋯ menu's **Share** waits for the share list, so offline or with the API down it stays disabled with no reason; a muted trailing "Offline" like "Needs Full sync" would explain it.
+- **Show free links left in the share dialog.** A Free user learns about the 3-link limit only when **Share** opens the upgrade dialog; a muted "2 of 3 free links" footnote on New link would set the expectation first.
+- **Renew an expired link from the dialog.** An expired link still opens in the dialog on its old date; picking a new expiry works, but the dialog never says the link is already dead for viewers.
+- **Keep the share page's header when the first rows fail.** A failure on the first page shows the full-page status; keeping the title, filters and column headers with an inline Try again in the grid would say less loudly that only the rows are missing.
+- **Horizontal-only scroll for the grid's cell scroll.** Home/End on a read-only grid's header row scrolls back to the top when the target column is not mounted, since the shared scroll-to-cell always scrolls both axes.
+- **Count the free share limit when an expired link is renewed.** Only creating a link checks the limit, so giving an expired link a new date or no expiry can leave a Free user with more than 3 live links.
+
+## Security
+
+- **Keep the API session token out of plain localStorage on desktop.** Chromium stores localStorage unencrypted on disk, and the token resolves every Full-sync connection string through `connections.resolve`; wrapping it with `safeStorage` in main, like the device key, would close that. The MCP token in `mcp.json` has the same gap.
+- **Run agent reads on Postgres over the extended protocol.** It refuses a second statement outright, so a future tokenizer mismatch could not reach past the read-only transaction.
+- **Show a short code on both sides of the sign-in handoff.** The browser now asks before signing an app in, but a matching code would stop a phished link from being confirmed blindly.
+- **Limit which images AI answers load.** Markdown images load from any host, so a prompt-injected answer can send conversation text to a remote server in an image URL.
+- **Authenticate the Railway alert webhook.** Anyone can post to it and send email to the alerts inbox; a secret in the webhook URL would do.
+- **Pair the web app with `tamery proxy`.** The web app now ignores a local proxy that answers for another account, but a process that knows the user id can still claim the port; a secret the CLI shows once and the browser keeps would close it.
+- **Cap open sessions and transactions per user on the cloud proxy.** Each holds a database socket for up to 15 idle minutes with no per-user limit, so one account can run the shared proxy out of file descriptors.
+- **Longer share passwords.** The minimum is 4 characters against 1000 tries per 10 minutes per share, so a 4-digit PIN falls in under two hours and an attacker can spend the budget to lock real viewers out.
+- **Rate-limit by the real client IP.** The API and proxy sit behind Cloudflare and key their limits on `x-real-ip`; if that is the edge's address, every user behind one edge shares the email-code and share-unlock budgets. `cf-connecting-ip` is the client.
+- **Security headers on every host.** None of tamery.app, web, docs or the API send HSTS, `frame-ancestors` or `nosniff`, and the web app's CSP allows inline scripts with no `connect-src`.
+- **Ask for a fresh sign-in before turning two-factor off.** `allowPasswordless` lets a stolen session disable TOTP or enroll its own.

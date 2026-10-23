@@ -1,32 +1,74 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { Button } from '@tamery/ui/components/button'
+import { useMutation } from '@tanstack/react-query'
+import {
+  createFileRoute,
+  getRouteApi,
+  Link,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 import { type } from 'arktype'
 
-import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
+import { OpenStatus } from '../open-status'
+
+const { useRouteContext, useSearch } = getRouteApi('/deep/sign-in')
+
+const CLIENT_NAMES = {
+  cli: 'the Tamery CLI',
+  desktop: 'the Tamery desktop app',
+  web: 'Tamery',
+}
+
+const ConfirmSignIn = () => {
+  const { codeChallenge, newUser, type: clientType } = useSearch()
+  const { email } = useRouteContext()
+  const navigate = useNavigate()
+  const { mutate: publish, isPending } = useMutation(
+    orpc.account.challenge.publish.mutationOptions({
+      meta: { event: 'sign_in_confirmed' },
+      onSuccess: () => navigate({ to: '/open', search: { type: clientType } }),
+    })
+  )
+
+  return (
+    <OpenStatus
+      title={`Sign in to ${CLIENT_NAMES[clientType]}`}
+      description={`Continue only if you started signing in yourself. You'll be signed in as ${email}.`}
+    >
+      <div className="flex flex-col items-center gap-2">
+        <Button
+          disabled={isPending}
+          onClick={() => publish({ codeChallenge, newUser })}
+        >
+          Continue
+        </Button>
+        <Button variant="ghost" render={<Link to="/account" />}>
+          Cancel
+        </Button>
+      </div>
+    </OpenStatus>
+  )
+}
+
 export const Route = createFileRoute('/deep/sign-in')({
+  component: ConfirmSignIn,
   validateSearch: type({
     codeChallenge: 'string',
     'newUser?': 'boolean',
     type: '"web" | "desktop" | "cli" = "desktop"',
   }),
-  loaderDeps: ({ search }) => search,
-  loader: async ({ deps }) => {
-    const { codeChallenge, newUser } = deps
-
-    const { data } = await authClient.getSession()
-
-    if (data) {
-      await orpc.account.challenge.publish.call({ codeChallenge, newUser })
-
-      throw redirect({ to: '/open', search: { type: deps.type } })
+  beforeLoad: ({ context, search }) => {
+    if (!context.session) {
+      throw redirect({
+        to: '/sign-in',
+        search: {
+          redirectPath: `/deep/sign-in?codeChallenge=${search.codeChallenge}&type=${search.type}`,
+        },
+      })
     }
 
-    throw redirect({
-      to: '/sign-in',
-      search: {
-        redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}&type=${deps.type}`,
-      },
-    })
+    return { email: context.session.user.email }
   },
 })

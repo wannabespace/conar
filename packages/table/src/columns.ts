@@ -23,6 +23,10 @@ export const columnVars = (id: string) => {
   }
 }
 
+// The fallback is what a server render draws: the variables are only set on the client.
+const liveWidth = (column: GridColumn) =>
+  `var(${columnVars(column.id).width}, ${column.size}px)`
+
 export const pinnedCount = (columns: GridColumn[]) => {
   const index = columns.findIndex((column) => !column.pinned)
   return index === -1 ? columns.length : index
@@ -30,7 +34,7 @@ export const pinnedCount = (columns: GridColumn[]) => {
 
 // Sums the live width variables, not `size`, so pinned offsets follow a resize drag before it commits.
 const pinnedLeft = (columns: GridColumn[], index: number) =>
-  `calc(${[`${GUTTER_WIDTH}px`, ...columns.slice(0, index).map((column) => `var(${columnVars(column.id).width})`)].join(' + ')})`
+  `calc(${[`${GUTTER_WIDTH}px`, ...columns.slice(0, index).map(liveWidth)].join(' + ')})`
 
 export const pinnedWidth = (columns: GridColumn[]) => {
   const count = pinnedCount(columns)
@@ -46,7 +50,7 @@ export const columnStyle = (
   return {
     flexShrink: 0,
     translate: `calc(var(${vars.shift}, 0) * 1px)`,
-    width: `var(${vars.width})`,
+    width: liveWidth(column),
     ...(column.pinned && {
       left: pinnedLeft(columns, index),
       position: 'sticky',

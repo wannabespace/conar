@@ -58,8 +58,6 @@ const AuthPage = () => {
   const { data, error } = useQuery(
     orpc.account.challenge.listen.liveOptions({
       input: codeChallenge ? { codeChallenge } : skipToken,
-      networkMode: 'online',
-      throwOnError: false,
     })
   )
 
@@ -140,8 +138,8 @@ const AuthPage = () => {
                 Sign in to continue
               </h1>
               <p className="text-muted-foreground mt-2 mb-8">
-                Tamery is in early access. Sign in to request access —
-                we&apos;ll email you when it&apos;s ready.
+                Tamery is in early access. Sign in to request access. We’ll
+                email you when it’s ready.
               </p>
             </motion.div>
             <motion.div
@@ -180,18 +178,6 @@ const AuthPage = () => {
                   If you already have access, sign in as usual.
                 </p>
               )}
-              <p className="text-muted-foreground mb-4 text-center text-xs">
-                You can still use Conar at{' '}
-                <a
-                  href="https://conar.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => posthog.capture('legacy_app_opened')}
-                >
-                  conar.app
-                </a>
-                .
-              </p>
             </motion.div>
             {!!error && (
               <div className="text-muted-foreground flex items-center gap-2 text-sm">

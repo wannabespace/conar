@@ -15,7 +15,7 @@ let getForwarding = (connectionString: string): Promise<Forwarding | null> => {
 
 /**
  * Resolves once the SSH session is open, an unknown host key's prompt included, so a driver's connect timeout never runs while the prompt is up.
- * Only the desktop main process plugs tunnels in, so the CLI and proxies, which bundle the dialects, never load ssh2.
+ * Only the desktop database process plugs tunnels in, so the CLI and proxies, which bundle the dialects, never load ssh2.
  */
 export const sshForwarding = {
   of: (connectionString: string) => getForwarding(connectionString),

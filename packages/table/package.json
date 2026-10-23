@@ -10,6 +10,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
+    "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
     "@tanstack/react-hotkeys": "catalog:",
     "@tanstack/react-virtual": "catalog:",

@@ -10,11 +10,13 @@ import {
   permix,
   usePermissionsSync,
 } from '~/core/user/permissions'
+import { subscriptionsQueryOptions } from '~/core/user/use-subscription'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
-import { subscriptionQueryClient } from '~/lib/query-client'
+import { queryClient } from '~/lib/query-client'
 import { ActionsCenter } from '~/modules/actions-center/actions-center'
 import { useConnectionLinks } from '~/modules/connection-links/use-connection-links'
+import { CopyDatabaseDialog } from '~/modules/copy-database/copy-database-dialog'
 import { GlobalBanner } from '~/modules/global-banner/global-banner'
 import { McpHost } from '~/modules/mcp/mcp-host'
 import { SubscriptionModal } from '~/modules/subscription/subscription-modal'
@@ -36,7 +38,7 @@ const ProtectedLayout = () => {
 
   useEffect(() => {
     const handleFocus = () => {
-      subscriptionQueryClient.refetchQueries()
+      queryClient.refetchQueries(subscriptionsQueryOptions)
     }
 
     window.addEventListener('focus', handleFocus)
@@ -51,6 +53,7 @@ const ProtectedLayout = () => {
       <EventsProvider>
         <ActionsCenter />
         {window.electron && <McpHost />}
+        {window.electron && <CopyDatabaseDialog />}
         <SubscriptionModal />
         <div className="flex h-full flex-col">
           <ProtectedTitleBar />

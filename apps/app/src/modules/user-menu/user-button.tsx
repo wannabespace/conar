@@ -9,6 +9,7 @@ import {
   Message01Icon,
   NewTwitterIcon,
   Settings02Icon,
+  Share08Icon,
   UserIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -40,7 +41,7 @@ import { Link } from '~/components/link'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { authClient } from '~/lib/auth'
 import { clearDb } from '~/lib/sync'
-import { accountUrl } from '~/lib/urls'
+import { accountUrl, sharesUrl } from '~/lib/urls'
 
 import { SupportDialog } from './support-dialog'
 import { useSignOut } from './use-sign-out'
@@ -135,6 +136,12 @@ export const UserButton = ({
             <ShortcutKbd shortcut="settings" />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
+        {!data?.user.isAnonymous && (
+          <DropdownMenuItem onClick={() => window.open(sharesUrl, '_blank')}>
+            <HugeiconsIcon icon={Share08Icon} strokeWidth={2} />
+            Shares
+          </DropdownMenuItem>
+        )}
         {window.electron && (
           <DropdownMenuItem
             onClick={() =>

@@ -30,7 +30,8 @@ export const MotionCollapse = ({
     animate={expanded}
     exit={collapsed}
     transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-    className={cn('overflow-hidden', className)}
+    // overflow-hidden would cut the focus and invalid rings (3px) of the controls inside
+    className={cn('[clip-path:inset(-4px)]', className)}
     {...props}
   >
     <div>{children}</div>

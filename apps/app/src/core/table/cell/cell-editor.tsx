@@ -247,7 +247,9 @@ export const CellField = ({
             (column.foreign
               ? 'w-[max(var(--anchor-width),--spacing(96))]'
               : 'w-[max(var(--anchor-width),--spacing(72))]'),
-          language && 'w-auto'
+          language && 'w-auto',
+          isPickColumn(column) &&
+            'w-max min-w-[max(var(--anchor-width),--spacing(72))]'
         )}
         onBlur={(event) => {
           // Leaving the window, or moving focus inside the field, is not leaving the cell.

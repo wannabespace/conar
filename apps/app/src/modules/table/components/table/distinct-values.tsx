@@ -1,6 +1,5 @@
 import { SearchRemoveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import {
   cellToFilterValues,
@@ -25,7 +24,6 @@ import type { CSSProperties } from 'react'
 import { useDeferredValue, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { getCapabilities } from '~/core/catalog/capabilities'
 import { columnStatsQuery } from '~/core/queries/rows/column-stats'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { valueCountsQuery } from '~/core/queries/rows/value-counts'
@@ -47,12 +45,6 @@ const RANGED_UI_TYPES = new Set<Column['uiType']>(['date', 'datetime', 'time'])
 export interface DistinctValuesTarget {
   anchor: Element
   column: Column
-}
-
-export const hasDistinctValues = (dialect: Dialect, column: Column) => {
-  const { bytes, incomparable } = getCapabilities(dialect).columnTypes
-  const type = column.type ?? ''
-  return !column.isArray && !bytes?.test(type) && !incomparable?.test(type)
 }
 
 const percent = new Intl.NumberFormat(undefined, {

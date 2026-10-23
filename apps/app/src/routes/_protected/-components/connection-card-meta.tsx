@@ -7,7 +7,13 @@ import {
   SelectValue,
 } from '@tamery/ui/components/select'
 import { Skeleton } from '@tamery/ui/components/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 
+import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import { ResourceLabel } from '~/core/connection/resource-label'
 import { rememberOpenedResource } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
@@ -77,11 +83,41 @@ const ConnectionResourcesSelect = ({
   </Select>
 )
 
+const ConnectionUrl = ({
+  displayUrl,
+  openResourceId,
+}: {
+  displayUrl: string
+  openResourceId: string | undefined
+}) => (
+  <Tooltip>
+    <TooltipTrigger
+      data-mask
+      render={
+        openResourceId ? (
+          <ConnectionResourceLink
+            resourceId={openResourceId}
+            preload={false}
+            tabIndex={-1}
+          />
+        ) : (
+          <span />
+        )
+      }
+      className="text-muted-foreground pointer-events-auto cursor-default truncate"
+    >
+      {displayUrl}
+    </TooltipTrigger>
+    <TooltipContent data-mask>{displayUrl}</TooltipContent>
+  </Tooltip>
+)
+
 export const ConnectionCardMeta = ({
   canSend,
   connection,
   databaseKnown,
   displayUrl,
+  openResourceId,
   resources,
   selectedResourceName,
 }: {
@@ -90,15 +126,18 @@ export const ConnectionCardMeta = ({
   /** Off until this device has the server details: the selected database is then only the first one the list stored. */
   databaseKnown: boolean
   displayUrl: string | undefined
+  /** The address is a link to it too: its tooltip takes the pointer the row link would otherwise get. */
+  openResourceId: string | undefined
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
 }) => (
   <div className="text-muted-foreground pointer-events-none relative z-10 flex min-w-0 shrink-0 items-center gap-2 text-xs">
     <div className="hidden max-w-52 min-w-0 items-center font-mono md:flex">
       {displayUrl ? (
-        <span data-mask className="truncate">
-          {displayUrl}
-        </span>
+        <ConnectionUrl
+          displayUrl={displayUrl}
+          openResourceId={openResourceId}
+        />
       ) : (
         displayUrl === undefined &&
         databaseKnown && <Skeleton className="h-3 w-40" />

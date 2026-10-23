@@ -1,41 +1,24 @@
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
 
-import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
-import {
-  Kysely,
-  PostgresAdapter,
-  PostgresQueryCompiler,
-  DummyDriver,
-  PostgresIntrospector,
-} from 'kysely'
+import { prepareQuery } from '@tamery/connection/queries/dialects/clickhouse/prepare-query'
+import { coldDialect } from '@tamery/connection/queries/kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {
   bindRow,
   bindValue,
-  clickhouseFilterValues,
+  clickhouseWrite,
   matchesPrimaryKeys,
-  sqliteFilterValues,
+  rowIdentity,
 } from './shape'
 
-mock.module('~/core/runtime/dialects/driver', () => ({
-  createKyselyDriver: mock(),
-}))
+const clickhouse = coldDialect(Dialect.ClickHouse).withTables<
+  Record<string, Record<string, unknown>>
+>()
 
-const { clickhouseColdDialect, prepareQuery } =
-  await import('~/core/runtime/dialects/clickhouse')
-
-const clickhouse = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: clickhouseColdDialect(),
-})
-
-const postgres = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: {
-    createAdapter: () => new PostgresAdapter(),
-    createDriver: () => new DummyDriver(),
-    createIntrospector: (db) => new PostgresIntrospector(db),
-    createQueryCompiler: () => new PostgresQueryCompiler(),
-  },
-})
+const postgres = coldDialect(Dialect.Postgres).withTables<
+  Record<string, Record<string, unknown>>
+>()
 
 test('ClickHouse parses ISO text for a DateTime column only, in SET and WHERE', () => {
   const columns = [
@@ -55,56 +38,6 @@ test('ClickHouse parses ISO text for a DateTime column only, in SET and WHERE', 
   )
 })
 
-test('ClickHouse filters parse ISO text for a DateTime column and keep it for a String one', () => {
-  const columns = [
-    { id: 'at', type: 'DateTime' },
-    { id: 'note', type: 'String' },
-  ]
-  const iso = '2024-02-29T13:45:10Z'
-  const query = clickhouse
-    .selectFrom('events')
-    .selectAll()
-    .where((eb) =>
-      toKyselyFilter(
-        eb,
-        ['at', 'note'].map((column) => ({
-          column,
-          ref: EQUAL_FILTER,
-          values: [iso],
-        })),
-        'AND',
-        clickhouseFilterValues(columns)
-      )
-    )
-
-  expect(prepareQuery(query.compile())).toBe(
-    `select * from \`events\` where (\`at\` = parseDateTime64BestEffort('${iso}', 0) and \`note\` = '${iso}')`
-  )
-})
-
-test('SQLite filters bind true and false as 1 and 0 on a boolean column only', () => {
-  const { parameters } = postgres
-    .selectFrom('items')
-    .selectAll()
-    .where((eb) =>
-      toKyselyFilter(
-        eb,
-        [
-          { column: 'active', ref: EQUAL_FILTER, values: ['true'] },
-          { column: 'note', ref: EQUAL_FILTER, values: ['false'] },
-        ],
-        'AND',
-        sqliteFilterValues([
-          { id: 'active', type: 'boolean' },
-          { id: 'note', type: 'text' },
-        ])
-      )
-    )
-    .compile()
-
-  expect(parameters).toEqual([1, 'false'])
-})
-
 test('a json column binds json text, NULL as is and undefined as DEFAULT', () => {
   const columns = [{ id: 'tags', type: 'jsonb' }]
   const { parameters, sql } = postgres
@@ -117,4 +50,81 @@ test('a json column binds json text, NULL as is and undefined as DEFAULT', () =>
     'update "posts" set "tags" = $1, "body" = default, "title" = $2'
   )
   expect(parameters).toEqual(['["a"]', null])
+})
+
+test('a ClickHouse write without format() runs again with JSONExtract', async () => {
+  const columns = [{ id: 'tags', type: 'Map(String, UInt8)' }]
+  const sent: string[] = []
+  await clickhouseWrite((bind) => {
+    const statement = prepareQuery(
+      clickhouse
+        .updateTable('events')
+        .set(bindRow(bind, columns, { tags: { a: 1 } }))
+        .where('id', '=', 1)
+        .compile()
+    )
+    sent.push(statement)
+    return statement.includes('format(')
+      ? Promise.reject(new Error('Unknown table function format'))
+      : Promise.resolve()
+  })
+
+  expect(sent.at(-1)).toBe(
+    `alter table \`events\` update \`tags\` = CAST(JSONExtractKeysAndValues('{"v":{"a":1}}', 'v', 'UInt8'), 'Map(String, UInt8)') where \`id\` = 1 settings mutations_sync = 1`
+  )
+})
+
+test('a row without a primary key is found by a NOT NULL unique key, else by every comparable column', () => {
+  expect(
+    rowIdentity(
+      [
+        { id: 'id', primaryKey: 'pk', type: 'integer' },
+        { id: 'name', type: 'text' },
+      ],
+      Dialect.Postgres
+    )
+  ).toEqual({ columns: ['id'], unique: true })
+  expect(
+    rowIdentity(
+      [
+        { id: 'ts', primaryKey: 'pk', type: 'DateTime' },
+        { id: 'name', type: 'String' },
+      ],
+      Dialect.ClickHouse
+    )
+  ).toEqual({ columns: ['ts', 'name'], unique: false })
+  expect(
+    rowIdentity(
+      [
+        { id: 'email', isNullable: false, type: 'text', unique: 'users_email' },
+        { id: 'name', type: 'text' },
+      ],
+      Dialect.Postgres
+    )
+  ).toEqual({ columns: ['email'], unique: true })
+  expect(
+    rowIdentity(
+      [
+        { id: 'email', isNullable: true, type: 'text', unique: 'users_email' },
+        { id: 'doc', type: 'json' },
+        { id: 'at', type: 'point' },
+        { id: 'tags', isArray: true, type: 'text' },
+        { id: 'score', type: 'real' },
+        { id: 'name', type: 'text' },
+      ],
+      Dialect.Postgres
+    )
+  ).toEqual({ columns: ['email', 'score', 'name'], unique: false })
+})
+
+test('a NULL in a row identity matches with IS NULL', () => {
+  const query = postgres
+    .deleteFrom('events')
+    .where((eb) =>
+      matchesPrimaryKeys(eb, bindValue.postgres, [], { name: null, id: 1 })
+    )
+    .compile()
+  expect(query.sql).toBe(
+    'delete from "events" where ("name" is null and "id" = $1)'
+  )
 })

@@ -1,13 +1,10 @@
 import {
-  ArrowDown02Icon,
-  ArrowUp02Icon,
   ComputerIcon,
   DashboardSquare01Icon,
   DatabaseAddIcon,
   DatabaseSyncIcon,
   Moon02Icon,
   Refresh01Icon,
-  Search01Icon,
   Sun03Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -19,13 +16,12 @@ import {
   CommandGroup,
   CommandItem,
   CommandList,
-  CommandPrimitive,
+  CommandPaletteFooter,
+  CommandPaletteInput,
   CommandShortcut,
   defaultFilter,
 } from '@tamery/ui/components/command'
-import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
-import { Kbd } from '@tamery/ui/components/kbd'
 import { themeStore, useResolvedTheme } from '@tamery/ui/theme-store'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { skipToken, useQuery } from '@tanstack/react-query'
@@ -57,6 +53,7 @@ import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
 import { posthog } from '~/lib/posthog'
 import { chatCommands } from '~/modules/chat/commands'
+import { copyDatabaseCommands } from '~/modules/copy-database/commands'
 import { navigatorCommands } from '~/modules/navigator/commands'
 import { queryLoggerCommands } from '~/modules/query-logger/commands'
 import { newQueryAction } from '~/modules/runner/lib/new-query'
@@ -193,19 +190,6 @@ const tableEntries = (
     })
   )
 
-const FooterHint = ({
-  children,
-  label,
-}: {
-  children: ReactNode
-  label: string
-}) => (
-  <span className="flex items-center gap-1">
-    {children}
-    {label}
-  </span>
-)
-
 export const ActionsCenter = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
@@ -265,6 +249,7 @@ export const ActionsCenter = () => {
   const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
   const moduleEntries = [
     ...chatCommands({ current }),
+    ...copyDatabaseCommands({ current }),
     ...navigatorCommands({ current }),
     ...queryLoggerCommands({ current }),
     ...tableCommands({ current, tabId }),
@@ -474,23 +459,14 @@ export const ActionsCenter = () => {
         shouldFilter={false}
         className="min-h-0 flex-1"
       >
-        <div className="flex shrink-0 items-center gap-3 border-b px-4">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            strokeWidth={2}
-            className="text-muted-foreground size-4 shrink-0"
-          />
-          <CommandPrimitive.Input
-            data-slot="command-input"
-            placeholder="Type a command or search…"
-            className="placeholder:text-muted-foreground/60 h-12 min-w-0 flex-1 bg-transparent text-base outline-hidden"
-            value={search}
-            onValueChange={(value) => {
-              setSearch(value)
-              listRef.current?.scrollTo({ top: 0 })
-            }}
-          />
-        </div>
+        <CommandPaletteInput
+          placeholder="Type a command or search…"
+          value={search}
+          onValueChange={(value) => {
+            setSearch(value)
+            listRef.current?.scrollTo({ top: 0 })
+          }}
+        />
         <CommandList
           ref={listRef}
           className="scroll-fade max-h-none flex-1 scroll-py-2"
@@ -498,32 +474,7 @@ export const ActionsCenter = () => {
           <div className="p-1">{listContent}</div>
         </CommandList>
       </Command>
-      <div className="text-2xs text-muted-foreground/70 flex shrink-0 items-center gap-3 border-t px-4 py-2">
-        <FooterHint label="navigate">
-          <Kbd>
-            <HugeiconsIcon
-              icon={ArrowUp02Icon}
-              strokeWidth={2}
-              className="size-3"
-            />
-          </Kbd>
-          <Kbd>
-            <HugeiconsIcon
-              icon={ArrowDown02Icon}
-              strokeWidth={2}
-              className="size-3"
-            />
-          </Kbd>
-        </FooterHint>
-        <FooterHint label="open">
-          <Kbd>
-            <EnterIcon />
-          </Kbd>
-        </FooterHint>
-        <FooterHint label="close">
-          <Kbd>esc</Kbd>
-        </FooterHint>
-      </div>
+      <CommandPaletteFooter />
     </CommandDialog>
   )
 }

@@ -1,4 +1,5 @@
 export {
+  activeFilter,
   EQUAL_FILTER,
   IN_FILTER,
   IS_NULL_FILTER,

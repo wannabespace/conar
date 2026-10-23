@@ -1,14 +1,16 @@
 import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
 import { enabledFilters } from '@tamery/shared/filters'
 import { pick } from '@tamery/shared/utils'
+import { TableSkeleton } from '@tamery/table'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import { rowIdentity } from '~/core/queries/rows/shape'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { DataGrid } from '~/core/table/data-grid'
 import { isSaving, useTableSessionStore } from '~/core/table/session'
@@ -39,7 +41,7 @@ import {
 } from './table-chrome'
 import { TableFieldLabel, TableHeaderCell } from './table-header-cell'
 import { keysInRange } from './table-selection'
-import { DocumentsSkeleton, TableSkeleton } from './table-skeleton'
+import { DocumentsSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -121,9 +123,9 @@ export const Table = ({
     { columnOrder, hiddenColumns, pinnedColumns },
     view === 'grid'
   )
-  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
-  const isEditable = primaryColumns.length > 0
-  const canInsert = isEditable && !!isBaseTable
+  const identityColumns = rowIdentity(columns, dialect).columns
+  const isEditable = identityColumns.length > 0
+  const canWriteRows = isEditable && !!isBaseTable
   const staged = useStagedEdits({
     columns,
     dialect,
@@ -131,10 +133,15 @@ export const Table = ({
     visible,
   })
 
-  const labels = useReferenceLabels(visible, staged.rows, columnLabels)
+  const newRowValues = staged.rows.slice(0, staged.rows.length - rows.length)
+  const labels = useReferenceLabels(
+    visible,
+    [...rows, ...newRowValues],
+    columnLabels
+  )
 
-  useSyncSelectionWithRows(rows, primaryColumns)
-  useFlashChangedCells(rows, primaryColumns)
+  useSyncSelectionWithRows(rows, identityColumns)
+  useFlashChangedCells(rows, identityColumns)
   useStagedHistoryHotkeys(
     stagedHistory({ id: connectionResource.id, schema, table })
   )
@@ -162,7 +169,7 @@ export const Table = ({
   }
   if (visible.length === 0) {
     return (
-      <PaneEmpty
+      <IconEmpty
         icon={LayoutThreeColumnIcon}
         title="No columns to show"
         description="Every column is hidden. Show some from the Columns menu."
@@ -176,6 +183,8 @@ export const Table = ({
         bar={tableBar({
           canDelete: !!isBaseTable && hasSelection,
           hasChanges,
+          keys: identityColumns,
+          rows,
           schema,
           table,
         })}
@@ -190,7 +199,7 @@ export const Table = ({
                 sessionStore.set((state) =>
                   rowSelection.extend(state, {
                     direction,
-                    keysInRange: keysInRange(rows, primaryColumns),
+                    keysInRange: keysInRange(rows, identityColumns),
                     rowCount: rows.length,
                   })
                 )
@@ -247,7 +256,7 @@ export const Table = ({
         menuItems={(cell, element) =>
           tableCellMenu({
             actions: getActions(cell.column),
-            canInsert,
+            canWriteRows,
             cell,
             element,
             isEditable,
@@ -269,7 +278,7 @@ export const Table = ({
           isEditable
             ? selectColumn({
                 entryAt: staged.rowAt,
-                keys: primaryColumns,
+                keys: identityColumns,
                 rows,
               })
             : undefined

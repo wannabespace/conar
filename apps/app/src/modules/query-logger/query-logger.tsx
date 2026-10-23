@@ -41,6 +41,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { QueryLog } from '~/core/runtime/log'
 import { getQueryLogsStore } from '~/core/runtime/log'
+import { formatClockTime } from '~/utils/clock-time'
 import { formatSql } from '~/utils/formatter'
 
 import { loggerOpen } from './logger-open'
@@ -89,14 +90,7 @@ const LogRow = ({
       <span className="w-12 text-right">
         {query.duration === null ? '' : `${Math.round(query.duration)} ms`}
       </span>
-      <span>
-        {query.createdAt.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          hour12: false,
-          minute: '2-digit',
-          second: '2-digit',
-        })}
-      </span>
+      <span>{formatClockTime(query.createdAt)}</span>
     </span>
   </button>
 )

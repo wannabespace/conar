@@ -92,6 +92,23 @@ describe('guessConnection — env files', () => {
       { password: 'Str0ng!', type: ConnectionType.MSSQL, user: 'sa' },
     ],
     [
+      'an app user beside generic variables, not an Oracle login',
+      'DB_HOST=localhost\nDB_USER=me\nDB_PASSWORD=dbpw\nDB_NAME=app\nAPP_USER=admin\nAPP_USER_PASSWORD=adminpw',
+      { database: 'app', host: 'localhost', password: 'dbpw', user: 'me' },
+    ],
+    [
+      'Oracle variables naming the service',
+      'ORACLE_HOST=db.acme.io:1522\nORACLE_USER=scott\nORACLE_PASSWORD=tiger\nORACLE_SERVICE_NAME=ORCLPDB1',
+      {
+        database: 'ORCLPDB1',
+        host: 'db.acme.io',
+        password: 'tiger',
+        port: '1522',
+        type: ConnectionType.Oracle,
+        user: 'scott',
+      },
+    ],
+    [
       'a Rails database.yml, skipping ERB',
       'development:\n  adapter: mysql2\n  host: localhost\n  username: rails\n  password: <%= ENV["DB_PASSWORD"] %>\n  database: app_dev\ntest:\n  database: app_test',
       {

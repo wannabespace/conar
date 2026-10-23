@@ -1,11 +1,17 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
 import { createQuery } from '~/core/runtime/query'
 
-import type { BindValue, ColumnTypes } from './shape'
-import { bindValue, rowsPerStatement, matchesPrimaryKeys } from './shape'
+import type { BindValue } from './shape'
+import {
+  bindValue,
+  clickhouseWrite,
+  rowsPerStatement,
+  matchesPrimaryKeys,
+} from './shape'
 
 interface DeleteParams {
   table: string
@@ -44,11 +50,13 @@ export const deleteRowsQuery = memoize((params: DeleteParams) => {
   return createQuery({
     query: {
       clickhouse: (db) =>
-        deleteInBatches(
-          db,
-          bindValue.clickhouse,
-          rowsPerStatement(Dialect.ClickHouse, keyWidth),
-          params
+        clickhouseWrite((bind) =>
+          deleteInBatches(
+            db,
+            bind,
+            rowsPerStatement(Dialect.ClickHouse, keyWidth),
+            params
+          )
         ),
       mssql: (db) =>
         deleteInBatches(
@@ -62,6 +70,13 @@ export const deleteRowsQuery = memoize((params: DeleteParams) => {
           db,
           bindValue.mysql,
           rowsPerStatement(Dialect.MySQL, keyWidth),
+          params
+        ),
+      oracle: (db) =>
+        deleteInBatches(
+          db,
+          bindValue.oracle,
+          rowsPerStatement(Dialect.Oracle, keyWidth),
           params
         ),
       postgres: (db) =>

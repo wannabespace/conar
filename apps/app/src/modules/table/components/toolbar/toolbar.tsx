@@ -7,6 +7,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
+import { Dialog } from '@tamery/ui/components/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,8 @@ import {
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
+import { ShareDialog } from '~/modules/share/share-dialog'
+import { ShareMenuItem } from '~/modules/share/share-menu-item'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
@@ -62,6 +65,7 @@ export const TableToolbar = ({
   const sessionStore = useTableSessionStore()
   const [seedOpen, setSeedOpen] = useState(false)
   const [codeOpen, setCodeOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -197,8 +201,16 @@ export const TableToolbar = ({
                 Code
               </DropdownMenuItem>
             )}
+            <ShareMenuItem
+              schema={schema}
+              table={table}
+              onOpen={() => setShareOpen(true)}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          <ShareDialog schema={schema} table={table} />
+        </Dialog>
         {isTable && (
           <>
             <ActionsSeed

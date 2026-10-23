@@ -16,6 +16,11 @@ export const dropViewQuery = ({
       clickhouse: (db) => db.withSchema(schema).schema.dropView(view).execute(),
       mssql: (db) => db.withSchema(schema).schema.dropView(view).execute(),
       mysql: (db) => db.withSchema(schema).schema.dropView(view).execute(),
+      oracle: (db) => {
+        const drop = db.withSchema(schema).schema.dropView(view)
+
+        return (materialized ? drop.materialized() : drop).execute()
+      },
       postgres: (db) => {
         const drop = db.withSchema(schema).schema.dropView(view)
         const kind = materialized ? drop.materialized() : drop

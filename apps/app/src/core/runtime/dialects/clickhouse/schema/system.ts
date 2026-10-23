@@ -12,7 +12,9 @@ interface DataSkippingIndices {
   database: string
   table: string
   name: string
-  type_full: string
+  type: string
+  /** Missing before 23.x, where `type` carries no parameters. */
+  type_full?: string
   expr: string
   granularity: string
 }

@@ -1,9 +1,15 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
 import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
-import type { BindValue, ColumnTypes } from './shape'
-import { bindRow, bindValue, matchesPrimaryKeys } from './shape'
+import type { BindValue } from './shape'
+import {
+  bindRow,
+  bindValue,
+  clickhouseWrite,
+  matchesPrimaryKeys,
+} from './shape'
 
 interface SetParams {
   schema: string
@@ -31,9 +37,11 @@ const updateRow = (
 export const setQuery = (params: SetParams) =>
   createQuery({
     query: {
-      clickhouse: (db) => updateRow(db, bindValue.clickhouse, params),
+      clickhouse: (db) =>
+        clickhouseWrite((bind) => updateRow(db, bind, params)),
       mssql: (db) => updateRow(db, bindValue.mssql, params),
       mysql: (db) => updateRow(db, bindValue.mysql, params),
+      oracle: (db) => updateRow(db, bindValue.oracle, params),
       postgres: (db) => updateRow(db, bindValue.postgres, params),
       sqlite: (db) => updateRow(db, bindValue.sqlite, params),
     },

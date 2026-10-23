@@ -6,32 +6,34 @@ description: 'Connect a database and run your first query.'
 
 ## 1. Open Tamery
 
-[Download the desktop app](https://tamery.app/download) or [open the web app](https://tamery.app).
+[Download the desktop app](https://tamery.app/download) or [open the web app](https://web.tamery.app).
 
-Sign in with email, Google, or GitHub. Tamery is in early access: if your email has not been approved yet, signing in joins the list. We email you when you can start.
+Sign in with email, Google, or GitHub. Email sign-in sends you a one-time code, so there is no password to remember.
 
 ## 2. Add a connection
 
-Click **Add new** and paste your connection string. You can also paste an `.env` file or fill in the fields yourself.
+Click **New connection** and paste your connection string. Anything that looks like one works: a URL, an `.env` file, a `psql` command. Tamery fills in the fields for you.
 
 ```text
 postgresql://user:password@localhost:5432/mydb
 ```
 
-Give it a name and click **Save connection**. Tamery tests it before saving. If it fails, check the highlighted fields or try **Explain with AI**.
+Click **Save connection**. Tamery tests it first, so a typo never ends up saved by accident. The name is optional; leave it and you get a random one.
 
-For a local database, use the desktop app or run [`tamery proxy`](/cli/commands#tamery-proxy) alongside the web app.
+If the test fails, the form points at the field that is likely wrong and offers a fix when it knows one. **Explain with AI** helps with stranger errors.
+
+For a database on your own machine, use the desktop app, or run [`tamery proxy`](/cli/commands#tamery-proxy) next to the web app.
 
 ## 3. Explore
 
-Open the connection and pick a table in the Navigator. Click a column header to sort; use the filter field to narrow the rows.
+Open the connection and pick a table in the Navigator. Click a column header to sort. Use the filter field to narrow the rows.
 
-To run SQL, open a **Query** tab with **+** and try:
+To run SQL, click **+** in the tab bar, choose **New query** and try:
 
 ```sql
 SELECT 1 AS hello;
 ```
 
-Click **Run** or press **Cmd+Enter** on macOS, **Ctrl+Enter** on Windows or Linux.
+Press **Cmd+Enter** on macOS or **Ctrl+Enter** on Windows and Linux. It runs the statement under the caret.
 
-From here, [edit table data](/features/table-browser), [explore the schema](/features/schema-visualizer), or [ask the AI assistant](/features/ai-assistant).
+From here, [edit table data](/features/table-browser), [explore the schema](/features/schema-visualizer), or [ask the AI assistant](/features/ai-assistant). Lost? Press **Cmd+P** (**Ctrl+P**) and type what you want to do.

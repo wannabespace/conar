@@ -9,6 +9,7 @@ import { defineConfig } from 'vite'
 
 setupPortlessEnvs({
   VITE_PUBLIC_API_URL: 'api.local.tamery',
+  VITE_PUBLIC_SHARE_URL: 'share.local.tamery',
   VITE_PUBLIC_WEB_URL: 'app.local.tamery',
 })
 

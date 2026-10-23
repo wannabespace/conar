@@ -20,6 +20,7 @@ import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { connectionResourcesQueryOptions } from '~/core/queries/connection/resources'
 import { posthog } from '~/lib/posthog'
+import { getCopyDatabaseAction } from '~/modules/copy-database/copy-database-dialog'
 import { openNewWindow } from '~/utils/new-window'
 
 import { ConnectionCardMeta } from './connection-card-meta'
@@ -137,6 +138,9 @@ export const ConnectionCard = ({
     connection,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
+    onCopyDatabase: getCopyDatabaseAction(
+      selectedResource ? { connection, resource: selectedResource } : null
+    ),
     onEdit: () => {
       posthog.capture('connection_edit_opened')
       void router.navigate({
@@ -216,6 +220,7 @@ export const ConnectionCard = ({
           connection={connection}
           databaseKnown={!needsDetails}
           displayUrl={connectionString?.displayUrl}
+          openResourceId={openResourceId}
           resources={resources}
           selectedResourceName={selectedResourceName}
         />
@@ -224,7 +229,7 @@ export const ConnectionCard = ({
           items={items}
           contentProps={{ className: 'min-w-44' }}
           render={<Button variant="ghost-faint" size="icon-xs" />}
-          className="relative z-10"
+          className="relative z-10 -ml-2"
         />
       </AppContextMenu>
     </div>

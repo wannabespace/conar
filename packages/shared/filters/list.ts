@@ -1,3 +1,6 @@
+import type { ArkError } from 'arktype'
+import { type } from 'arktype'
+
 import type { Filter, FilterGroup } from './types'
 
 export const EQUAL_FILTER = {
@@ -68,3 +71,21 @@ export const FILTERS_GROUPED = [
 export const FILTERS_LIST = FILTERS_GROUPED.map((group) => group.filters).flat()
 
 export const FILTER_OPERATORS = FILTERS_LIST.map((filter) => filter.operator)
+
+// Only the operator is read: the rest of `ref` decides how values reach SQL, so it is always the canonical filter.
+export const activeFilter = type({
+  column: 'string',
+  'disabled?': 'boolean',
+  ref: type({ operator: 'string' }).pipe(
+    ({ operator }, ctx): Filter | ArkError =>
+      FILTERS_LIST.find((filter) => filter.operator === operator) ??
+      ctx.error('a known filter operator')
+  ),
+  values: 'unknown[]',
+  'via?': {
+    key: 'string',
+    schema: 'string',
+    table: 'string',
+    target: 'string',
+  },
+})

@@ -15,6 +15,8 @@ export const alterColumnQuery = (target: AlterColumnTarget) =>
         db.executeQuery(alterColumnStatement(Dialect.MSSQL, db, target)),
       mysql: (db) =>
         db.executeQuery(alterColumnStatement(Dialect.MySQL, db, target)),
+      oracle: (db) =>
+        db.executeQuery(alterColumnStatement(Dialect.Oracle, db, target)),
       postgres: (db) =>
         db.executeQuery(alterColumnStatement(Dialect.Postgres, db, target)),
       sqlite: unsupported('Changing a column'),

@@ -84,7 +84,6 @@ const getIcons = async (fullBleed: Buffer) => {
       'icon-rounded.png': roundedTile,
       'icon.png': fullBleed,
       'logo.png': await toPng(roundedTile, 512),
-      'tray-icon.png': await toPng(roundedTile, 32),
     },
     web: {
       'apple-touch-icon.png': await toPng(fullBleed, 180),
@@ -117,10 +116,13 @@ for (const { desktop, variant, web } of iconSets) {
     desktop['icon.png']
   files['apps/desktop/resources/icon-1024x1024.png'] =
     desktop['icon-rounded.png']
-  files['apps/desktop/resources/tray-icon.png'] = desktop['tray-icon.png']
   files['apps/main/public/logo.png'] = desktop['logo.png']
-  files['docs/favicon.png'] = web['favicon-96x96.png']
-  for (const folder of ['apps/app/public', 'apps/main/public']) {
+  for (const folder of [
+    'apps/app/public',
+    'apps/docs/public',
+    'apps/main/public',
+    'apps/share/public',
+  ]) {
     for (const [name, buffer] of Object.entries(web)) {
       files[path.join(folder, name)] = buffer
     }

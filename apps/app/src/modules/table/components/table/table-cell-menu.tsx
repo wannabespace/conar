@@ -2,11 +2,16 @@ import {
   ArrowTurnBackwardIcon,
   CheckmarkSquare02Icon,
   Copy02Icon,
+  Delete02Icon,
   EraserIcon,
   FilterAddIcon,
   Link01Icon,
 } from '@hugeicons/core-free-icons'
-import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
+import {
+  cellToFilterValues,
+  EQUAL_FILTER,
+  IS_NULL_FILTER,
+} from '@tamery/shared/filters'
 
 import type { AppMenuNode } from '~/components/app-menu'
 import type { CellMenuExtra } from '~/core/table/cell/cell-menu'
@@ -22,10 +27,11 @@ import type { useStagedEdits } from '../../lib/staged-edits'
 import type { TablePageStore } from '../../lib/store'
 import { cellHop } from '../references/hops'
 import type { OpenPeek } from '../references/reference-buttons'
+import { deleteRowsDialogRef } from './actions-delete'
 
 export const tableCellMenu = ({
   actions,
-  canInsert,
+  canWriteRows,
   cell,
   element,
   isEditable,
@@ -36,7 +42,7 @@ export const tableCellMenu = ({
   store,
 }: {
   actions: ColumnActions
-  canInsert: boolean
+  canWriteRows: boolean
   cell: DataGridCell
   element: Element | null | undefined
   isEditable: boolean
@@ -74,7 +80,7 @@ export const tableCellMenu = ({
           },
         ] satisfies AppMenuNode[])
       : []),
-    ...(canInsert
+    ...(canWriteRows
       ? [
           {
             icon: Copy02Icon,
@@ -95,6 +101,16 @@ export const tableCellMenu = ({
               newRowsActions(sessionStore).discard(entry.newRow.id),
           },
         ]
+      : []),
+    ...(canWriteRows && entry.kind === 'saved' && !saving
+      ? ([
+          {
+            icon: Delete02Icon,
+            label: 'Delete Row',
+            onSelect: () => deleteRowsDialogRef.current?.open([entry.keys]),
+            variant: 'destructive',
+          },
+        ] satisfies AppMenuNode[])
       : []),
   ]
   const cellItems: AppMenuNode[] = [
@@ -135,18 +151,19 @@ export const tableCellMenu = ({
       {
         items: [
           {
-            disabled: storedValue === null || storedValue === undefined,
+            disabled: storedValue === undefined,
             icon: FilterAddIcon,
             label: 'Filter by Value',
             onSelect: () => {
+              const ref = storedValue === null ? IS_NULL_FILTER : EQUAL_FILTER
               store.set((state) => ({
                 ...state,
                 filters: [
                   ...state.filters,
                   {
                     column: column.id,
-                    ref: EQUAL_FILTER,
-                    values: cellToFilterValues(EQUAL_FILTER, storedValue),
+                    ref,
+                    values: cellToFilterValues(ref, storedValue),
                   },
                 ],
               }))

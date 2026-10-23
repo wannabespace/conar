@@ -6,7 +6,6 @@ import { createWebStorageValue } from 'seitu/web'
 import { useHasAccount } from '~/lib/auth'
 import type { ORPCOutputs } from '~/lib/orpc'
 import { orpc } from '~/lib/orpc'
-import { subscriptionQueryClient } from '~/lib/query-client'
 
 const SUBSCRIPTIONS_CACHE_KEY = 'tamery.subscriptions'
 
@@ -39,13 +38,10 @@ export const isActiveSubscription = ({ status }: { status: string | null }) =>
 
 export const useSubscription = () => {
   const hasAccount = useHasAccount()
-  const { data: list, isLoading } = useQuery(
-    {
-      ...subscriptionsQueryOptions,
-      enabled: hasAccount,
-    },
-    subscriptionQueryClient
-  )
+  const { data: list, isLoading } = useQuery({
+    ...subscriptionsQueryOptions,
+    enabled: hasAccount,
+  })
 
   const subscription = list?.find(isActiveSubscription) ?? null
 

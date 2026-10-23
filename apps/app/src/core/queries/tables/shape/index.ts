@@ -2,6 +2,7 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { CreateTableBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
+import { suggestedName } from '~/core/catalog/engine-name'
 import {
   identifiers,
   mssqlQualified,
@@ -101,7 +102,7 @@ export const createTableStatement = (
 
   if (keys.length > 1) {
     create = create.addPrimaryKeyConstraint(
-      `${table}_pkey`,
+      suggestedName(dialect, [table, 'pkey']),
       keys.map((key) => key.name)
     )
   }

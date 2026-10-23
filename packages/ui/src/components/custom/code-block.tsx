@@ -43,6 +43,7 @@ const highlight = (
 
 const useTokens = (code: string, language: string) => {
   const cache = useRef<{ key: string; tokens?: Token[][] }>({ key: '' })
+  const listener = useRef<(() => void) | null>(null)
   const key = `${language}\n${code}`
 
   const getSnapshot = () =>
@@ -50,7 +51,7 @@ const useTokens = (code: string, language: string) => {
 
   return useSyncExternalStore(
     (onChange) => {
-      let subscribed = true
+      listener.current = onChange
 
       if (cache.current.key !== key) {
         cache.current = { key }
@@ -58,9 +59,8 @@ const useTokens = (code: string, language: string) => {
           if (cache.current.key === key) {
             cache.current = { key, tokens: highlighted }
           }
-          if (subscribed) {
-            onChange()
-          }
+          // React can resubscribe while a highlight is pending (hydration does), so notify whoever is subscribed now.
+          listener.current?.()
         })
         if (tokens) {
           cache.current = { key, tokens }
@@ -68,7 +68,7 @@ const useTokens = (code: string, language: string) => {
       }
 
       return () => {
-        subscribed = false
+        listener.current = null
       }
     },
     getSnapshot,

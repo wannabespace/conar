@@ -90,6 +90,11 @@ const ConnectionSubMenu = ({
         <span data-mask className="truncate">
           {connection.name}
         </span>
+        {connection.label && (
+          <span data-mask className="text-muted-foreground shrink-0">
+            {connection.label}
+          </span>
+        )}
         {connection.color && (
           <span
             aria-hidden
@@ -149,6 +154,7 @@ const ConnectionsDropdown = ({
   onRemove: (connection: Connection) => void
 }) => {
   const [open, setOpen] = useState(false)
+  const { connectionStringsCollection } = useCollections()
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const atGuestLimit = !usePermissions().check('connection.create', {
     count: groups.length,
@@ -206,8 +212,14 @@ const ConnectionsDropdown = ({
           const lastOpenedId = lastOpenedResources.find((id) =>
             group.resources.some((resource) => resource.id === id)
           )
+          const defaultResourceName = connectionStringsCollection.get(
+            group.connection.id
+          )?.defaultResourceName
           const lastResource =
             group.resources.find((resource) => resource.id === lastOpenedId) ??
+            group.resources.find(
+              (resource) => resource.name === defaultResourceName
+            ) ??
             group.resources[0]
           if (!lastResource) {
             return null
@@ -353,7 +365,7 @@ const ConnectionsBreadcrumb = ({
         currentResourceId={resourceId}
         onRemove={onRemove}
       />
-      {current && currentGroup && (
+      {current && currentGroup && currentGroup.resources.length > 1 && (
         <>
           <HugeiconsIcon
             icon={ArrowRight01Icon}

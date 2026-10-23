@@ -27,6 +27,7 @@ import { useState } from 'react'
 
 import { OptionField } from '~/components/option-field'
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { submittedName } from '~/core/catalog/engine-name'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
 
 import { CommentField } from './column-comment-field'
@@ -110,7 +111,7 @@ const ColumnForm = ({
   const locked = lockedFields(dialect, column, primaryKey)
   const next = normalized(column, {
     comment,
-    name,
+    name: submittedName(dialect, name, column),
     nullable,
     primaryKey,
     type: columnType.type,

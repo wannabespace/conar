@@ -42,6 +42,7 @@ export const revokePrivilegeQuery = (target: PrivilegeTarget) =>
           await revoke('GRANT OPTION')
         }
       },
+      oracle: unsupported('Privileges'),
       postgres: unsupported('Privileges'),
       sqlite: unsupported('Privileges'),
     },

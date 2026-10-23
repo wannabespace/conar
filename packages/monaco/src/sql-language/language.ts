@@ -7,6 +7,7 @@ export const sqlLanguageIds = {
   [Dialect.ClickHouse]: 'sql-clickhouse',
   [Dialect.MSSQL]: 'sql-mssql',
   [Dialect.MySQL]: 'sql-mysql',
+  [Dialect.Oracle]: 'sql-oracle',
   [Dialect.Postgres]: 'sql-postgres',
   [Dialect.SQLite]: 'sql-sqlite',
 } satisfies Record<Dialect, string>

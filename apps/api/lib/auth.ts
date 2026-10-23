@@ -18,7 +18,6 @@ import {
 } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { v7 } from 'uuid'
 
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
@@ -42,7 +41,11 @@ export const auth = betterAuth({
       enabled: true,
     },
     database: {
-      generateId: () => v7(),
+      generateId: 'uuid',
+    },
+    // x-forwarded-for has extra hops on Railway, and a multi-value chain is discarded into one global rate-limit bucket. The edge overwrites x-real-ip with the connecting client.
+    ipAddress: {
+      ipAddressHeaders: ['x-real-ip'],
     },
   },
   appName: 'Tamery',
@@ -290,6 +293,8 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: env.GOOGLE_CLIENT_SECRET ?? '',
+      // An ID token signs in without the OAuth callback, which is where the TOTP challenge hooks in.
+      disableIdTokenSignIn: true,
       enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
       prompt: 'select_account',
     },

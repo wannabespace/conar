@@ -13,6 +13,7 @@ export const dropTriggerQuery = (params: TriggerTarget & { name: string }) => {
       clickhouse: unsupported('Triggers'),
       mssql: (db) => drop.mssql.execute(db),
       mysql: (db) => drop.mysql.execute(db),
+      oracle: (db) => drop.oracle.execute(db),
       postgres: (db) => drop.postgres.execute(db),
       sqlite: (db) => drop.sqlite.execute(db),
     },

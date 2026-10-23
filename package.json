@@ -20,12 +20,10 @@
     "test:e2e": "turbo run test:e2e",
     "test:start": "turbo run test:start",
     "dev": "bun scripts/run-script.ts dev",
-    "start:api": "cd apps/api && pnpm run start",
-    "start:main": "cd apps/main && pnpm run start",
-    "start:app": "cd apps/app && pnpm run start",
-    "start:proxy": "cd apps/proxy && pnpm run start",
     "build:main": "turbo run @tamery/main#build",
     "build:app": "turbo run @tamery/app#build",
+    "build:docs": "turbo run @tamery/docs#build",
+    "build:share": "turbo run @tamery/share#build",
     "build:todesktop": "turbo run @tamery/desktop#build:todesktop",
     "build:cli": "turbo run tamery#build",
     "publish:cli": "cd apps/cli && pnpm publish --access public --no-git-checks",
@@ -34,9 +32,7 @@
     "check-types": "tsc --noEmit && turbo run check-types",
     "update": "taze -r -I major",
     "docker:start": "docker compose -f docker-compose.dev.yml up -d",
-    "docker:stop": "docker compose -f docker-compose.dev.yml down",
-    "deps:inspect": "node-modules-inspector",
-    "deps:build": "node-modules-inspector build"
+    "docker:stop": "docker compose -f docker-compose.dev.yml down"
   },
   "devDependencies": {
     "@clack/prompts": "catalog:",
@@ -46,7 +42,6 @@
     "@types/bun": "catalog:",
     "cross-env": "catalog:",
     "husky": "catalog:",
-    "node-modules-inspector": "catalog:",
     "npm-run-all2": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",

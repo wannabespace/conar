@@ -19,6 +19,7 @@ import { Link } from '~/components/link'
 import type { SectionCapabilities } from '~/core/catalog/capabilities'
 import { getCapabilities } from '~/core/catalog/capabilities'
 import { definitionKey } from '~/core/catalog/definition-keys'
+import { submittedName, suggestedName } from '~/core/catalog/engine-name'
 import { groupInSchema } from '~/core/connection/utils'
 import { createIndexQuery } from '~/core/queries/indexes/create'
 import { dropIndexQuery } from '~/core/queries/indexes/drop'
@@ -103,11 +104,15 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) =>
     }),
   })
 
-const getSuggestedName = (draft: IndexDraft) =>
-  [draft.table, ...draft.columns, 'idx'].join('_')
+const getSuggestedName = (draft: IndexDraft, dialect: Dialect) =>
+  suggestedName(dialect, [draft.table, ...draft.columns, 'idx'])
 
-const getFinalName = (draft: IndexDraft) =>
-  draft.name.trim() || getSuggestedName(draft)
+const getFinalName = (
+  draft: IndexDraft,
+  dialect: Dialect,
+  item: GroupedIndex | null
+) =>
+  submittedName(dialect, draft.name, item) || getSuggestedName(draft, dialect)
 
 const getDraft = (
   item: GroupedIndex | null,
@@ -139,7 +144,7 @@ const reshapes = (
     draft.skipType !== opened.skipType ||
     draft.granularity !== opened.granularity ||
     (!getCapabilities(dialect).indexes.rename &&
-      getFinalName(draft) !== item.name)
+      getFinalName(draft, dialect, item) !== item.name)
   )
 }
 
@@ -163,7 +168,7 @@ const saveIndex = ({
     table,
     unique,
   }
-  const name = getFinalName(draft)
+  const name = getFinalName(draft, dialect, item)
 
   if (!item) {
     return run(createIndexQuery({ ...shape, name }))
@@ -283,7 +288,7 @@ const IndexInspector = ({
     mutationFn: (draft: IndexDraft) => saveIndex({ dialect, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
-      toast.success(`Index "${getFinalName(draft)}" saved`)
+      toast.success(`Index "${getFinalName(draft, dialect, item)}" saved`)
       onOpenChange(false)
     },
   })
@@ -310,7 +315,9 @@ const IndexInspector = ({
 
   return (
     <Inspector
-      canSave={!item || reshaped || getFinalName(draft) !== item.name}
+      canSave={
+        !item || reshaped || getFinalName(draft, dialect, item) !== item.name
+      }
       description={item ? `${item.schema}.${item.table}` : draft.schema}
       form={form}
       item={item}
@@ -339,7 +346,9 @@ const IndexInspector = ({
               autoFocus
               description="Leave it empty to use the suggested name."
               disabled={locked.readOnly}
-              placeholder={draft.table ? getSuggestedName(draft) : 'Index name'}
+              placeholder={
+                draft.table ? getSuggestedName(draft, dialect) : 'Index name'
+              }
             />
           )}
         </form.AppField>

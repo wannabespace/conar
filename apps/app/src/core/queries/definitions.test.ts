@@ -1,16 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { DialectAdapter, QueryCompiler, RawBuilder } from 'kysely'
-import {
-  DummyDriver,
-  Kysely,
-  MssqlAdapter,
-  MssqlQueryCompiler,
-  MysqlAdapter,
-  MysqlQueryCompiler,
-  PostgresAdapter,
-  PostgresQueryCompiler,
-} from 'kysely'
+import { coldDialect } from '@tamery/connection/queries/kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import type { RawBuilder } from 'kysely'
 
 import type { ConstraintShape } from './constraints/shape'
 import {
@@ -23,6 +15,7 @@ import {
   addSkipIndexStatement,
   createIndexStatement,
   getSkipIndexColumns,
+  oracleCreateIndexStatement,
 } from './indexes/shape'
 import {
   clickhouseRoleList,
@@ -36,42 +29,10 @@ import {
   setTriggerEnabledStatements,
 } from './triggers/shape'
 
-// The app's own cold dialects reach the browser runtime, so compiling here
-// stays on Kysely's own compilers.
-const cold = (
-  adapter: () => DialectAdapter,
-  queryCompiler: () => QueryCompiler
-) =>
-  new Kysely<never>({
-    dialect: {
-      createAdapter: adapter,
-      createDriver: () => new DummyDriver(),
-      createIntrospector: () => {
-        throw new Error('A statement test never introspects')
-      },
-      createQueryCompiler: queryCompiler,
-    },
-  })
-
-const compilers = {
-  mssql: cold(
-    () => new MssqlAdapter(),
-    () => new MssqlQueryCompiler()
-  ),
-  mysql: cold(
-    () => new MysqlAdapter(),
-    () => new MysqlQueryCompiler()
-  ),
-  postgres: cold(
-    () => new PostgresAdapter(),
-    () => new PostgresQueryCompiler()
-  ),
-}
-
 const compiled = (
   statement: RawBuilder<unknown>,
-  dialect: keyof typeof compilers = 'postgres'
-) => statement.compile(compilers[dialect]).sql.replaceAll(/\s+/gu, ' ').trim()
+  dialect: Dialect = Dialect.Postgres
+) => statement.compile(coldDialect(dialect)).sql.replaceAll(/\s+/gu, ' ').trim()
 
 const routine = (
   overrides: Partial<Parameters<typeof createFunctionStatements>[0]['shape']>
@@ -115,15 +76,18 @@ const trigger = (
 describe('routine statements', () => {
   test('SQL Server takes procedure parameters without parentheses', () => {
     expect(
-      compiled(routine({ kind: 'procedure' }).mssql, 'mssql')
+      compiled(routine({ kind: 'procedure' }).mssql, Dialect.MSSQL)
     ).not.toInclude('(')
     expect(
-      compiled(routine({ args: '@id int', kind: 'procedure' }).mssql, 'mssql')
+      compiled(
+        routine({ args: '@id int', kind: 'procedure' }).mssql,
+        Dialect.MSSQL
+      )
     ).toInclude('"app"."f" @id int AS')
   })
 
   test('SQL Server functions keep their parentheses and return type', () => {
-    expect(compiled(routine({ args: 'id int' }).mssql, 'mssql')).toBe(
+    expect(compiled(routine({ args: 'id int' }).mssql, Dialect.MSSQL)).toBe(
       'CREATE OR ALTER FUNCTION "app"."f" (id int) RETURNS integer AS BEGIN END'
     )
   })
@@ -136,7 +100,7 @@ describe('routine statements', () => {
           returnType: 'TABLE',
           schemaBound: true,
         }).mssql,
-        'mssql'
+        Dialect.MSSQL
       )
     ).toBe(
       'CREATE OR ALTER FUNCTION "app"."f" () RETURNS TABLE WITH SCHEMABINDING AS RETURN (SELECT 1 AS ok)'
@@ -174,7 +138,7 @@ describe('trigger statements', () => {
           },
           table: 'users',
         }).mysql,
-        'mysql'
+        Dialect.MySQL
       )
     ).toStartWith("CREATE DEFINER = 'ops@team'@'%' TRIGGER")
   })
@@ -191,13 +155,15 @@ describe('trigger statements', () => {
   })
 
   test('MySQL runs the body for each row', () => {
-    expect(compiled(trigger({}).mysql, 'mysql')).toBe(
+    expect(compiled(trigger({}).mysql, Dialect.MySQL)).toBe(
       'CREATE TRIGGER `app`.`t` AFTER INSERT ON `app`.`users` FOR EACH ROW BEGIN END'
     )
   })
 
   test('SQL Server names the table before the timing', () => {
-    expect(compiled(trigger({ timing: 'INSTEAD OF' }).mssql, 'mssql')).toBe(
+    expect(
+      compiled(trigger({ timing: 'INSTEAD OF' }).mssql, Dialect.MSSQL)
+    ).toBe(
       'CREATE TRIGGER "app"."t" ON "app"."users" INSTEAD OF INSERT AS BEGIN END'
     )
   })
@@ -233,21 +199,27 @@ describe('a foreign key names its columns in order', () => {
     onUpdate: 'NO ACTION',
   }
 
-  test('through the builder', () => {
-    expect(
-      addConstraint(
-        compilers.postgres,
-        { schema: 's', table: 't' },
-        shape
-      ).compile().sql
-    ).toBe(
-      'alter table "s"."t" add constraint "fk" foreign key ("a", "b") references "ref"."other" ("x", "y") on delete cascade on update no action'
-    )
-  })
+  test.each([
+    ['CASCADE', ' on delete cascade'],
+    ['NO ACTION', ''],
+  ] as const)(
+    'through the builder, ON DELETE %s leaves NO ACTION unspelled',
+    (onDelete, clause) => {
+      expect(
+        addConstraint(
+          coldDialect(Dialect.Postgres),
+          { schema: 's', table: 't' },
+          { ...shape, onDelete }
+        ).compile().sql
+      ).toBe(
+        `alter table "s"."t" add constraint "fk" foreign key ("a", "b") references "ref"."other" ("x", "y")${clause}`
+      )
+    }
+  )
 
   test('as the MySQL clause', () => {
-    expect(compiled(constraintClause(shape))).toBe(
-      'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE NO ACTION'
+    expect(compiled(constraintClause({ ...shape, onUpdate: 'SET NULL' }))).toBe(
+      'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE SET NULL'
     )
   })
 })
@@ -268,7 +240,7 @@ describe('a check wraps its condition', () => {
   test('through the builder', () => {
     expect(
       addConstraint(
-        compilers.postgres,
+        coldDialect(Dialect.Postgres),
         { schema: 's', table: 't' },
         shape
       ).compile().sql
@@ -294,6 +266,19 @@ test('a unique index covers its columns in order', () => {
       })
     )
   ).toBe('CREATE UNIQUE INDEX "i" ON "s"."t" ("a", "b")')
+})
+
+test("an Oracle index lands in its table's schema", () => {
+  expect(
+    compiled(
+      oracleCreateIndexStatement({
+        columns: ['a'],
+        name: 'i',
+        schema: 's',
+        table: 't',
+      })
+    )
+  ).toBe('CREATE INDEX "s"."i" ON "s"."t" ("a")')
 })
 
 const policy = (roles: string[], using: string | null) =>
@@ -345,10 +330,10 @@ describe('security predicates', () => {
   }
 
   test('a block operation follows the table', () => {
-    expect(compiled(policyPredicate.add(predicate), 'mssql')).toBe(
+    expect(compiled(policyPredicate.add(predicate), Dialect.MSSQL)).toBe(
       'ADD BLOCK PREDICATE "Security"."fn_tenant"(TenantId) ON "dbo"."Orders" AFTER INSERT'
     )
-    expect(compiled(policyPredicate.drop(predicate), 'mssql')).toBe(
+    expect(compiled(policyPredicate.drop(predicate), Dialect.MSSQL)).toBe(
       'DROP BLOCK PREDICATE ON "dbo"."Orders" AFTER INSERT'
     )
   })
@@ -449,7 +434,7 @@ describe('ClickHouse', () => {
           skipType: 'minmax',
           table: 't',
         }),
-        'mysql'
+        Dialect.ClickHouse
       )
     ).toBe(
       'ALTER TABLE `s`.`t` ADD INDEX `i` (`a`, `b`) TYPE minmax GRANULARITY 4'
@@ -462,31 +447,31 @@ describe('ClickHouse', () => {
   })
 
   test('round-trips a row policy audience', () => {
-    expect(compiled(clickhouseRoleList(['ALL', 'EXCEPT bob']), 'mysql')).toBe(
-      'ALL EXCEPT `bob`'
-    )
-    expect(compiled(clickhouseRoleList([]), 'mysql')).toBe('ALL')
+    expect(
+      compiled(clickhouseRoleList(['ALL', 'EXCEPT bob']), Dialect.ClickHouse)
+    ).toBe('ALL EXCEPT `bob`')
+    expect(compiled(clickhouseRoleList([]), Dialect.ClickHouse)).toBe('ALL')
   })
 })
 
 describe('a MySQL privilege', () => {
   test('reads the account the way the catalog and a user write it', () => {
-    expect(compiled(getAccount("'bob'@'%'"), 'mysql')).toBe("'bob'@'%'")
-    expect(compiled(getAccount('bob@localhost'), 'mysql')).toBe(
+    expect(compiled(getAccount("'bob'@'%'"), Dialect.MySQL)).toBe("'bob'@'%'")
+    expect(compiled(getAccount('bob@localhost'), Dialect.MySQL)).toBe(
       "'bob'@'localhost'"
     )
-    expect(compiled(getAccount('bob'), 'mysql')).toBe("'bob'@'%'")
+    expect(compiled(getAccount('bob'), Dialect.MySQL)).toBe("'bob'@'%'")
   })
 
   test('covers a database or one table', () => {
     const target = { grantee: 'bob', privilege: 'SELECT', schema: 'app' }
 
-    expect(compiled(privilegeOn({ ...target, table: '*' }), 'mysql')).toBe(
-      'SELECT ON `app`.*'
-    )
-    expect(compiled(privilegeOn({ ...target, table: 't' }), 'mysql')).toBe(
-      'SELECT ON `app`.`t`'
-    )
+    expect(
+      compiled(privilegeOn({ ...target, table: '*' }), Dialect.MySQL)
+    ).toBe('SELECT ON `app`.*')
+    expect(
+      compiled(privilegeOn({ ...target, table: 't' }), Dialect.MySQL)
+    ).toBe('SELECT ON `app`.`t`')
   })
 
   test('on a whole database matches it as a LIKE pattern', () => {

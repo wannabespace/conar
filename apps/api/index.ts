@@ -76,7 +76,9 @@ const app = new Hono<{
         ) {
           return origin
         }
-        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin)
+        return (origin.startsWith('https://') &&
+          origin.endsWith('.tamery.app')) ||
+          allowedOrigins.includes(origin)
           ? origin
           : null
       },
@@ -131,9 +133,8 @@ const app = new Hono<{
 
     if (
       status >= 400 &&
-      status !== 401 &&
-      status !== 403 &&
-      status !== 404 &&
+      ![401, 403, 404].includes(status) &&
+      (status >= 500 || !path.startsWith('/auth/')) &&
       env.ALERTS_EMAIL &&
       !c.req.url.includes('healthcheck.railway.app')
     ) {

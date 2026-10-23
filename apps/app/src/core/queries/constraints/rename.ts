@@ -20,6 +20,12 @@ export const renameConstraintQuery = ({
           db
         ),
       mysql: unsupported('Renaming constraints'),
+      oracle: (db) =>
+        db
+          .withSchema(schema)
+          .schema.alterTable(table)
+          .renameConstraint(name, newName)
+          .execute(),
       postgres: (db) =>
         db
           .withSchema(schema)

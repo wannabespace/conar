@@ -1,3 +1,4 @@
+import { coldDialect } from '@tamery/connection/queries/kysely'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
@@ -9,7 +10,6 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { inlineParameters } from '~/core/codegen/formats/sql'
 import { DiscardButton } from '~/core/drafts/discard-button'
 import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
-import { coldDialects } from '~/core/runtime/dialects'
 import { formatSql } from '~/utils/formatter'
 import { plural } from '~/utils/plural'
 
@@ -55,7 +55,7 @@ const draftLabel = (draft: DiagramDraft) => {
 const previewSql = (dialect: Dialect, draft: DiagramDraft) => {
   const { parameters, sql } = draftStatement(
     dialect,
-    coldDialects[dialect](),
+    coldDialect(dialect),
     draft
   )
   return formatSql(

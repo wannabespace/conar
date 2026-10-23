@@ -4,30 +4,42 @@ sidebarTitle: 'Schema'
 description: 'Inspect and edit indexes, constraints, functions, triggers, and access rules.'
 ---
 
-Click **Schema** at the top of the Navigator, then choose an object type. Pick a row to inspect its definition and available settings.
+Click **Schema** at the top of the Navigator, then choose an object type. Pick a row to inspect its definition and settings.
 
-| Object          | What you can inspect                                 |
-| --------------- | ---------------------------------------------------- |
-| **Enums**       | PostgreSQL types and their allowed values.           |
-| **Indexes**     | Indexed columns, uniqueness, and index type.         |
-| **Constraints** | Primary keys, foreign keys, unique keys, and checks. |
-| **Functions**   | Arguments, return type, and SQL body.                |
-| **Triggers**    | Table, event, and trigger body or function.          |
-| **Policies**    | Row access rules.                                    |
-| **Privileges**  | MySQL grants and who holds them.                     |
+| Object | What you can inspect | Engines |
+| --- | --- | --- |
+| **Enums** | Types and their allowed values. | PostgreSQL |
+| **Indexes** | Indexed columns, uniqueness, and index type. | All |
+| **Constraints** | Primary keys, foreign keys, unique keys, and checks. | All |
+| **Functions** | Functions and procedures: arguments, return type, and body. | PostgreSQL, MySQL, MariaDB, SQL Server, Oracle |
+| **Triggers** | Table, event, and trigger body or function. | All except ClickHouse |
+| **Policies** | Row access rules. | PostgreSQL, SQL Server, ClickHouse |
+| **Privileges** | Grants and who holds them. | MySQL, MariaDB |
 
-Tamery shows the categories supported by your engine. For table relationships, open the [Visualizer](/features/schema-visualizer).
+Each page has a search field, a schema picker, and a filter by kind, such as constraint type or functions versus procedures.
+
+For table relationships, open the [visualizer](/features/schema-visualizer).
 
 ## Create, edit, or drop
 
-Click **+ Add** to create an object. To edit one, open it, change the enabled fields, and save. Right-click a row to drop it; Tamery asks for confirmation.
+Click **Add index**, **Add enum**, and so on above the list to create an object. On desktop, **Cmd+N** (**Ctrl+N**) does the same. The button is missing where the engine can't create that kind of object, like constraints on SQLite.
 
-Some changes require replacing the object. The save button names the action, such as **Rebuild index** or **Replace enum**. Check its warning before saving: replacement can affect dependent objects or permissions.
+To edit an object, open it, change the enabled fields, and save.
 
-Read-only fields indicate changes Tamery cannot make safely through the form. You can use the [SQL editor](/features/sql-editor) for changes outside it.
+To drop one, right-click its row and choose **Drop**, or press **Cmd+D** (**Ctrl+D**). Tamery asks first. On PostgreSQL, constraints, enums, and functions can be dropped with **Cascade**, which also removes whatever depends on them.
+
+Some changes can only be made by replacing the object. The save button then says so, like **Rebuild index**, **Replace enum**, or **Recreate constraint**. Read its warning before saving: replacing can affect dependent objects or permissions.
+
+A read-only field is one Tamery can't change safely from the form. Use the [SQL editor](/features/sql-editor) for those.
+
+## Triggers
+
+On PostgreSQL, SQL Server, and Oracle, switch a trigger off and on without dropping it. Use **Enable** or **Disable** in its row menu, or the **Enabled** switch when it is open.
 
 ## Row level security
 
-On PostgreSQL, a policy takes effect only when row level security is enabled on its table. Right-click the table in the Navigator and choose **Enable RLS** or **Disable RLS**.
+On PostgreSQL, a policy only takes effect when row level security is on for its table. Right-click the table in the Navigator and choose **Enable RLS** or **Disable RLS**, or use the **Row level security** switch in the policy. Tables with RLS on show a shield in the Navigator.
 
-On SQL Server, use the policy's **Enabled** switch and configure its predicates in the inspector.
+On SQL Server, use the policy's **Enabled** switch and set its predicates in the inspector.
+
+On ClickHouse, policies are row policies for `SELECT`.

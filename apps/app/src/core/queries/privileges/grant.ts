@@ -40,6 +40,7 @@ export const grantPrivilegeQuery = (target: PrivilegeTarget) =>
           throw error
         }
       },
+      oracle: unsupported('Privileges'),
       postgres: unsupported('Privileges'),
       sqlite: unsupported('Privileges'),
     },
