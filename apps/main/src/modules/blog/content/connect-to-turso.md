@@ -23,6 +23,20 @@ Turso connects from both the desktop and web apps, with no local proxy needed, s
 
 Turso cannot hold a transaction open between runs. Run a whole `BEGIN … COMMIT` block together with **Run all** rather than one statement at a time. Everything else, browsing rows, editing, SQL, indexes and triggers, works as you would expect from SQLite.
 
+## FAQ
+
+### What do I need to connect to Turso?
+
+The database URL, a `libsql://` address, and an auth token. Paste both, or the two `TURSO_*` lines from your `.env`.
+
+### Does Turso work in the web app?
+
+Yes, on both desktop and web, with no local proxy, since the database is already remote.
+
+### Can I connect to a self-hosted libSQL server?
+
+Yes. If it runs without TLS, add `?tls=0` to the URL.
+
 ---
 
-[Download Tamery](/download), paste your URL and token, and connect. The full reference is in the [Turso docs](https://docs.tamery.app/connections/sqlite).
+[Download Tamery](/download), paste your database URL and auth token, and connect. The full reference is in the [Turso docs](https://docs.tamery.app/connections/sqlite).

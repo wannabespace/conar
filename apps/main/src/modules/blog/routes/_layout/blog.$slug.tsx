@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 
 import { seo } from '~/utils/seo'
 
-import { findPost } from '../../posts'
+import { BLOG_AUTHOR, findPost } from '../../posts'
 
 const BlogPostPage = () => {
   const { post } = Route.useLoaderData()
@@ -24,12 +24,13 @@ const BlogPostPage = () => {
         <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           {post.title}
         </h1>
-        <time
-          dateTime={post.publishedAt}
-          className="text-muted-foreground text-sm"
-        >
-          {format(new Date(post.publishedAt), 'MMMM d, yyyy')}
-        </time>
+        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+          <span>{BLOG_AUTHOR}</span>
+          <span aria-hidden>·</span>
+          <time dateTime={post.publishedAt}>
+            {format(new Date(post.publishedAt), 'MMMM d, yyyy')}
+          </time>
+        </div>
       </header>
       <Response variant="document" mode="static">
         {post.content}

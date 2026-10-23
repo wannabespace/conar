@@ -1,4 +1,3 @@
-import aPlaceToWriteThingsDown from './content/a-place-to-write-things-down.md?raw'
 import connectToClickhouse from './content/connect-to-clickhouse.md?raw'
 import connectToCloudflareD1 from './content/connect-to-cloudflare-d1.md?raw'
 import connectToMysql from './content/connect-to-mysql.md?raw'
@@ -7,6 +6,8 @@ import connectToPostgresql from './content/connect-to-postgresql.md?raw'
 import connectToSqlServer from './content/connect-to-sql-server.md?raw'
 import connectToSqlite from './content/connect-to-sqlite.md?raw'
 import connectToTurso from './content/connect-to-turso.md?raw'
+
+export const BLOG_AUTHOR = 'Valerii Strilets'
 
 export interface BlogPost {
   slug: string
@@ -80,14 +81,6 @@ export const blogPosts: BlogPost[] = [
       'Connect to Cloudflare D1: account ID, database ID and the API token to create, plus the two D1 quirks worth knowing.',
     publishedAt: '2026-10-24',
     content: connectToCloudflareD1,
-  },
-  {
-    slug: 'a-place-to-write-things-down',
-    title: 'A place to write things down',
-    description:
-      'Why Tamery has a blog now, and what goes here instead of the changelog.',
-    publishedAt: '2026-10-23',
-    content: aPlaceToWriteThingsDown,
   },
 ].toSorted((a, b) => b.publishedAt.localeCompare(a.publishedAt))
 

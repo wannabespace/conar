@@ -1,6 +1,6 @@
 Oracle connection strings look nothing like the other databases, and the service name trips people up every time. Here is how to connect in Tamery, with the exact string and the two gotchas worth knowing up front.
 
-## The connection string
+## The Oracle connection string
 
 Choose **Oracle** under Engine, or paste:
 
@@ -20,7 +20,7 @@ Oracle Database 12c or later is supported.
 
 In Oracle, each user is a schema. Tamery opens your own schema and lists the other schemas you can see. Built-in accounts like `SYS` and `XDB` stay hidden so they do not clutter the Navigator.
 
-## Encryption
+## Encryption and TCPS
 
 Add `ssl=true` to connect over TCPS, Oracle's TLS listener, usually on port **2484**:
 
@@ -43,6 +43,24 @@ docker run -d -p 1521:1521 -e ORACLE_PASSWORD=password gvenzl/oracle-free
 
 Connect as `system` to the `FREEPDB1` service. On desktop, Tamery lists the running container under detected databases, so you can click straight into it.
 
+## FAQ
+
+### What port does Oracle use?
+
+1521 by default, or 2484 for TCPS, Oracle's TLS listener.
+
+### What is the service name in an Oracle connection string?
+
+The part after the host and port, like `FREEPDB1`. It is not the same as a database name, which is what catches most people.
+
+### Does Tamery support Oracle wallets or tnsnames.ora?
+
+No. Connect with the host, port and service name. SSH tunnels are not available for Oracle connections either.
+
+### Which Oracle versions work?
+
+Oracle Database 12c and later.
+
 ---
 
-[Download Tamery](/download) and paste your string or JDBC URL to connect. The full reference is in the [Oracle docs](https://docs.tamery.app/connections/oracle).
+[Download Tamery](/download), paste the connection string or a JDBC thin URL, and connect. The full reference is in the [Oracle docs](https://docs.tamery.app/connections/oracle).

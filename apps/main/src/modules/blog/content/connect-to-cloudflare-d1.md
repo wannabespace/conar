@@ -23,6 +23,20 @@ D1 connects from both apps with no local proxy, since it is a remote HTTP API.
 
 Otherwise it behaves like SQLite: browse and edit rows, run SQL, manage indexes and triggers.
 
+## FAQ
+
+### What do I need to connect to Cloudflare D1?
+
+An account ID, a database ID and an API token. Pasting the database's dashboard URL fills in both IDs for you.
+
+### What permission does the D1 API token need?
+
+Account → D1 → Edit, and nothing broader.
+
+### Does D1 support transactions?
+
+Not held open between runs. Run a whole `BEGIN … COMMIT` block with Run all; D1 returns no rows from statements inside it.
+
 ---
 
-[Download Tamery](/download), paste your dashboard URL and token, and connect. The full reference is in the [Cloudflare D1 docs](https://docs.tamery.app/connections/sqlite).
+[Download Tamery](/download), paste the database URL from your dashboard and an API token, and connect. The full reference is in the [Cloudflare D1 docs](https://docs.tamery.app/connections/sqlite).

@@ -1,6 +1,6 @@
 Most PostgreSQL connection problems are not really connection problems. They are a pooled address that breaks transactions, a placeholder password that never got replaced, or an SSL mode that does not match the server. Here is how to connect in Tamery and skip all three.
 
-## The connection string
+## The PostgreSQL connection string
 
 Click **New connection** and paste your provider's string, or fill in the fields:
 
@@ -10,7 +10,7 @@ postgresql://user:password@localhost:5432/mydb
 
 Both `postgresql://` and `postgres://` work. The default port is **5432**.
 
-## Hosted databases
+## Hosted databases: Supabase, Neon, Railway
 
 Copy the string straight from Supabase, Neon, Railway, or wherever your database lives. Two things Tamery fixes for you:
 
@@ -19,7 +19,7 @@ Copy the string straight from Supabase, Neon, Railway, or wherever your database
 
 On Supabase, the direct server is IPv6 only. If your network has no IPv6, use the **Session pooler** string.
 
-## SSL
+## SSL and sslmode
 
 Keep whatever SSL setting your provider gives you:
 
@@ -39,6 +39,24 @@ With no SSL option set, Tamery tries an encrypted connection without certificate
 
 TimescaleDB is a Postgres extension, so connect to it exactly as PostgreSQL. Hypertables and continuous aggregates show up in the Navigator as tables and views; the internal schemas where chunks live stay hidden.
 
+## FAQ
+
+### What port does PostgreSQL use?
+
+5432 by default.
+
+### Why does my pooled connection string break transactions?
+
+A transaction pooler hands out a different backend per statement, so a transaction cannot stay open across them. Tamery switches a pooled address to the direct or session one so transactions work.
+
+### Does Tamery work with Supabase, Neon and Railway?
+
+Yes. Paste the string from the dashboard and Tamery handles the pooler and the password placeholder for you.
+
+### Is there a difference between postgres:// and postgresql://?
+
+No. Both schemes mean the same thing, and Tamery accepts either.
+
 ---
 
-[Download Tamery](/download), paste the string, and the form sorts out the pooler and the placeholder for you. Full details, including the local proxy for localhost on the web, are in the [PostgreSQL docs](https://docs.tamery.app/connections/postgresql).
+[Download Tamery](/download), paste the string from Supabase, Neon or your own server, and the form sorts out the pooler and the placeholder. Full details, including the local proxy for localhost on the web, are in the [PostgreSQL docs](https://docs.tamery.app/connections/postgresql).

@@ -1,6 +1,6 @@
-MySQL and MariaDB connection strings come in more shapes than any other database: URLs, Go DSNs, `.env` blocks, raw `mysql` commands. The good news is you do not have to normalize any of them by hand. Here is how to connect in Tamery.
+MySQL and MariaDB connection strings come in more shapes than any other database: URLs, Go DSNs, `.env` blocks, raw `mysql` commands. You do not have to normalize any of them by hand. Paste what you have into Tamery and the form reads it.
 
-## The connection string
+## The MySQL connection string
 
 Choose **MySQL** or **MariaDB** under Engine, or paste a string:
 
@@ -12,9 +12,9 @@ mysql://user:password@localhost:3306/mydb
 mariadb://user:password@localhost:3306/mydb
 ```
 
-The default port is **3306**. A Go DSN like `user:pass@tcp(host:3306)/mydb`, an `.env` file, or a `mysql` command line works too. Paste what you have and the form reads it.
+The default port is **3306**. A Go DSN like `user:pass@tcp(host:3306)/mydb`, an `.env` file, or a `mysql` command line works too.
 
-## SSL
+## SSL and TLS options
 
 Use your provider's string with its SSL options. `ssl=true` encrypts the connection and verifies the certificate:
 
@@ -32,6 +32,24 @@ If the connection fails with something about an unsupported authentication plugi
 
 Everything works the same as MySQL: rows, SQL, schema. System-versioned tables show their current rows, and you query the history with SQL. Sequences are available through SQL rather than the Navigator.
 
+## FAQ
+
+### What port does MySQL use?
+
+3306 by default, and the same for MariaDB.
+
+### How do I fix "authentication plugin cannot be loaded"?
+
+The server is using an auth method the driver cannot speak. Recreate the user with `mysql_native_password`, or update the server's auth plugin.
+
+### Does Tamery support MariaDB?
+
+Yes. Rows, SQL and schema work the same as MySQL, and system-versioned tables show their current rows.
+
+### Can I paste a Go DSN or an .env file?
+
+Yes. A DSN like `user:pass@tcp(host:3306)/mydb`, an `.env` block, or a `mysql` command line all parse.
+
 ---
 
-[Download Tamery](/download), paste any of those string formats, and connect. The full reference, including the local proxy for localhost on the web, is in the [MySQL and MariaDB docs](https://docs.tamery.app/connections/mysql).
+[Download Tamery](/download), paste a URL, a DSN or an `.env` block, and connect. The full reference, including the local proxy for localhost on the web, is in the [MySQL and MariaDB docs](https://docs.tamery.app/connections/mysql).

@@ -14,11 +14,11 @@ For any other filename, paste `sqlite3 /path/to/file` instead, so Tamery knows i
 
 The file has to exist already. A `~/` path points to the home folder of whatever computer opens the connection, so the same synced connection can work on your laptop and your desktop. Syncing the connection does not copy the file itself, only the pointer to it.
 
-## On the web app
+## Opening a local file from the web app
 
 The browser cannot read a file off your disk, so run [`tamery proxy`](https://docs.tamery.app/cli/commands) on the computer that holds the file. The web app then reaches it through the proxy.
 
-## What works
+## What you can edit in SQLite
 
 Browse and edit rows, run SQL, explore relationships, and manage indexes and triggers.
 
@@ -29,6 +29,24 @@ Browse and edit rows, run SQL, explore relationships, and manage indexes and tri
 
 If you are looking for hosted SQLite, Tamery connects to both [Turso](/blog/connect-to-turso) and [Cloudflare D1](/blog/connect-to-cloudflare-d1). They are SQLite-compatible but remote, so they have their own short guides.
 
+## FAQ
+
+### How do I open a SQLite file in Tamery?
+
+On desktop, drop the file onto the window, or pick it under the SQLite engine. You can also paste a path ending in `.db`, `.db3`, `.sqlite` or `.sqlite3`.
+
+### Can I open a local SQLite file in the web app?
+
+Yes, but run `tamery proxy` on the computer that holds the file first, since the browser cannot read your disk directly.
+
+### Does Tamery create a new SQLite database?
+
+No. The file has to exist already; Tamery opens it, it does not create one.
+
+### Can I change a column's type in SQLite?
+
+You can add, rename and drop columns, but not change an existing column's type or nullability, since SQLite would rebuild the whole table to do it.
+
 ---
 
-[Download Tamery](/download), drop your `.db` file in, and you are querying. The full reference is in the [SQLite docs](https://docs.tamery.app/connections/sqlite).
+[Download Tamery](/download), drop a `.db` file onto the window, and you are querying. The full reference is in the [SQLite docs](https://docs.tamery.app/connections/sqlite).
