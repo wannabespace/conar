@@ -6,20 +6,16 @@ import type { GridColumn } from './columns'
 import { glideIntoView } from './glide-into-view'
 import type { ScrollToCell } from './grid'
 
-export const HEADER_ROW = -1
-
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max)
 
 /** The caller marks the cursor's cell with `data-cursor` and passes `scrollToRef` to `Grid`: that is how a move finds the cell to scroll to, or mounts a virtualized one. */
 export const useGridNavigation = ({
   columns,
-  onActivateHeader,
   rowCount,
   scrollRef,
 }: {
   columns: GridColumn[]
-  onActivateHeader?: (column: string) => void
   rowCount: number
   scrollRef: RefObject<HTMLDivElement | null>
 }) => {
@@ -30,7 +26,7 @@ export const useGridNavigation = ({
   const place = (row: number, column: number) => {
     const next = {
       column: clamp(column, 0, columns.length - 1),
-      row: clamp(row, HEADER_ROW, rowCount - 1),
+      row: clamp(row, 0, rowCount - 1),
     }
     setPosition(next)
     requestAnimationFrame(() => {
@@ -40,16 +36,9 @@ export const useGridNavigation = ({
       if (scroller && cell) {
         glideIntoView(scroller, cell)
       } else if (id) {
-        scrollToRef.current?.(Math.max(next.row, 0), id)
+        scrollToRef.current?.(next.row, id)
       }
     })
-  }
-
-  const activate = () => {
-    const id = columns[cursor.column]?.id
-    if (cursor.row === HEADER_ROW && id) {
-      onActivateHeader?.(id)
-    }
   }
 
   useHotkeys(
@@ -72,8 +61,6 @@ export const useGridNavigation = ({
       },
       { callback: () => place(cursor.row, 0), hotkey: 'Home' },
       { callback: () => place(cursor.row, columns.length - 1), hotkey: 'End' },
-      { callback: activate, hotkey: 'Enter' },
-      { callback: activate, hotkey: 'Space' },
       {
         callback: () => {
           if (document.activeElement instanceof HTMLElement) {

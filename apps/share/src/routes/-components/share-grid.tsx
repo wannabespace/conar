@@ -7,7 +7,6 @@ import {
   ARIA_SORT,
   getColumnSize,
   Grid,
-  HEADER_ROW,
   useGridNavigation,
 } from '@tamery/table'
 import { Checkbox } from '@tamery/ui/components/checkbox'
@@ -65,12 +64,8 @@ export const ShareGrid = ({
             <div
               role="columnheader"
               aria-sort={sorted ? ARIA_SORT[sorted] : undefined}
-              data-cursor={isCursor(HEADER_ROW, column.id) || undefined}
               style={style}
-              className="relative flex h-8 items-center pr-3 pl-2 select-none"
-              onPointerDown={() =>
-                place(HEADER_ROW, gridColumns.indexOf(column))
-              }
+              className="flex h-8 items-center pr-3 pl-2 select-none"
             >
               <span className="text-foreground flex min-w-0 flex-1 items-center gap-1.5">
                 <ColumnKindIcon kind={kinds.get(column.id) ?? 'text'} />
@@ -85,9 +80,6 @@ export const ShareGrid = ({
                   />
                 )}
               </span>
-              {isCursor(HEADER_ROW, column.id) && (
-                <span aria-hidden className={CURSOR_CLASS} />
-              )}
             </div>
           )
         }}
