@@ -100,7 +100,7 @@ export const knownHosts = {
     return listed.length > 0 ? 'changed' : 'unknown'
   },
   describe: (key: Buffer) => ({
-    fingerprint: `SHA256:${createHash('sha256').update(key).digest('base64').replace(/=+$/u, '')}`,
+    fingerprint: `SHA256:${createHash('sha256').update(key).digest('base64').replace(/[=]+$/u, '')}`,
     keyType: getKeyType(key),
   }),
   getLine: (name: string, key: Buffer, { hashed }: { hashed: boolean }) => {

@@ -121,15 +121,12 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         tracker.markSynced(config.getKey(item.value), item.value.updatedAt)
       }
 
-      const writeItems = (
-        items: SyncMessage<T>[],
-        options?: { immediate: boolean }
-      ) => {
+      const writeItems = (items: SyncMessage<T>[]) => {
         if (signal.aborted) {
           return
         }
 
-        begin(options)
+        begin()
         for (const item of items) {
           writeItem(item)
         }
@@ -216,10 +213,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         }
       }
 
-      // Immediate: a plain sync commit waits for every persisting transaction
-      // on the collection, so the row would vanish while a later outbox write
-      // is still pending.
-      writeSynced = (items) => writeItems(items, { immediate: true })
+      writeSynced = writeItems
       abortSync = () => {
         abortController.abort(`${config.id} sync aborted`)
         firstSync.resolve()

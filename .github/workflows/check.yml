@@ -32,7 +32,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12.13.0
+          version: 12.15.0
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -63,7 +63,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12.13.0
+          version: 12.15.0
 
       - name: Audit production dependencies
         run: pnpm audit --prod --audit-level=critical

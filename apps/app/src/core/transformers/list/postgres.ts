@@ -22,7 +22,7 @@ const parsePgArrayLiteral = (value: string): string[] | undefined => {
   }
 
   return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) =>
-    m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim()
+    m[0] === '"' ? m.slice(1, -1).replaceAll(PG_UNESCAPE_RE, '$1') : m.trim()
   )
 }
 
@@ -34,8 +34,8 @@ export const toPgArrayLiteral = (items: string[], separator = ','): string => {
 
     if (PG_NEEDS_QUOTING_RE.test(item) || item.toUpperCase() === 'NULL') {
       const quoted = item
-        .replace(BACKSLASH_RE, '\\\\')
-        .replace(DOUBLE_QUOTE_RE, '\\"')
+        .replaceAll(BACKSLASH_RE, '\\\\')
+        .replaceAll(DOUBLE_QUOTE_RE, '\\"')
       return `"${quoted}"`
     }
 
