@@ -24,7 +24,7 @@ const BlogPage = () => (
       {blogPosts.map((post) => (
         <li key={post.slug}>
           <Link
-            className="group hover:bg-muted/50 ease-house flex h-full flex-col gap-3 rounded-2xl p-4 transition-colors"
+            className="group hover:bg-accent ease-house flex h-full flex-col gap-3 rounded-2xl p-4 transition-colors"
             params={{ slug: post.slug }}
             to="/blog/$slug"
           >
