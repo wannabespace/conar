@@ -128,7 +128,7 @@ export const CopyDatabaseDialog = () => {
       }}
     >
       {source && (
-        <DialogContent>
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Copy database</DialogTitle>
             <DialogDescription>

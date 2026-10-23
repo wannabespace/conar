@@ -204,12 +204,12 @@ export const CopyLog = ({ entries }: { entries: CopyLogLine[] }) => {
         <ol
           ref={contentRef}
           data-mask
-          className="py-1.5 font-mono text-xs leading-4 select-text"
+          className="py-2 font-mono text-xs leading-4 select-text"
         >
           {entries.map((entry, index) => (
             // The log only grows, so a line keeps its index.
             // oxlint-disable-next-line react/no-array-index-key
-            <li key={index} className="flex items-start gap-2.5 px-3 py-1.5">
+            <li key={index} className="flex items-start gap-2.5 px-3 py-1">
               <EntryIcon {...entry} />
               <span
                 className={cn(

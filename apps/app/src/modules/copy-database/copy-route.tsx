@@ -34,7 +34,7 @@ export const CopyRoute = ({
   source: CopyEnd
   target: CopyEnd
 }) => (
-  <span className="flex items-center gap-2">
+  <span className="mt-3 flex items-center gap-2">
     <RouteEnd {...source} />
     <HugeiconsIcon
       icon={ArrowRight02Icon}
