@@ -3,6 +3,7 @@ import type { IconOutput, IconShape } from '@tamery/icons'
 
 const sources = {
   cyan: 'brand/cyan/source.png',
+  'cyan-inverse': 'brand/cyan-inverse/source.png',
   'dark-cyan': 'brand/dark-cyan/source.png',
   'dark-white': 'brand/dark-white/source.png',
 } as const
@@ -85,6 +86,7 @@ const brandIcons = (source: Output['source']): Output[] => [
 export const iconsConfig = defineIconsConfig({
   outputs: [
     ...brandIcons('cyan'),
+    ...brandIcons('cyan-inverse'),
     ...brandIcons('dark-cyan'),
     ...brandIcons('dark-white'),
     ...webIcons('apps/app/public', 'cyan'),
@@ -104,10 +106,16 @@ export const iconsConfig = defineIconsConfig({
       source: 'cyan',
     },
     {
-      file: 'apps/main/public/logo.png',
-      format: { size: 512, type: 'png' },
+      file: 'apps/app/public/logo.png',
+      format: { size: 256, type: 'png' },
       shape: 'rounded',
-      source: 'cyan',
+      source: 'cyan-inverse',
+    },
+    {
+      file: 'apps/main/public/logo.png',
+      format: { size: 256, type: 'png' },
+      shape: 'rounded',
+      source: 'cyan-inverse',
     },
   ],
   shapes,
