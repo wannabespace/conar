@@ -133,7 +133,11 @@ export const CopyDatabaseDialog = () => {
             <DialogTitle>Copy database</DialogTitle>
             <DialogDescription>
               {copy.variables ? (
-                <CopyRoute source={source} target={copy.variables.target} />
+                <CopyRoute
+                  source={source}
+                  status={status}
+                  target={copy.variables.target}
+                />
               ) : (
                 <CopyEndLabel {...source} />
               )}
