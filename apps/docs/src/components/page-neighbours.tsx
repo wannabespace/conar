@@ -28,11 +28,7 @@ const Neighbour = ({
 
   return (
     <Item
-      className={
-        direction === 'next'
-          ? 'text-foreground sm:col-start-2'
-          : 'text-foreground'
-      }
+      className={direction === 'next' ? 'sm:col-start-2' : undefined}
       render={<DocsLink href={page.href} />}
       size="sm"
       variant="card"

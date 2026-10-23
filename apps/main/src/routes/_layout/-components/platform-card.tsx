@@ -51,7 +51,7 @@ export const PlatformCard = ({
           key={file.link}
           variant="grouped"
           size="sm"
-          className="text-foreground cursor-default"
+          className="cursor-default"
           render={
             <a
               href={file.link}
