@@ -1,125 +1,44 @@
 import { defineIconsConfig } from '@tamery/icons'
-import type { IconOutput, IconShape } from '@tamery/icons'
 
-const sources = {
-  cyan: 'brand/cyan/source.png',
-  'cyan-inverse': 'brand/cyan-inverse/source.png',
-  'dark-cyan': 'brand/dark-cyan/source.png',
-  'dark-white': 'brand/dark-white/source.png',
-} as const
-
-const shapes = {
-  maskable: { markWidth: 702 },
-  rounded: { cornerRadius: 227, markWidth: 754 },
-  square: { markWidth: 754 },
-} satisfies Record<string, IconShape>
-
-type Output = IconOutput<keyof typeof sources, keyof typeof shapes>
-
-const webIcons = (folder: string, source: Output['source']): Output[] => [
-  {
-    file: `${folder}/apple-touch-icon.png`,
-    format: { size: 180, type: 'png' },
-    shape: 'square',
-    source,
+export default defineIconsConfig({
+  sources: {
+    cyan: 'brand/cyan/source.png',
+    'cyan-inverse': 'brand/cyan-inverse/source.png',
+    'dark-cyan': 'brand/dark-cyan/source.png',
+    'dark-white': 'brand/dark-white/source.png',
   },
-  {
-    file: `${folder}/favicon-96x96.png`,
-    format: { size: 96, type: 'png' },
-    shape: 'rounded',
-    source,
+  sourceMarkSize: 0.6,
+  importPrefix: 'tamery-avatar-',
+  sets: {
+    'apps/app/public': { preset: 'web', source: 'cyan' },
+    'apps/docs/public': { preset: 'web', source: 'cyan' },
+    'apps/main/public': { preset: 'web', source: 'cyan' },
+    'apps/share/public': { preset: 'web', source: 'cyan' },
+    'brand/cyan': { preset: 'brand', source: 'cyan' },
+    'brand/cyan-inverse': { preset: 'brand', source: 'cyan-inverse' },
+    'brand/dark-cyan': { preset: 'brand', source: 'dark-cyan' },
+    'brand/dark-white': { preset: 'brand', source: 'dark-white' },
   },
-  {
-    file: `${folder}/favicon.ico`,
-    format: { sizes: [16, 32, 48], type: 'ico' },
-    shape: 'rounded',
-    source,
-  },
-  {
-    file: `${folder}/web-app-manifest-192x192.png`,
-    format: { size: 192, type: 'png' },
-    shape: 'rounded',
-    source,
-  },
-  {
-    file: `${folder}/web-app-manifest-512x512.png`,
-    format: { size: 512, type: 'png' },
-    shape: 'rounded',
-    source,
-  },
-  {
-    file: `${folder}/web-app-manifest-maskable-192x192.png`,
-    format: { size: 192, type: 'png' },
-    shape: 'maskable',
-    source,
-  },
-  {
-    file: `${folder}/web-app-manifest-maskable-512x512.png`,
-    format: { size: 512, type: 'png' },
-    shape: 'maskable',
-    source,
-  },
-]
-
-const brandIcons = (source: Output['source']): Output[] => [
-  ...webIcons(`brand/${source}`, source),
-  {
-    file: `brand/${source}/icon.png`,
-    format: { size: 1024, type: 'png' },
-    shape: 'square',
-    source,
-  },
-  {
-    file: `brand/${source}/icon-rounded.png`,
-    format: { size: 1024, type: 'png' },
-    shape: 'rounded',
-    source,
-  },
-  {
-    file: `brand/${source}/logo.png`,
-    format: { size: 512, type: 'png' },
-    shape: 'rounded',
-    source,
-  },
-]
-
-export const iconsConfig = defineIconsConfig({
-  outputs: [
-    ...brandIcons('cyan'),
-    ...brandIcons('cyan-inverse'),
-    ...brandIcons('dark-cyan'),
-    ...brandIcons('dark-white'),
-    ...webIcons('apps/app/public', 'cyan'),
-    ...webIcons('apps/docs/public', 'cyan'),
-    ...webIcons('apps/main/public', 'cyan'),
-    ...webIcons('apps/share/public', 'cyan'),
-    {
-      file: 'apps/desktop/resources/icon-1024x1024.png',
-      format: { size: 1024, type: 'png' },
+  files: {
+    'apps/app/public/logo.png': {
       shape: 'rounded',
+      size: 256,
+      source: 'cyan-inverse',
+    },
+    'apps/desktop/resources/icon-1024x1024.png': {
+      shape: 'rounded',
+      size: 1024,
       source: 'cyan',
     },
-    {
-      file: 'apps/desktop/resources/macos-icon.icon/Assets/icon.png',
-      format: { size: 1024, type: 'png' },
+    'apps/desktop/resources/macos-icon.icon/Assets/icon.png': {
       shape: 'square',
+      size: 1024,
       source: 'cyan',
     },
-    {
-      file: 'apps/app/public/logo.png',
-      format: { size: 256, type: 'png' },
+    'apps/main/public/logo.png': {
       shape: 'rounded',
+      size: 256,
       source: 'cyan-inverse',
     },
-    {
-      file: 'apps/main/public/logo.png',
-      format: { size: 256, type: 'png' },
-      shape: 'rounded',
-      source: 'cyan-inverse',
-    },
-  ],
-  shapes,
-  sourceMarkWidth: 616,
-  sourcePrefix: 'tamery-avatar-',
-  sources,
+  },
 })

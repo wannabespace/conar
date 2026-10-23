@@ -3,34 +3,26 @@ import path from 'node:path'
 
 import sharp from 'sharp'
 
+import { PRESETS } from './presets'
 import { CANVAS, encode, renderShape } from './render'
 import type { IconsConfig } from './types'
 
-export const generateIcons = async <
-  Source extends string,
-  Shape extends string,
->(
+export const generateIcons = async <Source extends string>(
   {
-    outputs,
+    files,
+    importPrefix,
+    sets,
     shapes,
-    sourceMarkWidth,
-    sourcePrefix,
+    sourceMarkSize,
     sources,
-  }: IconsConfig<Source, Shape>,
-  { root, sourceDir }: { root: string; sourceDir: string | null }
+  }: IconsConfig<Source>,
+  { importDir, root }: { importDir: string | null; root: string }
 ) => {
-  const duplicate = outputs.find(
-    ({ file }, index) =>
-      outputs.findIndex((output) => output.file === file) !== index
-  )
-  if (duplicate) {
-    throw new Error(`${duplicate.file} is listed twice in the icon outputs`)
-  }
-  const sourceFiles = sourceDir ? await readdir(sourceDir) : []
+  const imported = importDir ? await readdir(importDir) : []
 
   const readSource = (name: string, savedFile: string) => {
-    const prefix = `${sourcePrefix}${name}-`
-    const largest = sourceFiles
+    const prefix = `${importPrefix}${name}-`
+    const largest = imported
       .filter(
         (file) => file.startsWith(prefix) && path.extname(file) === '.png'
       )
@@ -41,10 +33,10 @@ export const generateIcons = async <
       .filter(({ size }) => Number.isInteger(size))
       .toSorted((a, b) => b.size - a.size)
       .at(0)
-    if (!sourceDir || !largest) {
+    if (!importDir || !largest) {
       return readFile(path.join(root, savedFile))
     }
-    return sharp(path.join(sourceDir, largest.file))
+    return sharp(path.join(importDir, largest.file))
       .resize(CANVAS, CANVAS)
       .png({ compressionLevel: 9 })
       .toBuffer()
@@ -56,28 +48,40 @@ export const generateIcons = async <
     renders.set(key, pending)
     return pending
   }
-  const loadSource = (name: string, file: string) =>
-    once(name, () => readSource(name, file))
+  const loadSource = (name: Source) =>
+    once(name, () => readSource(name, sources[name]))
 
-  const files = [
-    ...Object.entries<string>(sources).map(async ([name, file]) => ({
-      buffer: await loadSource(name, file),
+  const outputs = {
+    ...Object.fromEntries(
+      Object.entries(sets).flatMap(([folder, { preset, source }]) =>
+        Object.entries(PRESETS[preset](source)).map(([name, file]) => [
+          path.join(folder, name),
+          file,
+        ])
+      )
+    ),
+    ...files,
+  }
+
+  const rendered = [
+    ...Object.entries<`${string}.png`>(sources).map(async ([name, file]) => ({
+      buffer: await once(name, () => readSource(name, file)),
       file,
     })),
-    ...outputs.map(async ({ file, format, shape, source }) => {
-      const shaped = await once(`${source}:${shape}`, async () =>
+    ...Object.entries(outputs).map(async ([file, output]) => {
+      const shaped = await once(`${output.source}:${output.shape}`, async () =>
         renderShape(
-          await loadSource(source, sources[source]),
-          sourceMarkWidth,
-          shapes[shape]
+          await loadSource(output.source),
+          sourceMarkSize,
+          shapes[output.shape]
         )
       )
-      return { buffer: await encode(shaped, format), file }
+      return { buffer: await encode(shaped, output), file }
     }),
   ]
 
   return Promise.all(
-    files.map(async (pending) => {
+    rendered.map(async (pending) => {
       const { buffer, file } = await pending
       await mkdir(path.dirname(path.join(root, file)), { recursive: true })
       await writeFile(path.join(root, file), buffer)

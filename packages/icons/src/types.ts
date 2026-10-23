@@ -1,27 +1,41 @@
 export type IcoSize = 16 | 24 | 32 | 48 | 64 | 128 | 256
 
-export interface IconShape {
+export type ShapeName = 'maskable' | 'rounded' | 'square'
+
+export interface Shape {
+  /** Corner radius as a fraction of the icon size; omit for square corners. */
   cornerRadius?: number
-  markWidth: number
+  /** Width of the mark as a fraction of the icon size. */
+  markSize: number
 }
 
-export type IconOutput<Source extends string, Shape extends string> = {
-  shape: Shape
+export type PresetName = 'brand' | 'web'
+
+interface PngFile<Source extends string> {
+  shape: ShapeName
+  size: number
   source: Source
-} & (
-  | { file: `${string}.png`; format: { size: number; type: 'png' } }
-  | {
-      file: `${string}.ico`
-      format: { sizes: [IcoSize, ...IcoSize[]]; type: 'ico' }
-    }
-)
+}
 
-export type IconFormat = IconOutput<string, string>['format']
+interface IcoFile<Source extends string> {
+  shape: ShapeName
+  sizes: [IcoSize, ...IcoSize[]]
+  source: Source
+}
 
-export interface IconsConfig<Source extends string, Shape extends string> {
-  outputs: IconOutput<Source, Shape>[]
-  shapes: Record<Shape, IconShape>
-  sourceMarkWidth: number
-  sourcePrefix: string
+export type IconFile<Source extends string> = IcoFile<Source> | PngFile<Source>
+
+export type IconFiles<Source extends string, Path extends string> = {
+  [File in Path]: File extends `${string}.ico`
+    ? IcoFile<Source>
+    : PngFile<Source>
+}
+
+export interface IconsConfig<Source extends string> {
+  files: Record<string, IconFile<Source>>
+  importPrefix: string
+  sets: Record<string, { preset: PresetName; source: Source }>
+  shapes: Record<ShapeName, Shape>
+  sourceMarkSize: number
   sources: Record<Source, `${string}.png`>
 }

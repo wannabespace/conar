@@ -7,11 +7,12 @@ import { generateIcons } from './generate'
 import type { IconsConfig } from './types'
 
 const root = process.cwd()
-const { iconsConfig }: { iconsConfig: IconsConfig<string, string> } =
-  await import(path.join(root, 'icons.config.ts'))
+const { default: config }: { default: IconsConfig<string> } = await import(
+  path.join(root, 'icons.config.ts')
+)
 
-const written = await generateIcons(iconsConfig, {
+const written = await generateIcons(config, {
+  importDir: process.argv.at(2) ?? null,
   root,
-  sourceDir: process.argv.at(2) ?? null,
 })
 console.log(written.join('\n'))
