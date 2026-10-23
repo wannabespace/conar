@@ -37,15 +37,15 @@ const ConfirmSignIn = () => {
       title={`Sign in to ${CLIENT_NAMES[clientType]}`}
       description={`Continue only if you started signing in yourself. You'll be signed in as ${email}.`}
     >
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex items-center gap-2">
+        <Button variant="outline" render={<Link to="/account" />}>
+          Cancel
+        </Button>
         <Button
           disabled={isPending}
           onClick={() => publish({ codeChallenge, newUser })}
         >
           Continue
-        </Button>
-        <Button variant="ghost" render={<Link to="/account" />}>
-          Cancel
         </Button>
       </div>
     </OpenStatus>

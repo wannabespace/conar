@@ -105,7 +105,7 @@ const AuthPage = () => {
         <div className="relative flex flex-col overflow-hidden px-4 py-6">
           <div className="relative m-auto flex w-full max-w-87.5 flex-1 flex-col justify-center">
             <motion.img
-              src={`${import.meta.env.BASE_URL}web-app-manifest-192x192.png`}
+              src={`${import.meta.env.BASE_URL}logo.png`}
               alt=""
               className="mb-8 size-12 will-change-transform"
               initial={{

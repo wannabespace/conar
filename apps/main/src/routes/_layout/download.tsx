@@ -18,7 +18,7 @@ const DownloadPage = () => {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 pt-16 sm:px-6 sm:pt-24">
       <header className="flex max-w-2xl flex-col items-start gap-4">
-        <img src="/web-app-manifest-192x192.png" alt="" className="size-16" />
+        <img src="/logo.png" alt="" className="size-16" />
         <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
           Download Tamery
         </h1>
