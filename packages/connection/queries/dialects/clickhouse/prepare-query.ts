@@ -2,7 +2,8 @@ import type { CompiledQuery } from 'kysely'
 
 const escapeSqlStringRegex = /[\\']/gu
 
-const escapeSqlString = (v: string) => v.replace(escapeSqlStringRegex, '\\$&')
+const escapeSqlString = (v: string) =>
+  v.replaceAll(escapeSqlStringRegex, '\\$&')
 
 // Quoted text is matched first so a `?` inside a literal or an identifier is not taken for a placeholder.
 const compiledSqlRegex =
@@ -24,31 +25,34 @@ const formatArrayValue = (value: unknown) => {
 
 export const prepareQuery = (compiledQuery: CompiledQuery) => {
   let i = 0
-  const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, (token) => {
-    if (token !== '?') {
-      return token
-    }
-    const param = compiledQuery.parameters[i]
-    i += 1
+  const compiledSql = compiledQuery.sql.replaceAll(
+    compiledSqlRegex,
+    (token) => {
+      if (token !== '?') {
+        return token
+      }
+      const param = compiledQuery.parameters[i]
+      i += 1
 
-    if (param === null || param === undefined) {
-      return 'NULL'
-    }
+      if (param === null || param === undefined) {
+        return 'NULL'
+      }
 
-    if (Array.isArray(param)) {
-      return `[${param.map(formatArrayValue).join(', ')}]`
-    }
+      if (Array.isArray(param)) {
+        return `[${param.map(formatArrayValue).join(', ')}]`
+      }
 
-    if (typeof param === 'number') {
-      return `${param}`
-    }
+      if (typeof param === 'number') {
+        return `${param}`
+      }
 
-    if (param instanceof Date) {
-      return `parseDateTime64BestEffort('${escapeSqlString(param.toISOString())}')`
-    }
+      if (param instanceof Date) {
+        return `parseDateTime64BestEffort('${escapeSqlString(param.toISOString())}')`
+      }
 
-    return `'${escapeSqlString(typeof param === 'string' ? param : JSON.stringify(param))}'`
-  })
+      return `'${escapeSqlString(typeof param === 'string' ? param : JSON.stringify(param))}'`
+    }
+  )
 
   const mutation = compiledSql
     .replace(UPDATE, 'alter table $<table> update')

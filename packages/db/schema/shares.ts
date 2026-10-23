@@ -1,4 +1,5 @@
 import { ShareRefresh } from '@tamery/shared/enums/share-refresh'
+import { SHARE_MAX_ROWS } from '@tamery/shared/share'
 import type { ShareView } from '@tamery/shared/share'
 import { defineRelationsPart } from 'drizzle-orm'
 import * as d from 'drizzle-orm/pg-core'
@@ -21,6 +22,7 @@ export const shares = d.snakeCase.table(
     description: d.text(),
     expiresAt: d.timestamp({ withTimezone: true }),
     failingSince: d.timestamp({ withTimezone: true }),
+    maxRows: d.integer().notNull().default(SHARE_MAX_ROWS),
     name: d.text().notNull(),
     passwordHash: d.text(),
     refresh: shareRefresh().notNull(),

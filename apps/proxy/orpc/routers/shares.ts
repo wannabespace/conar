@@ -4,7 +4,6 @@ import {
   shareAccessErrors,
   shareCheckInput,
   sharePage,
-  shareSort,
   shareToken,
   shareUnlockErrors,
 } from '@tamery/shared/share'
@@ -48,7 +47,6 @@ export const shares = {
           dialect,
           limit: 1,
           offset: 0,
-          sort: null,
           view,
         })
       )
@@ -77,14 +75,14 @@ export const shares = {
       }
     }),
   rows: orpc
-    .input(shareAccess.merge({ page: sharePage, sort: shareSort }))
+    .input(shareAccess.merge({ page: sharePage }))
     .errors({
       ...shareAccessErrors,
       UNAVAILABLE: {
         message: 'This table cannot be loaded right now. Try again later.',
       },
     })
-    .handler(async ({ errors, input: { page, sort, ...access } }) => {
+    .handler(async ({ errors, input: { page, ...access } }) => {
       const share = await proxyApi.internal.shares.resolve({
         ...access,
         unlock: null,
@@ -92,14 +90,26 @@ export const shares = {
       const view = { ...share.view, schema: share.schema, table: share.table }
       const isShown = (column: string) =>
         view.columns.some((shown) => shown.id === column)
+      const base = {
+        columns: view.columns,
+        orderBy: Object.fromEntries(
+          Object.entries(view.orderBy).filter(([column]) => isShown(column))
+        ),
+        refresh: share.refresh,
+      }
+
+      const offset = (page - 1) * SHARE_PAGE_SIZE
+      const remaining = share.maxRows - offset
+      if (remaining <= 0) {
+        return { ...base, fetchedAt: new Date(), hasMore: false, rows: [] }
+      }
+      const pageLimit = Math.min(SHARE_PAGE_SIZE, remaining)
       const read = await Result.tryPromise(() =>
         readCachedShareRows(share, {
           connectionString: share.connectionString,
           dialect: share.dialect,
-          limit: SHARE_PAGE_SIZE + 1,
-          offset: (page - 1) * SHARE_PAGE_SIZE,
-          // A hidden column must not even order what the viewer sees.
-          sort: sort && isShown(sort.column) ? sort : null,
+          limit: pageLimit + 1,
+          offset,
           view,
         })
       )
@@ -114,12 +124,8 @@ export const shares = {
 
       const failing = read.isErr()
 
-      // Only the owner's own view reports, so no viewer's page or sort can mark the share failing.
-      if (
-        page === 1 &&
-        sort === null &&
-        failing !== (share.failingSince !== null)
-      ) {
+      // Only the owner's own first page reports, so no viewer's deeper page can mark the share failing.
+      if (page === 1 && failing !== (share.failingSince !== null)) {
         await silently(() =>
           proxyApi.internal.shares.report({ failing, id: access.id })
         )
@@ -130,14 +136,11 @@ export const shares = {
       }
 
       return {
-        columns: view.columns,
+        ...base,
         fetchedAt: read.value.fetchedAt,
-        hasMore: read.value.rows.length > SHARE_PAGE_SIZE,
-        orderBy: Object.fromEntries(
-          Object.entries(view.orderBy).filter(([column]) => isShown(column))
-        ),
-        refresh: share.refresh,
-        rows: read.value.rows.slice(0, SHARE_PAGE_SIZE),
+        hasMore:
+          remaining > SHARE_PAGE_SIZE && read.value.rows.length > pageLimit,
+        rows: read.value.rows.slice(0, pageLimit),
       }
     }),
   unlock: orpc

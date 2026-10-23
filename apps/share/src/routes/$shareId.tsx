@@ -10,11 +10,7 @@ import { Suspense } from 'react'
 import { StatusPage } from '~/components/status-page'
 import { TopBar } from '~/components/top-bar'
 import { SHARE_LOCKED } from '~/lib/share'
-import {
-  shareInfoQueryOptions,
-  shareRowsQueryOptions,
-  shareSearch,
-} from '~/lib/share-rows'
+import { shareInfoQueryOptions, shareRowsQueryOptions } from '~/lib/share-rows'
 
 import { PasswordForm } from './-components/password-form'
 import { ShareTable } from './-components/share-table'
@@ -67,15 +63,13 @@ const SharePage = () => {
 }
 
 export const Route = createFileRoute('/$shareId')({
-  validateSearch: shareSearch,
-  loaderDeps: ({ search }) => search,
-  loader: ({ context, deps, params }) => {
+  loader: ({ context, params }) => {
     if (!uuid.allows(params.shareId)) {
       throw notFound()
     }
     void silently(() =>
       context.queryClient.infiniteQuery({
-        ...shareRowsQueryOptions({ id: params.shareId, search: deps }),
+        ...shareRowsQueryOptions(params.shareId),
         staleTime: 'static',
       })
     )

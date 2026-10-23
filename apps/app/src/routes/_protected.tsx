@@ -16,6 +16,7 @@ import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sy
 import { queryClient } from '~/lib/query-client'
 import { ActionsCenter } from '~/modules/actions-center/actions-center'
 import { useConnectionLinks } from '~/modules/connection-links/use-connection-links'
+import { CopyDatabaseDialog } from '~/modules/copy-database/copy-database-dialog'
 import { GlobalBanner } from '~/modules/global-banner/global-banner'
 import { McpHost } from '~/modules/mcp/mcp-host'
 import { SubscriptionModal } from '~/modules/subscription/subscription-modal'
@@ -52,6 +53,7 @@ const ProtectedLayout = () => {
       <EventsProvider>
         <ActionsCenter />
         {window.electron && <McpHost />}
+        {window.electron && <CopyDatabaseDialog />}
         <SubscriptionModal />
         <div className="flex h-full flex-col">
           <ProtectedTitleBar />

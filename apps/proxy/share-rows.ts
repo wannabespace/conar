@@ -7,7 +7,7 @@ import { filterValueBindings } from '@tamery/connection/queries/value-binding'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { ShareRefresh } from '@tamery/shared/enums/share-refresh'
 import { SHARE_REFRESH_MS } from '@tamery/shared/enums/share-refresh'
-import type { shareSort, ShareView } from '@tamery/shared/share'
+import type { ShareView } from '@tamery/shared/share'
 import { LRUCache } from 'lru-cache'
 
 import { assertReachable } from '~/public-host'
@@ -20,12 +20,11 @@ interface ShareRead {
   dialect: Dialect
   limit: number
   offset: number
-  sort: typeof shareSort.infer
   view: ShareView
 }
 
 export const readShareRows = async (read: ShareRead) => {
-  const { dialect, sort, view } = read
+  const { dialect, view } = read
   await assertReachable(read.connectionString)
   const compiled = selectPage(
     coldDialect(dialect),
@@ -33,7 +32,7 @@ export const readShareRows = async (read: ShareRead) => {
       filters: view.filters,
       limit: read.limit,
       offset: read.offset,
-      orderBy: sort ? { [sort.column]: sort.direction } : view.orderBy,
+      orderBy: view.orderBy,
       schema: view.schema,
       select: view.columns.map(({ id }) => id),
       table: view.table,
@@ -77,13 +76,7 @@ export const readCachedShareRows = (
   read: ShareRead
 ) =>
   pages.forceFetch(
-    JSON.stringify([
-      share.id,
-      share.updatedAt,
-      read.limit,
-      read.offset,
-      read.sort,
-    ]),
+    JSON.stringify([share.id, share.updatedAt, read.limit, read.offset]),
     {
       context: { read, shareId: share.id },
       ttl: SHARE_REFRESH_MS[share.refresh],

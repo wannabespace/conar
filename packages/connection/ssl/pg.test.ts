@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
 import { readConnectionString } from '../parse-connection-string'
-import { parseSSLConfig } from './pg'
+import { defaultSSLConfig, getLibpqSslMode, parseSSLConfig } from './pg'
 
 describe('SSL Configuration', () => {
   it('should parse sslmode=disable', () => {
@@ -231,5 +231,31 @@ describe('SSL Configuration', () => {
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toBe(false)
+  })
+})
+
+describe('getLibpqSslMode', () => {
+  it.each([
+    ['', 'require'],
+    ['?sslmode=disable', 'disable'],
+    ['?sslmode=prefer', 'require'],
+    ['?sslmode=require', 'require'],
+    ['?sslmode=no-verify', 'require'],
+    ['?sslmode=verify', 'verify-full'],
+    ['?sslmode=verify-ca&sslrootcert=/ca.pem', 'verify-ca'],
+    ['?sslmode=verify-full&sslrootcert=/ca.pem', 'verify-full'],
+    ['?sslmode=require&sslrootcert=/ca.pem', 'verify-full'],
+    ['?ssl=true', 'verify-full'],
+  ])('maps "%s" to libpq sslmode %s', (query, expected) => {
+    const { searchParams } = readConnectionString(
+      `postgresql://user:password@localhost:5432/mydb${query}`
+    )
+
+    expect(
+      getLibpqSslMode(
+        parseSSLConfig(searchParams) ?? defaultSSLConfig,
+        searchParams.get('sslmode')
+      )
+    ).toBe(expected)
   })
 })

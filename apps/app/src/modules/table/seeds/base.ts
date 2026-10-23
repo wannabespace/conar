@@ -16,7 +16,7 @@ const typeParamsRegex = /\(.*\)|\[\]$/gu
 export const columnTypeName = (column: Column) =>
   (column.typeLabel ?? column.type ?? '')
     .toLowerCase()
-    .replace(typeParamsRegex, '')
+    .replaceAll(typeParamsRegex, '')
     .trim()
 
 export const columnMaxLength = (column: Column) =>
