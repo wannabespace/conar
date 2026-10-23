@@ -20,11 +20,11 @@ const BlogPage = () => (
         Updates, deep dives, and how-tos from the people building Tamery.
       </p>
     </header>
-    <ol className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+    <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {blogPosts.map((post) => (
         <li key={post.slug}>
           <Link
-            className="group ease-house hover:bg-muted/50 -m-3 flex h-full flex-col gap-3 rounded-xl p-3 transition-colors"
+            className="group bg-card ring-foreground/8 hover:ring-foreground/12 ease-house flex h-full flex-col gap-3 rounded-2xl p-5 shadow-sm ring transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-md"
             params={{ slug: post.slug }}
             to="/blog/$slug"
           >
@@ -37,7 +37,7 @@ const BlogPage = () => (
               </time>
               <span className="text-muted-foreground">{post.engine}</span>
             </div>
-            <h2 className="text-foreground text-2xl font-semibold tracking-tight text-pretty">
+            <h2 className="text-foreground text-xl font-semibold tracking-tight text-pretty">
               {post.title}
             </h2>
             <p className="text-muted-foreground text-pretty">
