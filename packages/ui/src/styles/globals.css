@@ -66,6 +66,18 @@
   }
 
   --ease-house: cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-progress-sweep: progress-sweep 1.5s cubic-bezier(0.65, 0, 0.35, 1)
+    infinite;
+
+  @keyframes progress-sweep {
+    from {
+      transform: translateX(-110%);
+    }
+    to {
+      transform: translateX(370%);
+    }
+  }
+
   --default-border-width: 0.5px;
   --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;

@@ -5,10 +5,12 @@ import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { UtilityProcess } from 'electron'
 import { utilityProcess } from 'electron'
 
+import type { CopyDatabaseRequest } from '../copy-database'
 import type { QueryProcessReply, QueryProcessRequest } from '../query'
 import { confirmHostKey } from './ssh-host-key'
 
 const pending = new Map<number, PromiseWithResolvers<unknown>>()
+const copyLogs = new Map<number, (line: string) => void>()
 let nextId = 0
 let child: UtilityProcess | null = null
 
@@ -29,6 +31,10 @@ const start = () => {
         trusted,
         type: 'hostKey',
       })
+      return
+    }
+    if (reply.type === 'copyLog') {
+      copyLogs.get(reply.id)?.(reply.line)
       return
     }
     const request = pending.get(reply.id)
@@ -53,21 +59,35 @@ const start = () => {
   return forked
 }
 
+const request = (build: (id: number) => QueryProcessRequest) => {
+  child ??= start()
+  const id = nextId
+  nextId += 1
+  const answer = Promise.withResolvers<unknown>()
+  pending.set(id, answer)
+  send(child, build(id))
+  return { id, promise: answer.promise }
+}
+
 const call = <M extends keyof QueryExecutor>(
   dialect: Dialect,
   method: M,
   args: Parameters<QueryExecutor[M]>[0]
-) => {
-  child ??= start()
-  const id = nextId
-  nextId += 1
-  const request = Promise.withResolvers<unknown>()
-  pending.set(id, request)
-  send(child, { args, dialect, id, method, type: 'call' })
-  return request.promise as ReturnType<QueryExecutor[M]>
-}
+) =>
+  request((id) => ({ args, dialect, id, method, type: 'call' }))
+    .promise as ReturnType<QueryExecutor[M]>
 
 export const queryProcess = {
+  cancelCopy: (copyId: string) => {
+    if (child) {
+      send(child, { copyId, type: 'cancelCopy' })
+    }
+  },
+  copyDatabase: (copy: CopyDatabaseRequest, log: (line: string) => void) => {
+    const sent = request((id) => ({ id, request: copy, type: 'copyDatabase' }))
+    copyLogs.set(sent.id, log)
+    return sent.promise.finally(() => copyLogs.delete(sent.id))
+  },
   executor: (dialect: Dialect): QueryExecutor => ({
     beginTransaction: (args) => call(dialect, 'beginTransaction', args),
     cancel: (args) => call(dialect, 'cancel', args),

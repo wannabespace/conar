@@ -85,6 +85,8 @@ export interface ConnectionCapabilities {
   columnTypes: ColumnTypeCapabilities
   comments: boolean
   constraintKinds: readonly ConstraintKind[]
+  /** Desktop only: the copy runs the engine's own dump tool. */
+  copyDatabase: boolean
   ddlRollback: boolean
   // null: the login's schema or the resource, resolved by getDefaultSchema
   defaultSchema: string | null
