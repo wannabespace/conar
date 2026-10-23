@@ -15,6 +15,9 @@
 - [Download](https://tamery.app/download): Download links for macOS, Windows and Linux
 - [Releases](https://tamery.app/releases): Changelog and version history
 - [Blog](https://tamery.app/blog): Longer stories and reasoning behind Tamery
+- [How to connect to SQL Server](https://tamery.app/blog/connect-to-sql-server): Connection string, trusted connections vs SQL auth, the sa account
+- [How to connect to PostgreSQL](https://tamery.app/blog/connect-to-postgresql): Connection string, poolers, placeholder passwords, SSL modes
+- [How to connect to MySQL](https://tamery.app/blog/connect-to-mysql): URL, Go DSN and .env formats, SSL, auth plugin errors
 - [Privacy Policy](https://tamery.app/privacy-policy): How Tamery handles your data
 - [Terms of Service](https://tamery.app/terms-of-service): Terms and conditions
 
