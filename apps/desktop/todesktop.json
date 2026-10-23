@@ -8,7 +8,7 @@
   "nodeVersion": "24.6.0",
   "appBuilderLibVersion": "26.15.3",
   "packageManager": "pnpm",
-  "pnpmVersion": "12.13.0",
+  "pnpmVersion": "12.15.0",
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
   "appFiles": ["dist-electron/**"],
   "filesForDistribution": ["!**/node_modules/oracledb/build/**"],

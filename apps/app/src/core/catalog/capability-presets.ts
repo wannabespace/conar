@@ -98,6 +98,8 @@ export interface ConnectionCapabilities {
   columnTypes: ColumnTypeCapabilities
   comments: boolean
   constraintKinds: readonly ConstraintKind[]
+  /** Desktop only: the copy runs the engine's own dump tool. */
+  copyDatabase: boolean
   ddlRollback: boolean
   // Rows are documents: a table's columns are sampled, never declared, so none is added, edited or dropped.
   declaredColumns: boolean

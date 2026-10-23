@@ -5,10 +5,15 @@ import {
   shareRefreshLabels,
 } from '@tamery/shared/enums/share-refresh'
 import type { ShareView } from '@tamery/shared/share'
-import { SHARE_PASSWORD_MIN_LENGTH } from '@tamery/shared/share'
+import {
+  SHARE_MAX_ROWS,
+  SHARE_PASSWORD_MIN_LENGTH,
+  SHARE_ROW_LIMITS,
+} from '@tamery/shared/share'
 import { objectEntries } from '@tamery/shared/utils'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
+import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { copy } from '@tamery/ui/lib/copy'
@@ -40,10 +45,16 @@ const REFRESH_ITEMS = objectEntries(shareRefreshLabels).map(
   ([value, label]) => ({ label, value })
 )
 
+const ROW_LIMIT_ITEMS = SHARE_ROW_LIMITS.map((value) => ({
+  label: `${value.toLocaleString()} rows`,
+  value: String(value),
+}))
+
 const formDefaults = (share: Share | null, table: string) => ({
   description: share?.description ?? '',
   expires: (share?.expiresAt ? 'current' : 'never') as Expiry,
   includeFilters: !share || share.view.filters.length > 0,
+  maxRows: String(share?.maxRows ?? SHARE_MAX_ROWS),
   name: share?.name ?? table,
   password: '',
   protect: share?.hasPassword ?? false,
@@ -80,6 +91,7 @@ export const ShareLinkForm = ({
         id: share?.id,
         description: values.description.trim() || null,
         expiresAt: getExpiresAt(values.expires, share?.expiresAt ?? null),
+        maxRows: Number(values.maxRows),
         name: values.name.trim(),
         refresh: values.refresh,
         ...(!values.protect && { password: null }),
@@ -175,6 +187,17 @@ export const ShareLinkForm = ({
             )}
           </form.AppField>
         </div>
+        <form.AppField name="maxRows">
+          {(field) => (
+            <field.Field>
+              <field.Label>Max rows</field.Label>
+              <field.Select items={ROW_LIMIT_ITEMS} />
+              <FieldDescription>
+                The most rows viewers can scroll through.
+              </FieldDescription>
+            </field.Field>
+          )}
+        </form.AppField>
         {filters.length > 0 && (
           <form.AppField name="includeFilters">
             {(field) => (

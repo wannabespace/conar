@@ -30,6 +30,11 @@ export type ElectronPreload = Promisified<typeof electron> & {
     onUrlOpened: (callback: () => void) => () => void
     openWindow: (route: string) => Promise<void>
   }
+  copyDatabase: {
+    onLog: (
+      callback: (params: { copyId: string; line: string }) => void
+    ) => () => void
+  }
   mcp: {
     serve: (source: McpSource) => () => void
   }
@@ -162,6 +167,15 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.invoke('connectionLinks.setDefault', arg)
     ),
     take: handleElectronError(() => ipcRenderer.invoke('connectionLinks.take')),
+  },
+  copyDatabase: {
+    cancel: handleElectronError((copyId: string) =>
+      ipcRenderer.invoke('copyDatabase.cancel', copyId)
+    ),
+    onLog: (onMessage) => onEvent('copyDatabase.log', onMessage),
+    start: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('copyDatabase.start', arg)
+    ),
   },
   deviceEncryption: {
     createKey: handleElectronError(() =>

@@ -2,6 +2,7 @@ import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect, isSqlDialect } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { unsupported } from '@tamery/shared/unsupported'
+import { quoteIdentifier } from '@tamery/sql/identifier'
 
 import { explicitIndexes } from '~/core/codegen/indexes'
 import type { QueryParams, SchemaParams } from '~/core/codegen/types'
@@ -9,7 +10,6 @@ import {
   formatValue,
   isSerialDefault,
   isSingleColumnConstraint,
-  quoteIdentifier,
 } from '~/core/codegen/utils'
 import { referentialActionClauses } from '~/core/queries/constraints/shape'
 import type { Column } from '~/core/table/cell/utils'

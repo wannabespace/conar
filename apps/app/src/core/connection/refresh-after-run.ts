@@ -5,6 +5,16 @@ import { resourceColumnsQueryKey } from '~/core/queries/tables/columns'
 import { getQueryLanguage } from '~/core/runtime/language'
 import { queryClient } from '~/lib/query-client'
 
+export const refreshCatalog = (connectionResource: ConnectionResource) => {
+  void queryClient.invalidateQueries({
+    queryKey: ['connection-resource', connectionResource.id],
+  })
+  queryClient.removeQueries({
+    queryKey: resourceColumnsQueryKey({ connectionResource }),
+    type: 'inactive',
+  })
+}
+
 export const refreshAfterRun = (
   connectionResource: ConnectionResource,
   dialect: Dialect,
@@ -12,13 +22,7 @@ export const refreshAfterRun = (
 ) => {
   const language = getQueryLanguage(dialect)
   if (language.invalidatesCatalog(text)) {
-    void queryClient.invalidateQueries({
-      queryKey: ['connection-resource', connectionResource.id],
-    })
-    queryClient.removeQueries({
-      queryKey: resourceColumnsQueryKey({ connectionResource }),
-      type: 'inactive',
-    })
+    refreshCatalog(connectionResource)
   } else if (language.writesData(text)) {
     // Sync with resourceRowsQueryKey and resourceTableTotalQueryKey: every row-data key starts with this prefix.
     void queryClient.invalidateQueries({

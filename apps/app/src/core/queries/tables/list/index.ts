@@ -25,6 +25,7 @@ export type RelationKind = 'table' | 'view'
 
 export const tablesAndSchemasType = type({
   comment: 'string | null',
+  'partition?': 'boolean | null',
   'row_level_security?': 'boolean | null',
   schema: 'string',
   table: 'string | null',
@@ -175,6 +176,7 @@ export const resourceTablesAndSchemasQuery = memoize(
               'n.nspname as schema',
               'c.relname as table',
               'c.relrowsecurity as row_level_security',
+              'c.relispartition as partition',
               (eb) =>
                 eb
                   .fn<string | null>('obj_description', [
@@ -261,6 +263,7 @@ export const resourceTablesAndSchemasQueryOptions = ({
                   {
                     comment: table.comment,
                     name: table.table,
+                    partition: table.partition ?? false,
                     rowLevelSecurity: table.rowLevelSecurity,
                     type: table.type,
                   },

@@ -1,6 +1,7 @@
 import {
   AppWindowIcon,
   Copy01Icon,
+  DatabaseExportIcon,
   Delete02Icon,
   PencilEdit01Icon,
   Refresh01Icon,
@@ -16,6 +17,7 @@ export const buildConnectionMenuItems = ({
   connection,
   onClearPassword,
   onCopy,
+  onCopyDatabase,
   onEdit,
   onOpenInNewWindow,
   onRefresh,
@@ -25,6 +27,7 @@ export const buildConnectionMenuItems = ({
   connection: Connection
   onClearPassword: () => void
   onCopy: () => void
+  onCopyDatabase: (() => void) | null
   onEdit: () => void
   onOpenInNewWindow: (() => void) | null
   onRefresh: () => void
@@ -53,6 +56,16 @@ export const buildConnectionMenuItems = ({
     icon: Copy01Icon,
     onSelect: onCopy,
   },
+  ...(onCopyDatabase
+    ? ([
+        {
+          label: 'Copy database…',
+          icon: DatabaseExportIcon,
+          disabled: !canSend,
+          onSelect: onCopyDatabase,
+        },
+      ] satisfies AppMenuNode[])
+    : []),
   ...(connection.syncType === SyncType.CloudWithoutSecrets
     ? ([
         {

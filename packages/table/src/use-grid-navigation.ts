@@ -19,7 +19,7 @@ export const useGridNavigation = ({
   scrollRef,
 }: {
   columns: GridColumn[]
-  onActivateHeader: (column: string) => void
+  onActivateHeader?: (column: string) => void
   rowCount: number
   scrollRef: RefObject<HTMLDivElement | null>
 }) => {
@@ -48,7 +48,7 @@ export const useGridNavigation = ({
   const activate = () => {
     const id = columns[cursor.column]?.id
     if (cursor.row === HEADER_ROW && id) {
-      onActivateHeader(id)
+      onActivateHeader?.(id)
     }
   }
 

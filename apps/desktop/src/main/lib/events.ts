@@ -7,6 +7,7 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
+import type { CopyDatabaseRequest } from '../copy-database'
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
@@ -49,6 +50,13 @@ export const electron = {
     },
   },
   connectionLinks,
+  copyDatabase: {
+    cancel: queryProcess.cancelCopy,
+    start: ((request: CopyDatabaseRequest, event?: IpcMainInvokeEvent) =>
+      queryProcess.copyDatabase(request, (line) =>
+        event?.sender.send('copyDatabase.log', { copyId: request.id, line })
+      )) as (request: CopyDatabaseRequest) => Promise<null>,
+  },
   deviceEncryption,
   localDatabases: {
     find: async () => {

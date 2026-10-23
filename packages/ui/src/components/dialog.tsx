@@ -118,7 +118,7 @@ const DialogFooter = ({
   <div
     data-slot="dialog-footer"
     className={cn(
-      `flex flex-col-reverse gap-2 sm:flex-row sm:justify-end`,
+      `flex min-w-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end`,
       className
     )}
     {...props}

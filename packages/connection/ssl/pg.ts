@@ -13,6 +13,7 @@ export const TLS_PARAMS = [
 ]
 
 const SSL_MODES_WITHOUT_VERIFY = new Set(['prefer', 'no-verify'])
+const LIBPQ_VERIFY_MODES = new Set(['verify-ca', 'verify-full'])
 
 const buildCertificateSslConfig = (
   searchParams: URLSearchParams,
@@ -86,4 +87,18 @@ export const parseSSLConfig = (
   }
 
   return parseSslFlag(ssl)
+}
+
+/** The libpq `sslmode` matching the `ssl` a pool settled on; sync with `parseSSLConfig`. */
+export const getLibpqSslMode = (
+  ssl: PoolOptions['ssl'],
+  sslMode: string | null
+) => {
+  if (ssl === false) {
+    return 'disable'
+  }
+  if (typeof ssl === 'object' && ssl.rejectUnauthorized === false) {
+    return 'require'
+  }
+  return sslMode && LIBPQ_VERIFY_MODES.has(sslMode) ? sslMode : 'verify-full'
 }
