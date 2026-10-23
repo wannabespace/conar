@@ -23,8 +23,6 @@ export type Output = IcoOutput | ImageOutput
 export type Targets = Record<string, Output | Record<string, Output>>
 
 export interface ResizeConfig {
-  /** Hairline drawn along cut corners, as an SVG colour; omit for none. */
-  border?: string
   /** Each source image with the files made from it. */
   images: Record<ImageFile, Targets>
   /** Zoom for every output that does not set its own. */

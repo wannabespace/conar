@@ -10,38 +10,27 @@ import type { Output, ResizeConfig } from './types'
 const SQUIRCLE_EXPONENT = 5
 const SQUIRCLE_POINTS = 720
 const ROUND_RADIUS = 0.22
-const BORDER_WIDTH = 1 / 512
 
-const getOutline = (
-  corners: 'round' | 'squircle',
-  size: number,
-  inset: number
-) => {
-  const half = size / 2 - inset
+const getOutline = (corners: 'round' | 'squircle', size: number) => {
   if (corners === 'round') {
-    return `<rect x="${inset}" y="${inset}" width="${2 * half}" height="${2 * half}" rx="${ROUND_RADIUS * size}"`
+    return `<rect width="${size}" height="${size}" rx="${ROUND_RADIUS * size}"/>`
   }
+  const half = size / 2
   const points = Array.from({ length: SQUIRCLE_POINTS }, (_, index) => {
     const angle = (2 * Math.PI * index) / SQUIRCLE_POINTS
     const cos = Math.cos(angle)
     const sin = Math.sin(angle)
     const x = Math.sign(cos) * Math.abs(cos) ** (2 / SQUIRCLE_EXPONENT)
     const y = Math.sign(sin) * Math.abs(sin) ** (2 / SQUIRCLE_EXPONENT)
-    return `${(size / 2 + half * x).toFixed(2)},${(size / 2 + half * y).toFixed(2)}`
+    return `${(half + half * x).toFixed(2)},${(half + half * y).toFixed(2)}`
   })
-  return `<path d="M${points.join('L')}Z"`
+  return `<path d="M${points.join('L')}Z"/>`
 }
-
-const toSvg = (size: number, element: string) =>
-  Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">${element}</svg>`
-  )
 
 const resize = async (
   source: string,
   size: number,
-  { corners, zoom }: { corners?: Output['corners']; zoom: number },
-  border: string | undefined
+  { corners, zoom }: { corners?: Output['corners']; zoom: number }
 ) => {
   const { height = 0, width = 0 } = await sharp(source).metadata()
   const crop = Math.round(Math.min(width, height) / zoom)
@@ -56,22 +45,13 @@ const resize = async (
   if (!corners) {
     return zoomed
   }
-  const borderWidth = size * BORDER_WIDTH
   return sharp(await zoomed.png().toBuffer()).composite([
     {
       blend: 'dest-in',
-      input: toSvg(size, `${getOutline(corners, size, 0)}/>`),
+      input: Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">${getOutline(corners, size)}</svg>`
+      ),
     },
-    ...(border
-      ? [
-          {
-            input: toSvg(
-              size,
-              `${getOutline(corners, size, borderWidth / 2)} fill="none" stroke="${border}" stroke-width="${borderWidth}"/>`
-            ),
-          },
-        ]
-      : []),
   ])
 }
 
@@ -86,14 +66,13 @@ const ENCODERS: Record<string, (image: Sharp) => Sharp> = {
 const encode = async (
   source: string,
   file: string,
-  output: Output & { zoom: number },
-  border: string | undefined
+  output: Output & { zoom: number }
 ) => {
   if ('sizes' in output) {
     return toIco(
       await Promise.all(
         output.sizes.map(async (size) => {
-          const image = await resize(source, size, output, border)
+          const image = await resize(source, size, output)
           return { png: await toPng(image).toBuffer(), size }
         })
       )
@@ -103,14 +82,14 @@ const encode = async (
   if (!encoder) {
     throw new Error(`${file}: unsupported format`)
   }
-  return encoder(await resize(source, output.size, output, border)).toBuffer()
+  return encoder(await resize(source, output.size, output)).toBuffer()
 }
 
 const isOutput = (value: Output | Record<string, Output>): value is Output =>
   'size' in value || 'sizes' in value
 
 export const resizeImages = (
-  { border, images, zoom = 1 }: ResizeConfig,
+  { images, zoom = 1 }: ResizeConfig,
   root: string
 ) => {
   const outputs = Object.entries(images).flatMap(([image, targets]) =>
@@ -135,12 +114,10 @@ export const resizeImages = (
 
   return Promise.all(
     outputs.map(async ({ file, image, output }) => {
-      const buffer = await encode(
-        path.join(root, image),
-        file,
-        { zoom, ...output },
-        border
-      )
+      const buffer = await encode(path.join(root, image), file, {
+        zoom,
+        ...output,
+      })
       await mkdir(path.dirname(path.join(root, file)), { recursive: true })
       await writeFile(path.join(root, file), buffer)
       return file

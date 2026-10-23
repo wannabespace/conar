@@ -18,7 +18,6 @@ const kit = {
 } as const
 
 export default defineConfig({
-  border: 'rgba(10, 26, 64, 0.1)',
   zoom: 1.23,
   images: {
     'brand/cyan.png': {
