@@ -30,5 +30,5 @@
 ## Secrets / environment
 
 - Each app's `env.ts` validates env vars with ArkType. In development, service URLs default dynamically via portless (`monorepo.md`) — don't add them back to `.env`.
-- Encryption secrets live in Infisical at `['users', userId]`, created in `databaseHooks.user.create.after`.
-- Connection strings are encrypted per **workspace**, not per requester: `getWorkspaceSecret(workspaceId)` resolves the workspace owner's secret and every decrypt path passes the row's own `workspaceId`, so shared workspaces decrypt with one key once invites ship.
+- Each user's connection-string key is a random secret in `user_encryption_keys`, wrapped at rest by `USER_KEY_SECRET` via the `encryptedUserKey` column type. `userEncryptionKey.create(userId)` mints it in `databaseHooks.user.create.after` (rolling the user back if it fails); `userEncryptionKey.get(userId)` reads it (`apps/api/lib/encryption-key.ts`). A user delete cascades the row (crypto-shred), so no delete hook.
+- Connection strings are encrypted per **workspace**, not per requester: `getWorkspaceSecret(workspaceId)` resolves the workspace owner's key and every decrypt path passes the row's own `workspaceId`, so shared workspaces decrypt with one key once invites ship.
