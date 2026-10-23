@@ -7,9 +7,13 @@ import { activeFilter } from './filters'
 
 export const SHARE_PAGE_SIZE = 100
 export const SHARE_MAX_PAGES = 100
+export const SHARE_MAX_ROWS = SHARE_PAGE_SIZE * SHARE_MAX_PAGES
 export const SHARE_PASSWORD_MIN_LENGTH = 4
 
+export const SHARE_ROW_LIMITS = [100, 500, 1000, 5000, SHARE_MAX_ROWS] as const
+
 export const sharePage = type(`1 <= number.integer <= ${SHARE_MAX_PAGES}`)
+export const shareMaxRows = type(`1 <= number.integer <= ${SHARE_MAX_ROWS}`)
 
 const orderDirection = type('"ASC" | "DESC"')
 
@@ -43,11 +47,6 @@ const shareView = type({
 
 export type ShareView = typeof shareView.infer
 
-export const shareSort = type({
-  column: 'string',
-  direction: orderDirection,
-}).or('null')
-
 export const shareCheckInput = shareView.merge({
   dialect: type.valueOf(Dialect),
   resourceId: 'string.uuid',
@@ -59,6 +58,7 @@ export const shareSaveInput = shareView.merge({
   expiresAt: 'Date | null',
   /** Left out creates a new share. */
   'id?': 'string.uuid',
+  maxRows: shareMaxRows,
   name: 'string > 0',
   /** Left out keeps the current password; `null` removes it. */
   'password?': `string >= ${SHARE_PASSWORD_MIN_LENGTH} | null`,

@@ -1,7 +1,7 @@
 import { safe } from '@orpc/client'
 import type { ColumnKind } from '@tamery/shared/column-kind'
 import type { shareAccessErrors } from '@tamery/shared/share'
-import { sharePage, shareSort, shareToken } from '@tamery/shared/share'
+import { sharePage, shareToken } from '@tamery/shared/share'
 import { valueToText } from '@tamery/shared/value-text'
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
@@ -34,7 +34,7 @@ const cellText = (value: unknown, kind: ColumnKind | null) => {
 }
 
 export const getShare = createServerFn({ method: 'GET' })
-  .validator(type({ id: 'string', page: sharePage, sort: shareSort }))
+  .validator(type({ id: 'string', page: sharePage }))
   .handler(async ({ data }) => {
     const { data: share, definedError } = await safe(
       proxy.shares.rows({ ...data, token: unlockToken.get(data.id) })
