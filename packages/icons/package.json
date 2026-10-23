@@ -1,0 +1,21 @@
+{
+  "name": "@tamery/icons",
+  "private": true,
+  "bin": {
+    "tamery-icons": "./src/cli.ts"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check-types": "tsc"
+  },
+  "dependencies": {
+    "sharp": "catalog:"
+  },
+  "devDependencies": {
+    "@tamery/configs": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

@@ -1,4 +1,4 @@
-import type { IconOutput, IconsConfig } from './types'
+import type { IconOutput, IconsConfig } from '@tamery/icons'
 
 const sources = {
   cyan: 'brand/cyan/source.png',
