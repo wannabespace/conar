@@ -37,7 +37,7 @@ export const TablesField = ({
   const tables =
     data?.schemas.flatMap((schema) =>
       schema.tables
-        .filter((table) => table.type === 'table')
+        .filter((table) => table.type === 'table' && !table.partition)
         .map((table) => ({
           key: JSON.stringify([schema.name, table.name]),
           schema: schema.name,
