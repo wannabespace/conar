@@ -1,26 +1,21 @@
 {
-  "fill": {
-    "linear-gradient": [
-      "extended-srgb:1.00000,1.00000,1.00000,1.00000",
-      "extended-srgb:0.92549,0.93333,0.97255,1.00000"
-    ]
-  },
   "groups": [
     {
       "layers": [
         {
-          "image-name": "glyph.png",
-          "name": "glyph",
-          "glass": true
+          "image-name": "icon.png",
+          "name": "icon",
+          "glass": false
         }
       ],
       "shadow": {
-        "kind": "layer-color",
-        "opacity": 0.5
+        "kind": "none",
+        "opacity": 0
       },
+      "specular": false,
       "translucency": {
         "enabled": false,
-        "value": 0.5
+        "value": 0
       }
     }
   ],

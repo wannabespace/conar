@@ -13,6 +13,16 @@ import {
 import { objectEntries } from '@tamery/shared/utils'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
+} from '@tamery/ui/components/combobox'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -22,6 +32,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { isFuture } from 'date-fns'
 import { AnimatePresence } from 'motion/react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
@@ -45,10 +56,9 @@ const REFRESH_ITEMS = objectEntries(shareRefreshLabels).map(
   ([value, label]) => ({ label, value })
 )
 
-const ROW_LIMIT_ITEMS = SHARE_ROW_LIMITS.map((value) => ({
-  label: `${value.toLocaleString()} rows`,
-  value: String(value),
-}))
+const ROW_LIMIT_PRESETS: readonly number[] = SHARE_ROW_LIMITS
+
+const rowsLabel = (value: number) => `${value.toLocaleString()} rows`
 
 const formDefaults = (share: Share | null, table: string) => ({
   description: share?.description ?? '',
@@ -72,6 +82,13 @@ export const ShareLinkForm = ({
 }) => {
   const { connectionResource, dialect } = useRouteContext()
   const { filters } = view
+  const [rowsQuery, setRowsQuery] = useState('')
+  const typedRows = Number(rowsQuery.trim())
+  const canAddRows =
+    /^\d+$/u.test(rowsQuery.trim()) &&
+    typedRows >= 1 &&
+    typedRows <= SHARE_MAX_ROWS &&
+    !ROW_LIMIT_PRESETS.includes(typedRows)
 
   const save = useMutation({
     meta: { event: share ? 'share_updated' : 'share_created' },
@@ -188,15 +205,63 @@ export const ShareLinkForm = ({
           </form.AppField>
         </div>
         <form.AppField name="maxRows">
-          {(field) => (
-            <field.Field>
-              <field.Label>Max rows</field.Label>
-              <field.Select items={ROW_LIMIT_ITEMS} />
-              <FieldDescription>
-                The most rows viewers can scroll through.
-              </FieldDescription>
-            </field.Field>
-          )}
+          {(field) => {
+            const trimmed = rowsQuery.trim()
+            const items = [
+              ...new Set([
+                ...ROW_LIMIT_PRESETS.map(String),
+                ...(ROW_LIMIT_PRESETS.includes(Number(field.state.value))
+                  ? []
+                  : [field.state.value]),
+                ...(canAddRows ? [trimmed] : []),
+              ]),
+            ]
+            return (
+              <field.Field>
+                <field.Label>Max rows</field.Label>
+                <Combobox
+                  items={items}
+                  value={field.state.value}
+                  onValueChange={(next) =>
+                    next !== null && field.handleChange(next)
+                  }
+                  inputValue={rowsQuery}
+                  onInputValueChange={setRowsQuery}
+                  onOpenChange={(open) => !open && setRowsQuery('')}
+                  autoHighlight
+                >
+                  <ComboboxTrigger id={field.name}>
+                    <ComboboxValue>
+                      {(value: string) => rowsLabel(Number(value))}
+                    </ComboboxValue>
+                  </ComboboxTrigger>
+                  <ComboboxContent>
+                    <ComboboxInput
+                      showTrigger={false}
+                      placeholder="Enter a number…"
+                      inputMode="numeric"
+                      autoComplete="off"
+                    />
+                    <ComboboxList>
+                      {(item: string) => (
+                        <ComboboxItem key={item} value={item}>
+                          {canAddRows && item === trimmed
+                            ? `Use ${rowsLabel(Number(item))}`
+                            : rowsLabel(Number(item))}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                    <ComboboxEmpty>
+                      {`Up to ${rowsLabel(SHARE_MAX_ROWS)}.`}
+                    </ComboboxEmpty>
+                  </ComboboxContent>
+                </Combobox>
+                <FieldDescription>
+                  The most rows viewers can scroll through.
+                </FieldDescription>
+              </field.Field>
+            )
+          }}
         </form.AppField>
         {filters.length > 0 && (
           <form.AppField name="includeFilters">
@@ -271,7 +336,7 @@ export const ShareLinkForm = ({
           </form.Subscribe>
         )}
         <p className="text-muted-foreground text-xs">
-          {`Anyone with the link sees the ${plural(view.columns.length, 'column')} the table shows, in its order. Tamery’s servers read the rows from your database each time the link refreshes; viewers can sort and scroll, never edit.`}
+          {`Anyone with the link sees the ${plural(view.columns.length, 'column')} the table shows, in its order. Tamery’s servers read the rows from your database each time the link refreshes; viewers can scroll and open any cell to read it, never sort or edit.`}
         </p>
         {save.error && (
           <Alert variant="error">
