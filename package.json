@@ -15,7 +15,7 @@
     "x": "bun scripts/run-script.ts",
     "check": "ultracite check",
     "fix": "ultracite fix",
-    "icons": "bun scripts/generate-icons.ts",
+    "icons": "bun scripts/icons/generate.ts",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "test:start": "turbo run test:start",
