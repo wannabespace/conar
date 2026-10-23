@@ -1,51 +1,41 @@
-import { Badge } from '@tamery/ui/components/badge'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { format } from 'date-fns'
 
 import { seo } from '~/utils/seo'
 
-import { ConnectionPlayground } from '../../components/connection-playground'
 import { blogPosts } from '../../posts'
 
 const BlogPage = () => (
-  <main className="mx-auto w-full max-w-6xl px-4 pt-16 pb-24 sm:px-6 sm:pt-24">
-    <header className="mb-10 flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+  <main className="mx-auto w-full max-w-3xl px-4 pt-16 pb-24 sm:px-6 sm:pt-28">
+    <header className="mb-12 flex flex-col gap-4">
+      <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
         Blog
       </h1>
-      <p className="text-muted-foreground text-base text-pretty sm:text-lg">
-        The longer stories behind Tamery, and hands-on guides for connecting to
-        every database it speaks.
+      <p className="text-muted-foreground text-lg text-pretty">
+        Hands-on guides for connecting Tamery to every database it speaks.
       </p>
     </header>
-    <div className="mb-16 max-w-2xl">
-      <p className="text-muted-foreground mb-3 text-sm">
-        Every guide ships a live parser. Paste any connection string and watch
-        Tamery read it apart:
-      </p>
-      <ConnectionPlayground />
-    </div>
-    <ol className="grid gap-4 sm:grid-cols-2">
+    <ol className="flex flex-col">
       {blogPosts.map((post) => (
         <li key={post.slug}>
           <Link
-            className="group bg-card ring-foreground/8 hover:ring-foreground/15 ease-house flex h-full flex-col gap-3 rounded-2xl p-5 shadow-sm ring transition-[box-shadow,transform] hover:-translate-y-0.5"
+            className="group border-border/60 flex flex-col gap-2 border-t py-7 first:border-t-0"
             params={{ slug: post.slug }}
             to="/blog/$slug"
           >
-            <div className="flex items-center justify-between gap-2">
-              <Badge variant="secondary">{post.engine}</Badge>
-              <time
-                className="text-muted-foreground text-xs"
-                dateTime={post.publishedAt}
-              >
-                {format(new Date(post.publishedAt), 'MMM d, yyyy')}
+            <div className="text-muted-foreground flex items-center gap-2 text-xs">
+              <span className="text-foreground/70 font-medium">
+                {post.engine}
+              </span>
+              <span aria-hidden>·</span>
+              <time dateTime={post.publishedAt}>
+                {format(new Date(post.publishedAt), 'MMMM d, yyyy')}
               </time>
             </div>
-            <h2 className="text-foreground group-hover:text-foreground text-lg font-semibold tracking-tight">
+            <h2 className="text-foreground group-hover:text-primary ease-house text-xl font-semibold tracking-tight transition-colors">
               {post.title}
             </h2>
-            <p className="text-muted-foreground text-sm text-pretty">
+            <p className="text-muted-foreground text-pretty">
               {post.description}
             </p>
           </Link>
