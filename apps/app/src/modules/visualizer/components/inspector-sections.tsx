@@ -98,6 +98,7 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
           const rowProps = {
             className: cn(
               rowClass,
+              // oxlint-disable-next-line shadcn/require-static-classes -- per-row and draft-state classes on the content element AppContextMenu wraps
               relation.state && draftStateClass[relation.state]
             ),
             onMouseEnter: () => hoverRelation([relation.id]),

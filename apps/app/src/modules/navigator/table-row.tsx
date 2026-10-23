@@ -128,6 +128,7 @@ export const TableRow = ({
     >
       <SidebarMenuButton
         isActive={isActive}
+        // oxlint-disable-next-line shadcn/no-restyle -- page-specific: a pinned row reserves label space for the overlaid pin control
         className={cn(row.pinned && 'pr-12')}
         render={
           <Link
