@@ -1,3 +1,5 @@
+import { parseISO } from 'date-fns'
+
 export const BLOG_AUTHOR = 'Valerii Strilets'
 
 export interface BlogPost {
@@ -75,5 +77,12 @@ export const blogPosts: BlogPost[] = [
   },
 ].toSorted((a, b) => b.publishedAt.localeCompare(a.publishedAt))
 
-export const findPost = (slug: string) =>
-  blogPosts.find((post) => post.slug === slug)
+const isPublished = (post: BlogPost) =>
+  parseISO(post.publishedAt).getTime() <= Date.now()
+
+export const publishedPosts = () => blogPosts.filter(isPublished)
+
+export const findPost = (slug: string) => {
+  const post = blogPosts.find((p) => p.slug === slug)
+  return post && isPublished(post) ? post : undefined
+}

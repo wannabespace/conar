@@ -3,7 +3,7 @@ import { format, parseISO } from 'date-fns'
 
 import { seo } from '~/utils/seo'
 
-import { BLOG_AUTHOR, blogPosts } from '../../posts'
+import { BLOG_AUTHOR, publishedPosts } from '../../posts'
 
 const authorInitials = BLOG_AUTHOR.split(' ')
   .map((part) => part[0])
@@ -21,7 +21,7 @@ const BlogPage = () => (
       </p>
     </header>
     <ol className="-mx-4 grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
-      {blogPosts.map((post) => (
+      {publishedPosts().map((post) => (
         <li key={post.slug}>
           <Link
             className="group hover:bg-accent ease-house flex h-full flex-col gap-3 rounded-2xl p-4 transition-colors"
