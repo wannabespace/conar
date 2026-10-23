@@ -4,7 +4,6 @@ export type {
   Files,
   IcoOutput,
   IcoSize,
-  ManifestOutput,
   PngOutput,
   ResizeConfig,
   Transform,

@@ -5,21 +5,6 @@ const web = {
   'apple-touch-icon.png': { size: 180 },
   'favicon-96x96.png': { corners: 'round', size: 96 },
   'favicon.ico': { corners: 'round', sizes: [16, 32, 48] },
-  'site.webmanifest': {
-    icons: {
-      'web-app-manifest-192x192.png': 'any',
-      'web-app-manifest-512x512.png': 'any',
-      'web-app-manifest-maskable-192x192.png': 'maskable',
-      'web-app-manifest-maskable-512x512.png': 'maskable',
-    },
-    manifest: {
-      background_color: '#ffffff',
-      display: 'standalone',
-      name: 'Tamery',
-      short_name: 'Tamery',
-      theme_color: '#ffffff',
-    },
-  },
   'web-app-manifest-192x192.png': { corners: 'round', size: 192 },
   'web-app-manifest-512x512.png': { corners: 'round', size: 512 },
   'web-app-manifest-maskable-192x192.png': { size: 192, zoom: 1.15 },

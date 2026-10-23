@@ -5,14 +5,7 @@ import sharp from 'sharp'
 import type { Sharp } from 'sharp'
 
 import { toIco } from './ico'
-import type {
-  Files,
-  IcoOutput,
-  ManifestOutput,
-  PngOutput,
-  ResizeConfig,
-  Transform,
-} from './types'
+import type { IcoOutput, PngOutput, ResizeConfig, Transform } from './types'
 
 const SQUIRCLE_EXPONENT = 5
 const SQUIRCLE_POINTS = 720
@@ -69,31 +62,6 @@ const resize = (
 
 const toPng = (image: Sharp) => image.png({ compressionLevel: 9 }).toBuffer()
 
-const toManifest = (
-  { icons, manifest }: ManifestOutput,
-  folder: Files,
-  file: string
-) =>
-  `${JSON.stringify(
-    {
-      ...manifest,
-      icons: Object.entries(icons).map(([name, purpose]) => {
-        const icon = Object.entries(folder).find(([key]) => key === name)?.[1]
-        if (!icon || !('size' in icon)) {
-          throw new Error(`${file} lists ${name}, which its folder lacks`)
-        }
-        return {
-          purpose,
-          sizes: `${icon.size}x${icon.size}`,
-          src: `/${name}`,
-          type: 'image/png',
-        }
-      }),
-    },
-    null,
-    2
-  )}\n`
-
 const encode = async (
   source: Source,
   output: IcoOutput | PngOutput,
@@ -113,7 +81,7 @@ const encode = async (
   )
 }
 
-type Output = IcoOutput | ManifestOutput | PngOutput
+type Output = IcoOutput | PngOutput
 
 export const resizeImages = async (
   { images, zoom = 1 }: ResizeConfig,
@@ -125,7 +93,6 @@ export const resizeImages = async (
       const { height, width } = await sharp(file).metadata()
       return Object.entries(folders).flatMap(([folder, files]) =>
         Object.entries(files).map(([name, output]: [string, Output]) => ({
-          files,
           output,
           source: { file, height, width },
           target: path.join(folder, name),
@@ -144,11 +111,8 @@ export const resizeImages = async (
   }
 
   return Promise.all(
-    outputs.map(async ({ files, output, source, target }) => {
-      const content =
-        'manifest' in output
-          ? toManifest(output, files, target)
-          : await encode(source, output, zoom)
+    outputs.map(async ({ output, source, target }) => {
+      const content = await encode(source, output, zoom)
       await mkdir(path.dirname(path.join(root, target)), { recursive: true })
       await writeFile(path.join(root, target), content)
       return target

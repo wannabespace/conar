@@ -15,17 +15,9 @@ export interface IcoOutput extends Transform {
   sizes: readonly [IcoSize, ...IcoSize[]]
 }
 
-export interface ManifestOutput {
-  /** PNG files of the same folder to list, with their `purpose`; sizes come from their outputs. */
-  icons: Record<`${string}.png`, 'any' | 'maskable'>
-  /** Every other manifest field, written as is. */
-  manifest: Record<string, unknown>
-}
-
 export interface Files {
   [file: `${string}.ico`]: IcoOutput
   [file: `${string}.png`]: PngOutput
-  [file: `${string}.webmanifest`]: ManifestOutput
 }
 
 export interface ResizeConfig {
