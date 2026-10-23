@@ -10,7 +10,9 @@ Pasting a path works too, as long as the file ends in `.db`, `.db3`, `.sqlite` o
 sqlite:///Users/me/app.db
 ```
 
-For any other filename, paste `sqlite3 /path/to/file` instead, so Tamery knows it is a SQLite file and not something else.
+For any other filename, paste `sqlite3 /path/to/file` instead, so Tamery knows it is a SQLite file and not something else. Here is how a path reads:
+
+<ConnectionPlayground engine="sqlite" />
 
 The file has to exist already. A `~/` path points to the home folder of whatever computer opens the connection, so the same synced connection can work on your laptop and your desktop. Syncing the connection does not copy the file itself, only the pointer to it.
 

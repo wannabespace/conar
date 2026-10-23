@@ -1,12 +1,3 @@
-import connectToClickhouse from './content/connect-to-clickhouse.md?raw'
-import connectToCloudflareD1 from './content/connect-to-cloudflare-d1.md?raw'
-import connectToMysql from './content/connect-to-mysql.md?raw'
-import connectToOracle from './content/connect-to-oracle.md?raw'
-import connectToPostgresql from './content/connect-to-postgresql.md?raw'
-import connectToSqlServer from './content/connect-to-sql-server.md?raw'
-import connectToSqlite from './content/connect-to-sqlite.md?raw'
-import connectToTurso from './content/connect-to-turso.md?raw'
-
 export const BLOG_AUTHOR = 'Valerii Strilets'
 
 export interface BlogPost {
@@ -14,7 +5,7 @@ export interface BlogPost {
   title: string
   description: string
   publishedAt: string
-  content: string
+  engine: string
 }
 
 export const blogPosts: BlogPost[] = [
@@ -24,7 +15,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Connect to Microsoft SQL Server or Azure SQL: the connection string, trusted connections vs SQL authentication, and the sa account.',
     publishedAt: '2026-10-24',
-    content: connectToSqlServer,
+    engine: 'SQL Server',
   },
   {
     slug: 'connect-to-postgresql',
@@ -32,7 +23,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Connect to PostgreSQL, including Supabase, Neon and Railway: the connection string, poolers, placeholder passwords and SSL modes.',
     publishedAt: '2026-10-24',
-    content: connectToPostgresql,
+    engine: 'PostgreSQL',
   },
   {
     slug: 'connect-to-mysql',
@@ -40,7 +31,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Connect to MySQL or MariaDB: URL, Go DSN and .env formats, SSL options, and fixing authentication plugin errors.',
     publishedAt: '2026-10-24',
-    content: connectToMysql,
+    engine: 'MySQL & MariaDB',
   },
   {
     slug: 'connect-to-oracle',
@@ -48,7 +39,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Connect to Oracle: the connection string and JDBC URL, the service name, schemas, TCPS encryption and the limits to know.',
     publishedAt: '2026-10-24',
-    content: connectToOracle,
+    engine: 'Oracle',
   },
   {
     slug: 'connect-to-clickhouse',
@@ -56,7 +47,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Connect to ClickHouse Cloud or a self-hosted server over HTTP: the right ports, the HTTPS string, and what differs from a row store.',
     publishedAt: '2026-10-24',
-    content: connectToClickhouse,
+    engine: 'ClickHouse',
   },
   {
     slug: 'connect-to-sqlite',
@@ -64,7 +55,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Open a SQLite database file in Tamery: drag and drop, paths and schemes, and how to reach a local file from the web app.',
     publishedAt: '2026-10-24',
-    content: connectToSqlite,
+    engine: 'SQLite',
   },
   {
     slug: 'connect-to-turso',
@@ -72,7 +63,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Connect to Turso (libSQL): the database URL and auth token, self-hosted servers, and the one difference from local SQLite.',
     publishedAt: '2026-10-24',
-    content: connectToTurso,
+    engine: 'Turso',
   },
   {
     slug: 'connect-to-cloudflare-d1',
@@ -80,7 +71,7 @@ export const blogPosts: BlogPost[] = [
     description:
       'Connect to Cloudflare D1: account ID, database ID and the API token to create, plus the two D1 quirks worth knowing.',
     publishedAt: '2026-10-24',
-    content: connectToCloudflareD1,
+    engine: 'Cloudflare D1',
   },
 ].toSorted((a, b) => b.publishedAt.localeCompare(a.publishedAt))
 

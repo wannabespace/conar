@@ -8,6 +8,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
+    "@mdx-js/rollup": "^3.1.0",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-form": "catalog:",
@@ -17,10 +18,12 @@
     "@tanstack/react-router-devtools": "catalog:",
     "@tanstack/react-router-ssr-query": "catalog:",
     "@tanstack/react-start": "catalog:",
+    "@tamery/connection": "workspace:*",
     "arktype": "catalog:",
     "better-auth": "catalog:",
     "better-result": "catalog:",
     "date-fns": "catalog:",
+    "remark-gfm": "^4.0.0",
     "js-confetti": "catalog:",
     "memoza": "catalog:",
     "motion": "catalog:",
@@ -43,6 +46,7 @@
     "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
     "@tanstack/virtual-file-routes": "catalog:",
+    "@types/mdx": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
