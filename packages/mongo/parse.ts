@@ -263,13 +263,12 @@ export const getEffect = (call: MongoCall): MethodEffect => {
   if (call.method === 'aggregate' && call.args.some(namesWritingStage)) {
     return 'write'
   }
-  if (
-    call.collection === null &&
-    DATABASE_METHODS[call.method].effect === 'command'
-  ) {
-    return READ_COMMANDS.has(commandName(call.args) ?? '') ? 'read' : 'command'
+  if (call.collection !== null) {
+    return COLLECTION_METHODS[call.method].effect
   }
-  return call.collection === null
-    ? DATABASE_METHODS[call.method].effect
-    : COLLECTION_METHODS[call.method].effect
+  const { effect } = DATABASE_METHODS[call.method]
+  if (effect !== 'command') {
+    return effect
+  }
+  return READ_COMMANDS.has(commandName(call.args) ?? '') ? 'read' : 'command'
 }

@@ -1,12 +1,9 @@
 import type { LookupAddress } from 'node:dns'
 import { lookup } from 'node:dns/promises'
-import type { LookupFunction } from 'node:net'
-import { BlockList } from 'node:net'
+import { BlockList, connect } from 'node:net'
 
 import { ORPCError } from '@orpc/server'
 import { readConnectionString } from '@tamery/connection/parse-connection-string'
-import { toError } from '@tamery/shared/utils'
-import { Result } from 'better-result'
 
 const NON_PUBLIC_NETWORKS = new BlockList()
 for (const [network, prefix, family] of [
@@ -39,6 +36,7 @@ const FILE_PARAMS = [
   'sslrootcert',
   'tlscafile',
   'tlscertificatekeyfile',
+  'tlscrlfile',
 ]
 
 export const PRIVATE_HOST_MESSAGE =
@@ -49,35 +47,34 @@ const SRV_SCHEME = 'mongodb+srv'
 const isPublic = ({ address, family }: LookupAddress) =>
   !NON_PUBLIC_NETWORKS.check(address, family === 6 ? 'ipv6' : 'ipv4')
 
-const publicAddresses = async (hostname: string) => {
-  const addresses = await lookup(hostname, { all: true })
-  if (addresses.length === 0 || !addresses.every(isPublic)) {
+const publicAddresses = async (
+  hostname: string
+): Promise<[LookupAddress, ...LookupAddress[]]> => {
+  const [first, ...rest] = await lookup(hostname, { all: true })
+  if (!first || ![first, ...rest].every(isPublic)) {
     throw new ORPCError('FORBIDDEN', { message: PRIVATE_HOST_MESSAGE })
   }
-  return addresses
-}
-
-/** A socket lookup that refuses non-public addresses; the MongoDB driver dials every server it discovers through it. */
-export const publicLookup: LookupFunction = (hostname, options, respond) => {
-  void (async () => {
-    const found = await Result.tryPromise(() => publicAddresses(hostname))
-    if (found.isErr()) {
-      respond(toError(found.error.cause), '')
-      return
-    }
-    const [first] = found.value
-    // Node asks for every address when it races IPv4 against IPv6 (`autoSelectFamily`), else for one.
-    if (options.all) {
-      respond(null, found.value)
-    } else if (first) {
-      respond(null, first.address, first.family)
-    }
-  })()
+  return [first, ...rest]
 }
 
 /**
- * The driver resolves the host again, so a DNS answer that changes between the two lookups still slips through.
- * An empty host is refused too: drivers fall back to localhost for it.
+ * Dials the address it just checked, so the MongoDB driver reaches every server it discovers — a replica set member at a
+ * literal private IP among them, which a DNS lookup never sees — only after that server passed the public-host check.
+ */
+export const guardedConnect = async ({
+  host,
+  port,
+}: {
+  host: string
+  port: number
+}) => {
+  const [address] = await publicAddresses(host)
+  return connect({ family: address.family, host: address.address, port })
+}
+
+/**
+ * A fast pre-check that refuses the seed before the driver starts; `guardedConnect` re-checks every socket it opens, the
+ * seed included, so this one need not be authoritative. An empty host is refused too: drivers fall back to localhost for it.
  */
 export const assertReachable = async (connectionString: string) => {
   const { host, scheme, searchParams } = readConnectionString(connectionString)
@@ -87,7 +84,7 @@ export const assertReachable = async (connectionString: string) => {
         'The cloud proxy cannot read certificate files. Run `tamery proxy` or open this connection in the desktop app.',
     })
   }
-  // An SRV name has no address of its own: the servers it lists are checked by `publicLookup` as the driver dials them.
+  // An SRV name has no address of its own: the servers it lists are checked by `guardedConnect` as the driver dials them.
   if (host && scheme === SRV_SCHEME) {
     return
   }

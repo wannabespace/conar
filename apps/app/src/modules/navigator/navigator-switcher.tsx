@@ -4,10 +4,13 @@ import {
   Layers01Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { uppercaseFirst } from '@tamery/shared/utils'
 import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
+
+import { useObjectNames } from '~/core/catalog/names'
 
 import { getNavigatorStore } from './stores'
 
@@ -20,10 +23,11 @@ export const NavigatorSwitcher = () => {
   const navigatorStore = getNavigatorStore(connectionResource.id)
   const navigator = useSubscription(navigatorStore)
   const isDefinitions = navigator === 'definitions'
+  const names = useObjectNames()
 
   return (
     <SidebarMenuButton
-      aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
+      aria-label={isDefinitions ? `Back to ${names.table}s` : 'Open schema'}
       onClick={() =>
         navigatorStore.set(isDefinitions ? 'tables' : 'definitions')
       }
@@ -44,7 +48,7 @@ export const NavigatorSwitcher = () => {
                 strokeWidth={2}
                 className="text-muted-foreground"
               />
-              Tables
+              {uppercaseFirst(names.table)}s
             </>
           ) : (
             <>

@@ -3,7 +3,7 @@ import process from 'node:process'
 
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
-import { mongodbLookup } from '@tamery/connection/queries/dialects/mongodb/client'
+import { mongodbGuard } from '@tamery/connection/queries/dialects/mongodb/client'
 import { querySerializer } from '@tamery/query-proxy/serializer'
 import { sanitizeLogData } from '@tamery/shared/sanitize-log'
 import { Hono } from 'hono'
@@ -12,10 +12,10 @@ import { cors } from 'hono/cors'
 import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
-import { publicLookup } from './public-host'
+import { guardedConnect } from './public-host'
 import type { AppVariables } from './variables'
 
-mongodbLookup.use(publicLookup)
+mongodbGuard.use(guardedConnect)
 
 const handler = new RPCHandler(router, {
   interceptors: [

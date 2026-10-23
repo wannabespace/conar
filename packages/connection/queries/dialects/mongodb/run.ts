@@ -1,15 +1,22 @@
-import type { CollectionMethod, DatabaseMethod } from '@tamery/mongo/methods'
+import type {
+  CollectionMethod,
+  CursorMethod,
+  DatabaseMethod,
+} from '@tamery/mongo/methods'
 import type { MongoCall } from '@tamery/mongo/parse'
 import { getEffect, parseScript } from '@tamery/mongo/parse'
 import type { Expression } from 'acorn'
 import type {
   AbstractCursor,
+  AggregationCursor,
   AnyBulkWriteOperation,
   ClientSession,
   Collection,
+  CollationOptions,
   Db,
   Document,
   ExplainVerbosityLike,
+  FindCursor,
   IndexSpecification,
   MongoClient,
 } from 'mongodb'
@@ -19,11 +26,35 @@ import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { mongodb, parseShellValue } from './client'
 
-const { EJSON } = mongodb.BSON
+const { EJSON, Long } = mongodb.BSON
 
-/** Values cross IPC and HTTP as relaxed Extended JSON, the only form that keeps an ObjectId or a Decimal128 its type. */
+/**
+ * Relaxed Extended JSON would turn a 64-bit `NumberLong` into a double, so an `_id` past 2^53 would read back a different
+ * number and an edit or delete would target the wrong document; pre-wrapping each Long keeps it exact while every other
+ * scalar stays plain. BSON types (ObjectId, Decimal128, Date…) are left for the serializer; only plain documents recurse.
+ */
+const keepLongs = (value: unknown): unknown => {
+  if (value instanceof Long) {
+    return { $numberLong: value.toString() }
+  }
+  if (Array.isArray(value)) {
+    return value.map(keepLongs)
+  }
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    value.constructor === Object
+  ) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, inner]) => [key, keepLongs(inner)])
+    )
+  }
+  return value
+}
+
+/** Values cross IPC and HTTP as relaxed Extended JSON, which keeps an ObjectId or Decimal128 its type and a scalar plain. */
 const toWire = (value: unknown) =>
-  EJSON.serialize({ value }, { relaxed: true }).value
+  EJSON.serialize({ value: keepLongs(value) }, { relaxed: true }).value
 
 const value = (column: string, result: unknown): ResultSet => ({
   affectedRows: null,
@@ -48,10 +79,12 @@ const FINISHED: ResultSet = {
 
 const document = (arg: unknown) => (arg ?? {}) as Document
 
+type QueryCursor = AggregationCursor<Document> | FindCursor<Document>
+
 interface Run<Target> {
   args: unknown[]
   options: { comment?: string; session?: ClientSession }
-  read: (cursor: AbstractCursor) => Promise<ResultSet>
+  read: (cursor: QueryCursor) => Promise<ResultSet>
   rows: (docs: Document[]) => ResultSet
   target: Target
 }
@@ -335,40 +368,118 @@ const readCursor = async (cursor: AbstractCursor, maxRows: number) => {
   return rowsOf(docs, maxRows)
 }
 
-interface Explainable {
-  explain: (verbosity?: ExplainVerbosityLike) => Promise<Document>
+const EXPLAIN_VERBOSITY: Record<string, ExplainVerbosityLike> = {
+  allPlansExecution: 'allPlansExecution',
+  executionStats: 'executionStats',
+  queryPlanner: 'queryPlanner',
+  queryPlannerExtended: 'queryPlannerExtended',
+}
+
+const verbosityOf = (arg: unknown): ExplainVerbosityLike | undefined => {
+  if (typeof arg === 'boolean') {
+    return arg
+  }
+  return typeof arg === 'string' ? EXPLAIN_VERBOSITY[arg] : undefined
+}
+
+const collationOf = (arg: unknown): CollationOptions => {
+  const options = document(arg)
+  if (typeof options.locale !== 'string') {
+    throw new TypeError('.collation() needs a locale.')
+  }
+  return { ...options, locale: options.locale }
+}
+
+const applyStep = (cursor: QueryCursor, method: CursorMethod, arg: unknown) => {
+  switch (method) {
+    case 'limit': {
+      return cursor.limit(Number(arg))
+    }
+    case 'project':
+    case 'projection': {
+      return cursor.project(document(arg))
+    }
+    case 'skip': {
+      return cursor.skip(Number(arg))
+    }
+    case 'sort': {
+      // oxlint-disable-next-line no-array-sort -- a result cursor's sort(), not Array#sort()
+      return cursor.sort(document(arg))
+    }
+    default: {
+      break
+    }
+  }
+  // `in` narrows to a find() cursor; the parser allows these after aggregate() too, where they do not apply.
+  if ('allowDiskUse' in cursor) {
+    switch (method) {
+      case 'allowDiskUse': {
+        return cursor.allowDiskUse(arg !== false)
+      }
+      case 'batchSize': {
+        return cursor.batchSize(Number(arg))
+      }
+      case 'collation': {
+        return cursor.collation(collationOf(arg))
+      }
+      case 'comment': {
+        return cursor.comment(String(arg))
+      }
+      case 'hint': {
+        return cursor.hint(document(arg))
+      }
+      case 'maxTimeMS': {
+        return cursor.maxTimeMS(Number(arg))
+      }
+      default: {
+        break
+      }
+    }
+  }
+  throw new TypeError(`.${method}() does not apply to this cursor.`)
 }
 
 const chained =
   (call: MongoCall, text: string, maxRows: number) =>
-  async (cursor: AbstractCursor) => {
-    const steps = call.cursor.filter(
-      ({ method }) => method !== 'toArray' && method !== 'pretty'
-    )
-    const explain = steps.find(({ method }) => method === 'explain')
-    for (const { args, method } of steps) {
-      const apply = (cursor as unknown as Record<string, unknown>)[
-        method === 'projection' ? 'project' : method
-      ]
-      if (typeof apply !== 'function') {
-        throw new TypeError(`.${method}() does not apply to ${call.method}().`)
+  async (cursor: QueryCursor) => {
+    const explain = call.cursor.find(({ method }) => method === 'explain')
+    for (const { args, method } of call.cursor) {
+      if (method === 'explain' || method === 'pretty' || method === 'toArray') {
+        continue
       }
-      if (method !== 'explain') {
-        apply.apply(
-          cursor,
-          args.map((arg) => evaluate(text, arg))
-        )
-      }
+      applyStep(cursor, method, args[0] && evaluate(text, args[0]))
     }
     if (!explain) {
       return readCursor(cursor, maxRows)
     }
-    const [verbosity] = explain.args.map((arg) => evaluate(text, arg))
-    const plan = await (cursor as unknown as Explainable).explain(
-      verbosity as ExplainVerbosityLike
+    const verbosity = verbosityOf(
+      explain.args[0] && evaluate(text, explain.args[0])
     )
+    const plan = await (verbosity === undefined
+      ? cursor.explain()
+      : cursor.explain(verbosity))
     return rowsOf([plan], maxRows)
   }
+
+const WRITE_STAGES = new Set(['$merge', '$out'])
+
+/** A pipeline stage can be assembled from BSON constructors, so the write check reads the evaluated value, not its source. */
+const hasWriteStage = (node: unknown): boolean => {
+  if (Array.isArray(node)) {
+    return node.some(hasWriteStage)
+  }
+  if (node !== null && typeof node === 'object') {
+    return Object.entries(node).some(
+      ([key, inner]) => WRITE_STAGES.has(key) || hasWriteStage(inner)
+    )
+  }
+  return false
+}
+
+// `getEffect` reads the syntax, which can miss a `$out` the pipeline only names once evaluated; the BSON scan catches it.
+const writesWhenRun = (call: MongoCall, args: unknown[]) =>
+  getEffect(call) !== 'read' ||
+  (call.method === 'aggregate' && args.some(hasWriteStage))
 
 const runCall = (
   client: MongoClient,
@@ -399,13 +510,16 @@ export const runScript = async (
   },
   { maxRows = Infinity, queryId }: RunOptions
 ) => {
-  const calls = parseScript(text)
+  const prepared = parseScript(text).map((call) => ({
+    args: call.args.map((arg) => evaluate(text, arg)),
+    call,
+  }))
   const writing = readOnly
-    ? calls.find((call) => getEffect(call) !== 'read')
+    ? prepared.find(({ args, call }) => writesWhenRun(call, args))
     : undefined
   if (writing) {
     throw new Error(
-      `This runs read-only, and ${writing.method}() can change data.`
+      `This runs read-only, and ${writing.call.method}() can change data.`
     )
   }
 
@@ -428,9 +542,9 @@ export const runScript = async (
 
   const start = performance.now()
   const result: ResultSet[] = []
-  for (const call of calls) {
+  for (const { args, call } of prepared) {
     const context = {
-      args: call.args.map((arg) => evaluate(text, arg)),
+      args,
       options,
       read: chained(call, text, maxRows),
       rows: (docs: Document[]) => rowsOf(docs, maxRows),
