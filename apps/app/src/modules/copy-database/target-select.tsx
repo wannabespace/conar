@@ -18,24 +18,13 @@ import { getCapabilities } from '~/core/catalog/capabilities'
 import { useCollections } from '~/core/collections'
 import { canQueryConnection } from '~/core/connection/fetching'
 import { ResourceLabel } from '~/core/connection/resource-label'
-import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 
-export interface CopyEnd {
-  connection: Connection
-  resource: ConnectionResource
-}
+import type { CopyEnd } from './copy-end-label'
+import { CopyEndLabel } from './copy-end-label'
 
 const COPYABLE_TYPES = Object.values(ConnectionType).filter(
   (type) => getCapabilities(getDialect(type)).copyDatabase
-)
-
-export const CopyEndLabel = ({ connection, resource }: CopyEnd) => (
-  <span data-mask className="min-w-0 truncate">
-    {connection.name}
-    <span className="text-muted-foreground"> / </span>
-    <ResourceLabel connection={connection} name={resource.name} />
-  </span>
 )
 
 export const TargetSelect = ({

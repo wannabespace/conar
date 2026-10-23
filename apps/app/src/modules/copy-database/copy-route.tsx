@@ -2,25 +2,19 @@ import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { Progress } from '@tamery/ui/components/progress'
+import type { ComponentProps } from 'react'
 
 import { ResourceLabel } from '~/core/connection/resource-label'
 
+import type { CopyEnd } from './copy-end-label'
 import type { CopyStatus } from './copy-progress'
-import type { CopyEnd } from './target-select'
 
-const PROGRESS_VALUES: Record<CopyStatus, number | null> = {
-  copied: 100,
-  copying: null,
-  failed: 100,
-  stopped: 0,
-}
-
-const PROGRESS_VARIANTS = {
-  copied: 'success',
-  copying: 'default',
-  failed: 'destructive',
-  stopped: 'default',
-} as const satisfies Record<CopyStatus, string>
+const PROGRESS = {
+  copied: { value: 100, variant: 'success' },
+  copying: { value: null, variant: 'default' },
+  failed: { value: 100, variant: 'destructive' },
+  stopped: { value: 0, variant: 'default' },
+} as const satisfies Record<CopyStatus, ComponentProps<typeof Progress>>
 
 const RouteEnd = ({ connection, resource }: CopyEnd) => (
   <span
@@ -62,10 +56,6 @@ export const CopyRoute = ({
       />
       <RouteEnd {...target} />
     </span>
-    <Progress
-      aria-label="Copy progress"
-      value={PROGRESS_VALUES[status]}
-      variant={PROGRESS_VARIANTS[status]}
-    />
+    <Progress aria-label="Copy progress" {...PROGRESS[status]} />
   </span>
 )

@@ -12,15 +12,13 @@ import type { ConnectionResource } from '~/core/connection/sync'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { plural } from '~/utils/plural'
 
-export interface CopyTable {
+interface CopyTable {
   schema: string
   table: string
 }
 
 /** `null` is the whole database, which copies more than its tables. */
 export type TableSelection = Map<string, CopyTable> | null
-
-const EVERYTHING = 'everything'
 
 export const TablesField = ({
   onSelectionChange,
@@ -34,32 +32,16 @@ export const TablesField = ({
   const { data } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource: resource })
   )
-  const tables =
+  const tables = new Map(
     data?.schemas.flatMap((schema) =>
       schema.tables
         .filter((table) => table.type === 'table' && !table.partition)
-        .map((table) => ({
-          key: JSON.stringify([schema.name, table.name]),
-          schema: schema.name,
-          table: table.name,
-        }))
-    ) ?? []
-
-  const toggle = ({ key, schema, table }: (typeof tables)[number]) => {
-    const next = new Map(
-      selection ??
-        tables.map((entry) => [
-          entry.key,
-          { schema: entry.schema, table: entry.table },
+        .map((table): [string, CopyTable] => [
+          JSON.stringify([schema.name, table.name]),
+          { schema: schema.name, table: table.name },
         ])
     )
-    if (next.has(key)) {
-      next.delete(key)
-    } else {
-      next.set(key, { schema, table })
-    }
-    onSelectionChange(next)
-  }
+  )
 
   return (
     <>
@@ -69,7 +51,7 @@ export const TablesField = ({
           <CommandList>
             <CommandGroup>
               <CommandItem
-                value={EVERYTHING}
+                value="everything"
                 keywords={['all']}
                 data-checked={selection === null || undefined}
                 onSelect={() =>
@@ -78,15 +60,21 @@ export const TablesField = ({
               >
                 Everything
               </CommandItem>
-              {tables.map((entry) => (
+              {[...tables].map(([key, entry]) => (
                 <CommandItem
-                  key={entry.key}
-                  value={entry.key}
+                  key={key}
+                  value={key}
                   keywords={[entry.schema, entry.table]}
-                  data-checked={
-                    (selection?.has(entry.key) ?? true) || undefined
-                  }
-                  onSelect={() => toggle(entry)}
+                  data-checked={(selection?.has(key) ?? true) || undefined}
+                  onSelect={() => {
+                    const next = new Map(selection ?? tables)
+                    if (next.has(key)) {
+                      next.delete(key)
+                    } else {
+                      next.set(key, entry)
+                    }
+                    onSelectionChange(next)
+                  }}
                 >
                   <span data-mask className="min-w-0 truncate">
                     {entry.schema !== data?.defaultSchema && (

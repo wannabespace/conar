@@ -61,16 +61,12 @@ const perform = async (
   }
   const controller = new AbortController()
   copies.set(data.request.id, controller)
-  try {
-    await copyDatabase(
-      data.request,
-      (line) => reply({ id: data.id, line, type: 'copyLog' }),
-      controller.signal
-    )
-    return null
-  } finally {
-    copies.delete(data.request.id)
-  }
+  await copyDatabase(
+    data.request,
+    (line) => reply({ id: data.id, line, type: 'copyLog' }),
+    controller.signal
+  ).finally(() => copies.delete(data.request.id))
+  return null
 }
 
 sshForwarding.use((connectionString) =>

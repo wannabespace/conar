@@ -22,97 +22,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { formatClockTime } from '~/utils/clock-time'
 
-export interface CopyLogEntry {
-  kind: 'step' | 'error' | 'warning' | 'detail' | 'info'
-  /** pg_dump's name for the object a step creates, or `TABLE DATA` for copied rows. */
-  object: string | null
-  text: string
-}
-
-export type CopyLogLine = CopyLogEntry & { at: Date }
-
-const CREATED = /^creating (?<object>.+?) "(?<name>.+)"$/u
-const COPIED = /^dumping contents of table "(?<name>.+)"$/u
-const TOOL_PROBLEM = /^(?:pg_dump|psql): (?<kind>error|warning): (?<text>.*)$/u
-const SERVER_MESSAGE =
-  /^(?:psql:[^:]*:\d+: )?(?<kind>ERROR|FATAL|WARNING|DETAIL|NOTICE|HINT):\s+(?<text>.*)$/u
-const SERVER_KINDS: Record<string, CopyLogEntry['kind'] | null> = {
-  DETAIL: 'detail',
-  ERROR: 'error',
-  FATAL: 'error',
-  HINT: null,
-  NOTICE: null,
-  WARNING: 'warning',
-}
-const HIDDEN_OBJECTS = new Set([
-  'COMMENT',
-  'DEFAULT',
-  'SEQUENCE OWNED BY',
-  'TABLE ATTACH',
-])
-
-/** `null` for pg_dump's catalog reads, column and partition plumbing, and the server's notices and hints, which name nothing a user picked. */
-export const parseCopyLogLine = (line: string): CopyLogEntry | null => {
-  const problem = TOOL_PROBLEM.exec(line)?.groups
-  if (problem) {
-    return {
-      kind: problem.kind === 'error' ? 'error' : 'warning',
-      object: null,
-      text: problem.text ?? '',
-    }
-  }
-  if (line.startsWith('pg_dump: ')) {
-    const step = line.slice('pg_dump: '.length)
-    const created = CREATED.exec(step)?.groups
-    if (created) {
-      return HIDDEN_OBJECTS.has(created.object ?? '')
-        ? null
-        : {
-            kind: 'step',
-            object: created.object ?? null,
-            text: created.name ?? '',
-          }
-    }
-    const copied = COPIED.exec(step)?.groups
-    return copied
-      ? { kind: 'step', object: 'TABLE DATA', text: copied.name ?? '' }
-      : null
-  }
-  const message = SERVER_MESSAGE.exec(line)?.groups
-  if (message) {
-    const kind = SERVER_KINDS[message.kind ?? '']
-    return kind ? { kind, object: null, text: message.text ?? '' } : null
-  }
-  return { kind: 'info', object: null, text: line }
-}
-
-const isProblem = ({ kind }: CopyLogEntry) =>
-  kind === 'error' || kind === 'detail'
-
-/** A failure reaches the log twice, as the tool's own lines and as the copy's error, in either order, so a problem already shown is not repeated. */
-export const appendCopyLog = (
-  previous: CopyLogLine[],
-  next: CopyLogEntry[]
-): CopyLogLine[] => [
-  ...previous,
-  ...next
-    .filter(
-      (entry) =>
-        !isProblem(entry) ||
-        !previous.some(
-          (seen) => seen.kind === entry.kind && seen.text === entry.text
-        )
-    )
-    .map((entry) => ({ ...entry, at: new Date() })),
-]
-
-export const toFailureEntries = (error: Error): CopyLogEntry[] =>
-  error.message.split('\n').map((line) => {
-    const entry = parseCopyLogLine(line)
-    return entry && entry.kind !== 'info'
-      ? entry
-      : { kind: 'error', object: null, text: line }
-  })
+import type { CopyLogEntry, CopyLogLine } from './copy-log-line'
 
 const OBJECT_ICONS: Record<string, IconSvgElement> = {
   AGGREGATE: SourceCodeIcon,
@@ -207,8 +117,6 @@ export const CopyLog = ({ entries }: { entries: CopyLogLine[] }) => {
           className="py-2 font-mono text-xs leading-4 select-text"
         >
           {entries.map((entry, index) => (
-            // The log only grows, so a line keeps its index.
-            // oxlint-disable-next-line react/no-array-index-key
             <li key={index} className="flex items-start gap-2.5 px-3 py-1">
               <EntryIcon {...entry} />
               <span

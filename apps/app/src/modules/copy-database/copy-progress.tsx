@@ -5,8 +5,8 @@ import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { DialogClose, DialogFooter } from '@tamery/ui/components/dialog'
 
-import type { CopyLogLine } from './copy-log'
 import { CopyLog } from './copy-log'
+import type { CopyLogLine } from './copy-log-line'
 
 export type CopyStatus = 'copying' | 'copied' | 'stopped' | 'failed'
 
@@ -18,8 +18,7 @@ export const CopyProgress = ({
   since,
   status,
 }: {
-  /** When the copy committed; set only once it has. */
-  copiedAt: number | undefined
+  copiedAt: number | null
   entries: CopyLogLine[]
   onBack: () => void
   onStop: () => void

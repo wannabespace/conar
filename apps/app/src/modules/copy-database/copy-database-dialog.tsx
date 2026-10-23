@@ -15,15 +15,19 @@ import { canQueryConnection } from '~/core/connection/fetching'
 import { refreshCatalog } from '~/core/connection/refresh-after-run'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 
+import type { CopyEnd } from './copy-end-label'
+import { CopyEndLabel } from './copy-end-label'
 import { CopyForm } from './copy-form'
-import type { CopyLogLine } from './copy-log'
-import { appendCopyLog, parseCopyLogLine, toFailureEntries } from './copy-log'
+import type { CopyLogLine } from './copy-log-line'
+import {
+  appendCopyLog,
+  parseCopyLogLine,
+  toFailureEntries,
+} from './copy-log-line'
 import type { CopyStatus } from './copy-progress'
 import { CopyProgress } from './copy-progress'
 import { CopyRoute } from './copy-route'
 import type { TableSelection } from './tables-field'
-import type { CopyEnd } from './target-select'
-import { CopyEndLabel } from './target-select'
 
 interface CopyRun {
   id: string
@@ -120,7 +124,6 @@ export const CopyDatabaseDialog = () => {
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        // Escape first stops a running copy, then closes: a stopped copy changes nothing, so the press is safe.
         if (copy.isPending) {
           stop()
         } else {
@@ -148,7 +151,7 @@ export const CopyDatabaseDialog = () => {
             <CopyProgress
               entries={entries}
               since={copy.submittedAt}
-              copiedAt={copy.data}
+              copiedAt={copy.data ?? null}
               status={status}
               onBack={() => copy.reset()}
               onStop={stop}

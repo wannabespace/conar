@@ -1,7 +1,7 @@
 const { execFile } = require('node:child_process')
 const { createHash } = require('node:crypto')
 const { createReadStream, createWriteStream, existsSync } = require('node:fs')
-const { chmod, cp, mkdir, mkdtemp, rm } = require('node:fs/promises')
+const { chmod, cp, mkdtemp, rm } = require('node:fs/promises')
 const os = require('node:os')
 const path = require('node:path')
 const { Readable } = require('node:stream')
@@ -73,28 +73,6 @@ const sha256 = async (file) => {
   return hash.digest('hex')
 }
 
-const download = async (archive) => {
-  const file = path.join(
-    os.tmpdir(),
-    `postgresql-${VERSION}-${archive.name}-binaries.zip`
-  )
-  if (existsSync(file) && (await sha256(file)) === archive.sha256) {
-    return file
-  }
-  const response = await fetch(
-    `https://get.enterprisedb.com/postgresql/postgresql-${VERSION}-${archive.name}-binaries.zip`
-  )
-  if (!response.ok || !response.body) {
-    throw new Error(`PostgreSQL tools download failed: ${response.status}`)
-  }
-  await pipeline(Readable.fromWeb(response.body), createWriteStream(file))
-  const actual = await sha256(file)
-  if (actual !== archive.sha256) {
-    throw new Error(`PostgreSQL tools checksum mismatch: ${actual}`)
-  }
-  return file
-}
-
 module.exports = async function toDesktopAfterPack({
   appOutDir,
   arch,
@@ -105,7 +83,21 @@ module.exports = async function toDesktopAfterPack({
   if (!archive) {
     return
   }
-  const zip = await download(archive)
+  const name = `postgresql-${VERSION}-${archive.name}-binaries.zip`
+  const zip = path.join(os.tmpdir(), name)
+  if (!existsSync(zip) || (await sha256(zip)) !== archive.sha256) {
+    const response = await fetch(
+      `https://get.enterprisedb.com/postgresql/${name}`
+    )
+    if (!response.ok) {
+      throw new Error(`PostgreSQL tools download failed: ${response.status}`)
+    }
+    await pipeline(Readable.fromWeb(response.body), createWriteStream(zip))
+    const actual = await sha256(zip)
+    if (actual !== archive.sha256) {
+      throw new Error(`PostgreSQL tools checksum mismatch: ${actual}`)
+    }
+  }
   const extracted = await mkdtemp(path.join(os.tmpdir(), 'postgresql-'))
   const entries = [...archive.files, ...LICENSES]
   // Windows' own bsdtar reads zip; a GNU tar earlier on PATH (Git's) does not.
@@ -121,20 +113,19 @@ module.exports = async function toDesktopAfterPack({
     ...entries.map(([from]) => from),
   ])
 
-  const resources =
+  const destination =
     electronPlatformName === 'darwin'
       ? path.join(
           appOutDir,
           `${packager.appInfo.productFilename}.app`,
           'Contents',
-          'Resources'
+          'Resources',
+          'postgres'
         )
-      : path.join(appOutDir, 'resources')
-  const destination = path.join(resources, 'postgres')
+      : path.join(appOutDir, 'resources', 'postgres')
   await Promise.all(
     entries.map(async ([from, to]) => {
       const target = path.join(destination, to)
-      await mkdir(path.dirname(target), { recursive: true })
       await cp(path.join(extracted, from), target)
       if (to.startsWith('bin/')) {
         await chmod(target, 0o755)

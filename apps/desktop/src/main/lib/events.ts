@@ -51,7 +51,7 @@ export const electron = {
   },
   connectionLinks,
   copyDatabase: {
-    cancel: (copyId: string) => queryProcess.cancelCopy(copyId),
+    cancel: queryProcess.cancelCopy,
     start: ((request: CopyDatabaseRequest, event?: IpcMainInvokeEvent) =>
       queryProcess.copyDatabase(request, (line) =>
         event?.sender.send('copyDatabase.log', { copyId: request.id, line })

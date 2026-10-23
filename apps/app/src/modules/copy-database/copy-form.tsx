@@ -7,22 +7,13 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+import type { CopyEnd } from './copy-end-label'
+import { CopyEndLabel } from './copy-end-label'
 import type { TableSelection } from './tables-field'
 import { TablesField } from './tables-field'
-import type { CopyEnd } from './target-select'
-import { CopyEndLabel, TargetSelect } from './target-select'
+import { TargetSelect } from './target-select'
 
 const FORM_ID = 'copy-database'
-
-const getBlocker = (target: CopyEnd | null, selection: TableSelection) => {
-  if (!target) {
-    return 'Choose a database to copy to.'
-  }
-  if (selection?.size === 0) {
-    return 'Choose what to copy.'
-  }
-  return null
-}
 
 export const CopyForm = ({
   onSelectionChange,
@@ -39,7 +30,12 @@ export const CopyForm = ({
   source: CopyEnd
   target: CopyEnd | null
 }) => {
-  const blocker = getBlocker(target, selection)
+  let blocker: string | null = null
+  if (!target) {
+    blocker = 'Choose a database to copy to.'
+  } else if (selection?.size === 0) {
+    blocker = 'Choose what to copy.'
+  }
 
   return (
     <>

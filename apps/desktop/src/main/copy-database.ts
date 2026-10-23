@@ -47,8 +47,7 @@ const listenLocally = async (forwarding: Forwarding) => {
   const server = createServer((local) => {
     void silently(() => pipeline(local, forwarding.socket(), local))
   })
-  server.listen(0, '127.0.0.1')
-  await once(server, 'listening')
+  await once(server.listen(0, '127.0.0.1'), 'listening')
   // A TCP server listening on a port answers with AddressInfo, never a pipe name.
   const { port } = server.address() as AddressInfo
   return { close: () => server.close(), port }
@@ -78,10 +77,8 @@ const openEndpoint = async (connectionString: string) => {
   const local = forwarding ? await listenLocally(forwarding) : null
   const sslMode = getLibpqSslMode(pool.options.ssl, searchParams.get('sslmode'))
   return {
-    close: () => local?.close(),
-    database: identity.isOk()
-      ? (identity.value.rows[0]?.database ?? null)
-      : null,
+    [Symbol.dispose]: () => local?.close(),
+    database: identity.unwrapOr(null)?.rows[0]?.database ?? null,
     env: {
       ...Object.fromEntries(
         Object.entries(process.env).filter(([key]) => !key.startsWith('PG'))
@@ -158,10 +155,7 @@ const commitAfter = (dumped: Promise<void>, stripHeader: boolean) => {
         done(toError(result.error.cause))
         return
       }
-      done(
-        null,
-        Buffer.concat([header ? strip(header) : Buffer.alloc(0), COMMIT])
-      )
+      done(null, header ? Buffer.concat([strip(header), COMMIT]) : COMMIT)
     },
     transform: (chunk: Buffer, _encoding, done) => {
       if (!header) {
@@ -185,74 +179,63 @@ export const copyDatabase = async (
   log: (line: string) => void,
   signal: AbortSignal
 ) => {
-  const from = await openEndpoint(source)
-  try {
-    const to = await openEndpoint(target)
-    try {
-      if (from.database !== null && from.database === to.database) {
-        throw new Error(
-          'The target is the source database, reached through another connection. Choose another one.'
-        )
-      }
-      const dump = spawn(
-        toolPath('pg_dump'),
-        [
-          '--clean',
-          '--if-exists',
-          '--no-owner',
-          '--no-privileges',
-          '--verbose',
-          KEEPALIVES,
-          ...(tables ?? []).map(
-            ({ schema, table }) =>
-              `--table-and-children=${quoteIdentifier(schema, Dialect.Postgres)}.${quoteIdentifier(table, Dialect.Postgres)}`
-          ),
-        ],
-        { env: from.env, signal, stdio: ['ignore', 'pipe', 'pipe'] }
-      )
-      const restore = spawn(
-        toolPath('psql'),
-        ['--no-psqlrc', '--quiet', '--set=ON_ERROR_STOP=1', KEEPALIVES],
-        { env: to.env, signal, stdio: ['pipe', 'ignore', 'pipe'] }
-      )
-      const dumped = watchTool('pg_dump', dump, log)
-      const restored = watchTool('psql', restore, log)
-      const schemas = new Set(tables?.map(({ schema }) => schema))
-      restore.stdin.write(
-        [
-          // Not PGOPTIONS: PgBouncer refuses the startup `options` parameter. Before BEGIN, or a rollback resets them and the server keeps a dead client's locks for hours.
-          'SET tcp_keepalives_idle = 10;',
-          'SET tcp_keepalives_interval = 5;',
-          'SET tcp_keepalives_count = 3;',
-          'BEGIN;',
-          ...[...schemas].map(
-            (schema) =>
-              `CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(schema, Dialect.Postgres)};`
-          ),
-          '',
-        ].join('\n')
-      )
-      // psql's failure first: once it stops, pg_dump only reports the broken pipe.
-      const results = await Promise.allSettled([
-        restored,
-        dumped,
-        pipeline(
-          dump.stdout,
-          commitAfter(dumped, to.version < POSTGRES_17),
-          restore.stdin
-        ),
-      ])
-      const failure = results.find(
-        (result): result is PromiseRejectedResult =>
-          result.status === 'rejected'
-      )
-      if (failure) {
-        throw failure.reason
-      }
-    } finally {
-      to.close()
+  using from = await openEndpoint(source)
+  using to = await openEndpoint(target)
+  if (from.database !== null && from.database === to.database) {
+    throw new Error(
+      'The target is the source database, reached through another connection. Choose another one.'
+    )
+  }
+  const dump = spawn(
+    toolPath('pg_dump'),
+    [
+      '--clean',
+      '--if-exists',
+      '--no-owner',
+      '--no-privileges',
+      '--verbose',
+      KEEPALIVES,
+      ...(tables ?? []).map(
+        ({ schema, table }) =>
+          `--table-and-children=${quoteIdentifier(schema, Dialect.Postgres)}.${quoteIdentifier(table, Dialect.Postgres)}`
+      ),
+    ],
+    { env: from.env, signal, stdio: ['ignore', 'pipe', 'pipe'] }
+  )
+  const restore = spawn(
+    toolPath('psql'),
+    ['--no-psqlrc', '--quiet', '--set=ON_ERROR_STOP=1', KEEPALIVES],
+    { env: to.env, signal, stdio: ['pipe', 'ignore', 'pipe'] }
+  )
+  const dumped = watchTool('pg_dump', dump, log)
+  restore.stdin.write(
+    [
+      // Not PGOPTIONS: PgBouncer refuses the startup `options` parameter. Before BEGIN, or a rollback resets them and the server keeps a dead client's locks for hours.
+      'SET tcp_keepalives_idle = 10;',
+      'SET tcp_keepalives_interval = 5;',
+      'SET tcp_keepalives_count = 3;',
+      'BEGIN;',
+      ...Array.from(
+        new Set(tables?.map(({ schema }) => schema)),
+        (schema) =>
+          `CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(schema, Dialect.Postgres)};`
+      ),
+      '',
+    ].join('\n')
+  )
+  // psql's failure first: once it stops, pg_dump only reports the broken pipe.
+  const results = await Promise.allSettled([
+    watchTool('psql', restore, log),
+    dumped,
+    pipeline(
+      dump.stdout,
+      commitAfter(dumped, to.version < POSTGRES_17),
+      restore.stdin
+    ),
+  ])
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      throw result.reason
     }
-  } finally {
-    from.close()
   }
 }

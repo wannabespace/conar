@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 
-import { appendCopyLog, parseCopyLogLine, toFailureEntries } from './copy-log'
+import {
+  appendCopyLog,
+  parseCopyLogLine,
+  toFailureEntries,
+} from './copy-log-line'
 
 describe('parseCopyLogLine', () => {
   it('names created objects and copied tables without the tool prefix', () => {
