@@ -1,5 +1,6 @@
 export * from './auth'
 export * from './chats'
+export * from './encryption'
 export * from './connections'
 export * from './queries'
 export * from './subscriptions'

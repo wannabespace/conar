@@ -12,7 +12,7 @@ All connection strings are encrypted with a **per-user secret key**, unique to y
 
 ## Encryption in transit
 
-When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the per-user secret is held in Infisical, accessible only to the Tamery backend.
+When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted. The per-user key is stored encrypted at rest, wrapped by a master key held only in the backend environment, so a database dump alone cannot read it.
 
 To keep the server from ever handling your plaintext password, use **Cloud (without password)** — then only metadata is stored and returned.
 

@@ -1,6 +1,5 @@
 import { db } from '@conar/db'
 import { subscriptions } from '@conar/db/schema'
-import { infisical } from '@conar/infisical'
 import {
   ACTIVE_SUBSCRIPTION_STATUSES,
   LATEST_VERSION_BEFORE_SUBSCRIPTION,
@@ -9,23 +8,17 @@ import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
 
-import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
+import { userEncryptionKey } from '~/lib/encryption-key'
 import { redis } from '~/lib/redis'
 
 import type { Context } from './context'
 
 export const orpc = os.$context<Context>()
 
-export const getUserSecret = memoize(
-  (userId: string) => {
-    return infisical.secrets.get({
-      path: ['users', userId],
-      name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-    })
-  },
-  { maxAge: 5 * 60 * 1000 },
-) // 5 minutes
+export const getUserSecret = memoize((userId: string) => userEncryptionKey.get(userId), {
+  maxAge: 5 * 60 * 1000,
+}) // 5 minutes
 
 async function getSession(headers: Headers) {
   const session = await auth.api.getSession({ headers })
