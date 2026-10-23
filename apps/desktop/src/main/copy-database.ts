@@ -16,7 +16,9 @@ import { getPool } from '@tamery/connection/queries/dialects/pg/client'
 import type { Forwarding } from '@tamery/connection/ssh/forwarding'
 import { sshForwarding } from '@tamery/connection/ssh/forwarding'
 import { getLibpqSslMode } from '@tamery/connection/ssl/pg'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { silently, toError } from '@tamery/shared/utils'
+import { quoteIdentifier } from '@tamery/sql/identifier'
 import { Result } from 'better-result'
 
 export interface CopyDatabaseRequest {
@@ -39,8 +41,6 @@ const HEADER_BYTES = 4096
 const COMMIT = Buffer.from('COMMIT;\n')
 const KEEPALIVES =
   '--dbname=keepalives_idle=10 keepalives_interval=5 keepalives_count=3'
-
-const quoteIdentifier = (name: string) => `"${name.replaceAll('"', '""')}"`
 
 /** libpq dials a TCP port, while a tunnel opens none, so the copy gets a loopback listener for its length. */
 const listenLocally = async (forwarding: Forwarding) => {
@@ -205,7 +205,7 @@ export const copyDatabase = async (
           KEEPALIVES,
           ...(tables ?? []).map(
             ({ schema, table }) =>
-              `--table-and-children=${quoteIdentifier(schema)}.${quoteIdentifier(table)}`
+              `--table-and-children=${quoteIdentifier(schema, Dialect.Postgres)}.${quoteIdentifier(table, Dialect.Postgres)}`
           ),
         ],
         { env: from.env, signal, stdio: ['ignore', 'pipe', 'pipe'] }
@@ -227,7 +227,7 @@ export const copyDatabase = async (
           'BEGIN;',
           ...[...schemas].map(
             (schema) =>
-              `CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(schema)};`
+              `CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(schema, Dialect.Postgres)};`
           ),
           '',
         ].join('\n')
