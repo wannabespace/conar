@@ -20,7 +20,7 @@ export const MSSQL_GENERATORS = {
         const tag =
           faker.hacker
             .noun()
-            .replace(XML_TAG_SANITIZE_REGEX, '')
+            .replaceAll(XML_TAG_SANITIZE_REGEX, '')
             .toLowerCase() || 'item'
         return `<${tag}>${faker.lorem.words({ max: 5, min: 2 })}</${tag}>`
       },
