@@ -38,12 +38,10 @@ export const CopyEndLabel = ({ connection, resource }: CopyEnd) => (
 )
 
 export const TargetSelect = ({
-  id,
   onTargetChange,
   source,
   target,
 }: {
-  id: string
   onTargetChange: (target: CopyEnd) => void
   source: CopyEnd
   target: CopyEnd | null
@@ -83,7 +81,7 @@ export const TargetSelect = ({
         }
       }}
     >
-      <SelectTrigger id={id} className="w-full">
+      <SelectTrigger aria-label="Copy to" className="w-full">
         <SelectValue placeholder="Choose a database">
           {target && <CopyEndLabel {...target} />}
         </SelectValue>

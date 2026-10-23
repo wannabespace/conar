@@ -105,7 +105,7 @@ export const TablesField = ({
       <FieldDescription>
         {selection === null
           ? 'Schemas, types, functions, views and data.'
-          : `${plural(selection.size, 'table')} with their data, indexes and constraints. Types and functions they use must already be in the target.`}
+          : `${plural(selection.size, 'table')} with data, indexes and constraints. Types and functions they use must already be in the target.`}
       </FieldDescription>
     </>
   )

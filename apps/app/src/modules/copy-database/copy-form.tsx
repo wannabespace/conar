@@ -54,9 +54,8 @@ export const CopyForm = ({
       >
         <FieldGroup size="sm">
           <Field>
-            <FieldLabel htmlFor="copy-database-target">To</FieldLabel>
+            <FieldLabel>To</FieldLabel>
             <TargetSelect
-              id="copy-database-target"
               source={source}
               target={target}
               onTargetChange={onTargetChange}

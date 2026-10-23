@@ -32,10 +32,10 @@ export const CopyProgress = ({
   target: CopyEnd
 }) => (
   <>
-    <CopyLog lines={lines} />
+    {(status === 'copying' || lines.length > 0) && <CopyLog lines={lines} />}
     {status === 'failed' && error && (
       <Alert variant="destructive">
-        <AlertTitle data-mask className="wrap-break-word">
+        <AlertTitle data-mask className="wrap-break-word whitespace-pre-line">
           {error.message}
         </AlertTitle>
         <AlertDescription>
@@ -54,12 +54,12 @@ export const CopyProgress = ({
           </>
         )}
         {status === 'copied' && (
-          <span className="min-w-0 truncate">
+          <span>
             Copied to <CopyEndLabel {...target} />
           </span>
         )}
         {status === 'stopped' && (
-          <span className="min-w-0 truncate">
+          <span>
             Stopped. <CopyEndLabel {...target} /> is unchanged.
           </span>
         )}
