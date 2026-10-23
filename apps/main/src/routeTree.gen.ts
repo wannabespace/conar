@@ -28,6 +28,8 @@ import { Route as AccountAiUsageRouteImport } from './modules/ai-usage/routes/ac
 import { Route as AccountBillingRouteImport } from './modules/billing/routes/account/billing'
 import { Route as DeepDotshareRouteImport } from './modules/deep-link/routes/deep.share'
 import { Route as DeepDotsignInRouteImport } from './modules/deep-link/routes/deep.sign-in'
+import { Route as LayoutBlogDotindexRouteImport } from './modules/blog/routes/_layout/blog.index'
+import { Route as LayoutBlogDotslugRouteImport } from './modules/blog/routes/_layout/blog.$slug'
 import { Route as AccountSettingsIndexRouteImport } from './modules/settings/routes/account/settings/index'
 
 const AuthRoute = AuthRouteImport.update({
@@ -123,6 +125,16 @@ const DeepDotsignInRoute = DeepDotsignInRouteImport.update({
   path: '/deep/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LayoutBlogDotindexRoute = LayoutBlogDotindexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutBlogDotslugRoute = LayoutBlogDotslugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const AccountSettingsIndexRoute = AccountSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -147,6 +159,8 @@ export interface FileRoutesByFullPath {
   '/deep/share': typeof DeepDotshareRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account/': typeof AccountIndexRoute
+  '/blog/$slug': typeof LayoutBlogDotslugRoute
+  '/blog/': typeof LayoutBlogDotindexRoute
   '/account/settings/': typeof AccountSettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -166,6 +180,8 @@ export interface FileRoutesByTo {
   '/deep/share': typeof DeepDotshareRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account': typeof AccountIndexRoute
+  '/blog/$slug': typeof LayoutBlogDotslugRoute
+  '/blog': typeof LayoutBlogDotindexRoute
   '/account/settings': typeof AccountSettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -189,6 +205,8 @@ export interface FileRoutesById {
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
+  '/_layout/blog/$slug': typeof LayoutBlogDotslugRoute
+  '/_layout/blog/': typeof LayoutBlogDotindexRoute
   '/account/settings/': typeof AccountSettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -211,6 +229,8 @@ export interface FileRouteTypes {
     | '/deep/share'
     | '/deep/sign-in'
     | '/account/'
+    | '/blog/$slug'
+    | '/blog/'
     | '/account/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -230,6 +250,8 @@ export interface FileRouteTypes {
     | '/deep/share'
     | '/deep/sign-in'
     | '/account'
+    | '/blog/$slug'
+    | '/blog'
     | '/account/settings'
   id:
     | '__root__'
@@ -252,6 +274,8 @@ export interface FileRouteTypes {
     | '/deep/sign-in'
     | '/_layout/'
     | '/account/'
+    | '/_layout/blog/$slug'
+    | '/_layout/blog/'
     | '/account/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -399,6 +423,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeepDotsignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_layout/blog/': {
+      id: '/_layout/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof LayoutBlogDotindexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/blog/$slug': {
+      id: '/_layout/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof LayoutBlogDotslugRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/account/settings/': {
       id: '/account/settings/'
       path: '/settings'
@@ -432,6 +470,8 @@ interface LayoutRouteChildren {
   LayoutReleasesRoute: typeof LayoutReleasesRoute
   LayoutTermsOfServiceRoute: typeof LayoutTermsOfServiceRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutBlogDotslugRoute: typeof LayoutBlogDotslugRoute
+  LayoutBlogDotindexRoute: typeof LayoutBlogDotindexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
@@ -441,6 +481,8 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutReleasesRoute: LayoutReleasesRoute,
   LayoutTermsOfServiceRoute: LayoutTermsOfServiceRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutBlogDotslugRoute: LayoutBlogDotslugRoute,
+  LayoutBlogDotindexRoute: LayoutBlogDotindexRoute,
 }
 
 const LayoutRouteWithChildren =

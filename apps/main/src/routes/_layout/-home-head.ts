@@ -1,3 +1,5 @@
+import type { FAQPage, WithContext } from 'schema-dts'
+
 import { SEO } from '~/constants'
 import { seo } from '~/utils/seo'
 
@@ -11,7 +13,7 @@ const faqStructuredData = {
     acceptedAnswer: { '@type': 'Answer', text: answer },
     name: question,
   })),
-}
+} satisfies WithContext<FAQPage>
 
 export const homeHead = () => ({
   ...seo({

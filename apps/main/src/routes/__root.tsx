@@ -14,6 +14,7 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { MotionConfig } from 'motion/react'
 import { useEffect } from 'react'
+import type { Graph } from 'schema-dts'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
@@ -61,7 +62,7 @@ const structuredData = {
       sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
   ],
-}
+} satisfies Graph
 
 const analyticsScripts = [
   {
