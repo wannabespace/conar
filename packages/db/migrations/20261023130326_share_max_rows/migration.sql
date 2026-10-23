@@ -1,0 +1,1 @@
+ALTER TABLE "shares" ADD COLUMN "max_rows" integer DEFAULT 10000 NOT NULL;

@@ -13,37 +13,11 @@ import {
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
 import { cn } from '@tamery/ui/lib/utils'
-import { Link, useNavigate } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 
-import { posthog } from '~/lib/posthog'
-import type { shareSearch } from '~/lib/share-rows'
-
-type ShareSearch = typeof shareSearch.infer
-
 const CURSOR_CLASS =
   'pointer-events-none absolute inset-0 group-focus-within/grid:inset-ring-3 group-focus-within/grid:inset-ring-ring/50'
-
-const nextSort = (
-  current: ShareSearch,
-  column: string,
-  ownerSort: ShareSearch
-): ShareSearch => {
-  if (current.sort === column && current.order === 'DESC' && !ownerSort.sort) {
-    return {}
-  }
-  const next = {
-    order:
-      current.sort === column && current.order === 'ASC'
-        ? ('DESC' as const)
-        : ('ASC' as const),
-    sort: column,
-  }
-  return next.sort === ownerSort.sort && next.order === ownerSort.order
-    ? {}
-    : next
-}
 
 export const ShareGrid = ({
   columns,
@@ -52,7 +26,6 @@ export const ShareGrid = ({
   onEndReached,
   orderBy,
   rows,
-  search,
 }: {
   columns: { id: string; kind: ColumnKind; type: string | null }[]
   footer: ReactNode
@@ -60,38 +33,15 @@ export const ShareGrid = ({
   onEndReached: () => void
   orderBy: Record<string, 'ASC' | 'DESC'>
   rows: GridRow[]
-  search: ShareSearch
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
   const kinds = new Map(columns.map(({ id, kind }) => [id, kind]))
   const gridColumns = columns.map((column) => ({
     id: column.id,
     size: getColumnSize(column.type),
   }))
-  const [ownerColumn, ownerDirection] = Object.entries(orderBy)[0] ?? []
-  const ownerSort: ShareSearch = ownerColumn
-    ? { order: ownerDirection, sort: ownerColumn }
-    : {}
-  const current: ShareSearch = search.sort
-    ? { order: search.order ?? 'ASC', sort: search.sort }
-    : ownerSort
-  const getSort = (column: string) => {
-    if (search.sort) {
-      return current.sort === column ? current.order : null
-    }
-    return orderBy[column] ?? null
-  }
-  const trackSort = (next: ShareSearch) => {
-    void posthog.capture('share_sorted', { order: next.order ?? 'default' })
-  }
   const { cursor, place, scrollToRef } = useGridNavigation({
     columns: gridColumns,
-    onActivateHeader: (column) => {
-      const next = nextSort(current, column, ownerSort)
-      trackSort(next)
-      void navigate({ search: next, to: '.' })
-    },
     rowCount: rows.length,
     scrollRef,
   })
@@ -110,8 +60,7 @@ export const ShareGrid = ({
         rows={rows}
         columns={gridColumns}
         renderHeader={({ column, style }) => {
-          const sorted = getSort(column.id)
-          const next = nextSort(current, column.id, ownerSort)
+          const sorted = orderBy[column.id] ?? null
           return (
             <div
               role="columnheader"
@@ -123,14 +72,7 @@ export const ShareGrid = ({
                 place(HEADER_ROW, gridColumns.indexOf(column))
               }
             >
-              <Link
-                to="."
-                search={next}
-                preload={false}
-                tabIndex={-1}
-                className="text-foreground flex min-w-0 flex-1 items-center gap-1.5"
-                onClick={() => trackSort(next)}
-              >
+              <span className="text-foreground flex min-w-0 flex-1 items-center gap-1.5">
                 <ColumnKindIcon kind={kinds.get(column.id) ?? 'text'} />
                 <span data-mask className="truncate text-xs font-medium">
                   {column.id}
@@ -142,7 +84,7 @@ export const ShareGrid = ({
                     className="text-primary ml-auto size-3 shrink-0"
                   />
                 )}
-              </Link>
+              </span>
               {isCursor(HEADER_ROW, column.id) && (
                 <span aria-hidden className={CURSOR_CLASS} />
               )}

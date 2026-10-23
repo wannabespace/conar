@@ -42,7 +42,13 @@ export const save = orpc
     }
 
     const changes = {
-      ...pick(input, ['description', 'expiresAt', 'name', 'refresh']),
+      ...pick(input, [
+        'description',
+        'expiresAt',
+        'maxRows',
+        'name',
+        'refresh',
+      ]),
       failingSince: null,
       view: pick(input, ['columnTypes', 'columns', 'filters', 'orderBy']),
       ...(password !== undefined && {
