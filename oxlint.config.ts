@@ -11,6 +11,7 @@ const callSiteClasses = [
   'motion',
   'opacity',
   'truncate',
+  'focus-ring',
   'no-scrollbar',
   'scroll-fade',
   'scroll-fade-x',
@@ -94,6 +95,18 @@ export default defineConfig({
             ],
             pattern:
               '^(CommandPrimitive|DropdownMenuTrigger$|ScrollArea$|TooltipTrigger$)',
+          },
+          // AppContextMenu wraps a complete content element in ContextMenuTrigger, a passthrough that owns no surface, so the element keeps its own effects too.
+          {
+            allow: [
+              ...callSiteClasses,
+              'color',
+              'effects',
+              'shape',
+              'spacing',
+              'typography',
+            ],
+            pattern: '^ContextMenuTrigger$',
           },
         ],
       },

@@ -43,7 +43,7 @@ export const RecentTables = () => {
           key={`${table.schema}:${table.table}`}
           variant="ghost"
           size="sm"
-          className="text-foreground justify-start"
+          className="justify-start"
           render={
             <Link
               to="/connection/$resourceId/$tabId"

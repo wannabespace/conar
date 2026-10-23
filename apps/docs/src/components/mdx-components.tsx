@@ -50,7 +50,7 @@ const Card = ({ href }: { href: string }) => {
 
   return (
     <Item
-      className="text-foreground group/card"
+      className="group/card"
       render={<DocsLink href={href} />}
       size="sm"
       variant="card"
