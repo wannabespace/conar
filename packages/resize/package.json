@@ -1,8 +1,8 @@
 {
-  "name": "@tamery/icons",
+  "name": "@tamery/resize",
   "private": true,
   "bin": {
-    "tamery-icons": "./src/cli.ts"
+    "resize-images": "./src/cli.ts"
   },
   "type": "module",
   "exports": {
