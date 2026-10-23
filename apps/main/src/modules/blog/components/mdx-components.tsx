@@ -3,8 +3,6 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { isValidElement } from 'react'
 
-import { ConnectionPlayground } from './connection-playground'
-
 const headingText = (children: ReactNode): string => {
   if (typeof children === 'string') {
     return children
@@ -25,7 +23,6 @@ const slug = (children: ReactNode) =>
     .replaceAll(/^-|-$/gu, '')
 
 export const mdxComponents = {
-  ConnectionPlayground,
   a: ({ href = '', children, ...props }: ComponentProps<'a'>) =>
     /^https?:/u.test(href) ? (
       <a href={href} rel="noopener noreferrer" target="_blank" {...props}>
@@ -39,7 +36,7 @@ export const mdxComponents = {
   code: ({ className, ...props }: ComponentProps<'code'>) => (
     <code
       className={cn(
-        'bg-foreground/5 rounded-md px-1 py-px font-mono',
+        'bg-foreground/5 rounded-md px-1 py-px font-mono text-sm',
         className
       )}
       data-mask
@@ -73,13 +70,16 @@ export const mdxComponents = {
   },
   table: (props: ComponentProps<'table'>) => (
     <div className="my-6 overflow-x-auto">
-      <table className="w-full border-collapse text-sm" {...props} />
+      <table
+        className="w-full border-collapse text-left text-sm [&_td:first-child]:whitespace-nowrap [&_th:first-child]:whitespace-nowrap"
+        {...props}
+      />
     </div>
   ),
   th: ({ className, ...props }: ComponentProps<'th'>) => (
     <th
       className={cn(
-        'border-border border-b px-3 py-2 text-left font-medium',
+        'text-muted-foreground border-border border-b px-4 py-2.5 font-medium',
         className
       )}
       {...props}
@@ -87,7 +87,10 @@ export const mdxComponents = {
   ),
   td: ({ className, ...props }: ComponentProps<'td'>) => (
     <td
-      className={cn('border-border/60 border-b px-3 py-2 align-top', className)}
+      className={cn(
+        'border-border/50 border-b px-4 py-2.5 align-top',
+        className
+      )}
       {...props}
     />
   ),

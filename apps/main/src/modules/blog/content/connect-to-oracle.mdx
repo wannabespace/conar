@@ -8,9 +8,11 @@ Choose **Oracle** under Engine, or paste:
 oracle://user:password@localhost:1521/FREEPDB1
 ```
 
-The path at the end is the **service name**, not a database name. The default port is **1521**. A JDBC thin URL works too, so you can paste what you already have, like the one below:
+The path at the end is the **service name**, not a database name. The default port is **1521**. A JDBC thin URL works too, so you can paste what you already have:
 
-<ConnectionPlayground engine="oracle" />
+```text
+jdbc:oracle:thin:@//localhost:1521/FREEPDB1
+```
 
 Oracle Database 12c or later is supported.
 
