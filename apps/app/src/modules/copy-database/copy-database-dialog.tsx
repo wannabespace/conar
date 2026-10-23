@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { useMutation } from '@tanstack/react-query'
-import { createRef, useImperativeHandle, useState } from 'react'
+import { createRef, useEffect, useImperativeHandle, useState } from 'react'
 import { v7 as uuidv7 } from 'uuid'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
@@ -15,6 +15,8 @@ import { refreshCatalog } from '~/core/connection/refresh-after-run'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 
 import { CopyForm } from './copy-form'
+import type { CopyLogLine } from './copy-log'
+import { appendCopyLog, parseCopyLogLine, toFailureEntries } from './copy-log'
 import type { CopyStatus } from './copy-progress'
 import { CopyProgress } from './copy-progress'
 import type { TableSelection } from './tables-field'
@@ -62,23 +64,34 @@ export const CopyDatabaseDialog = () => {
   const [source, setSource] = useState<CopyEnd | null>(null)
   const [target, setTarget] = useState<CopyEnd | null>(null)
   const [selection, setSelection] = useState<TableSelection>(null)
-  const [lines, setLines] = useState<string[]>([])
+  const [entries, setEntries] = useState<CopyLogLine[]>([])
 
   const copy = useMutation({
     meta: { event: 'database_copied' },
-    mutationFn: (run: CopyRun) => {
-      const unsubscribe = window.electron?.copyDatabase.onLog(
-        ({ copyId, line }) => {
-          if (copyId === run.id) {
-            setLines((previous) => [...previous, line])
-          }
-        }
-      )
-      return startCopy(run).finally(() => unsubscribe?.())
+    mutationFn: startCopy,
+    onError: (error, run) => {
+      if (!run.stop.signal.aborted) {
+        setEntries((previous) =>
+          appendCopyLog(previous, toFailureEntries(error))
+        )
+      }
     },
-    onMutate: () => setLines([]),
+    onMutate: () => setEntries([]),
     onSuccess: (_, run) => refreshCatalog(run.target.resource),
   })
+
+  const runId = copy.variables?.id
+  // Electron delivers a run's last lines after its result, so the log listens for as long as the run is shown, not until it settles.
+  useEffect(
+    () =>
+      window.electron?.copyDatabase.onLog(({ copyId, line }) => {
+        const entry = copyId === runId && parseCopyLogLine(line)
+        if (entry) {
+          setEntries((previous) => appendCopyLog(previous, [entry]))
+        }
+      }),
+    [runId]
+  )
 
   useImperativeHandle(copyDatabaseDialogRef, () => ({
     open: (next) => {
@@ -116,22 +129,23 @@ export const CopyDatabaseDialog = () => {
           <DialogHeader>
             <DialogTitle>Copy database</DialogTitle>
             <DialogDescription>
-              <CopyEndLabel {...source} />
-              {copy.variables && (
-                <>
-                  {' to '}
-                  <CopyEndLabel {...copy.variables.target} />
-                </>
-              )}
+              <span className="text-foreground grid grid-cols-[auto_1fr] gap-x-2">
+                <span className="text-muted-foreground">From</span>
+                <CopyEndLabel {...source} />
+                {copy.variables && (
+                  <>
+                    <span className="text-muted-foreground">To</span>
+                    <CopyEndLabel {...copy.variables.target} />
+                  </>
+                )}
+              </span>
             </DialogDescription>
           </DialogHeader>
           {copy.variables ? (
             <CopyProgress
-              error={copy.error}
-              lines={lines}
+              entries={entries}
               since={copy.submittedAt}
               status={status}
-              target={copy.variables.target}
               onBack={() => copy.reset()}
               onStop={stop}
             />

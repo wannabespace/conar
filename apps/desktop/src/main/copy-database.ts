@@ -109,18 +109,6 @@ const openEndpoint = async (connectionString: string) => {
 const toolPath = (tool: Tool) =>
   existsSync(BUNDLED_TOOLS) ? path.join(BUNDLED_TOOLS, tool) : tool
 
-const PG_DUMP_PREFIX = 'pg_dump: '
-const PG_DUMP_SHOWN = /^(?:creating|dumping contents|error|warning)\b/u
-const SERVER_LABEL = /^(?:ERROR|DETAIL):\s+/u
-
-const toLogLine = (line: string) => {
-  if (line.startsWith(PG_DUMP_PREFIX)) {
-    const step = line.slice(PG_DUMP_PREFIX.length)
-    return PG_DUMP_SHOWN.test(step) ? step : null
-  }
-  return /^(?:HINT|NOTICE):/u.test(line) ? null : line
-}
-
 const watchTool = async (
   tool: Tool,
   child: ChildProcess & { stderr: Readable },
@@ -129,14 +117,11 @@ const watchTool = async (
   let lastError: string | null = null
   createInterface({ input: child.stderr }).on('line', (line) => {
     if (/error:/iu.test(line)) {
-      lastError = line.replace(SERVER_LABEL, '')
+      lastError = line
     } else if (lastError && line.startsWith('DETAIL:')) {
-      lastError = `${lastError}\n${line.replace(SERVER_LABEL, '')}`
+      lastError = `${lastError}\n${line}`
     }
-    const shown = toLogLine(line)
-    if (shown !== null) {
-      log(shown)
-    }
+    log(line)
   })
   const closed = await Result.tryPromise(() => once(child, 'close'))
   if (closed.isErr()) {

@@ -1,47 +1,29 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
 import { DialogClose, DialogFooter } from '@tamery/ui/components/dialog'
 import { Spinner } from '@tamery/ui/components/spinner'
 
+import type { CopyLogLine } from './copy-log'
 import { CopyLog } from './copy-log'
-import type { CopyEnd } from './target-select'
-import { CopyEndLabel } from './target-select'
 
 export type CopyStatus = 'copying' | 'copied' | 'stopped' | 'failed'
 
 export const CopyProgress = ({
-  error,
-  lines,
+  entries,
   onBack,
   onStop,
   since,
   status,
-  target,
 }: {
-  error: Error | null
-  lines: string[]
+  entries: CopyLogLine[]
   onBack: () => void
   onStop: () => void
   since: number
   status: CopyStatus
-  target: CopyEnd
 }) => (
   <>
-    {(status === 'copying' || lines.length > 0) && <CopyLog lines={lines} />}
-    {status === 'failed' && error && (
-      <Alert variant="destructive">
-        <AlertTitle data-mask className="wrap-break-word whitespace-pre-line">
-          {error.message}
-        </AlertTitle>
-        <AlertDescription>
-          Nothing changed in <CopyEndLabel {...target} />.
-        </AlertDescription>
-      </Alert>
+    {(status === 'copying' || entries.length > 0) && (
+      <CopyLog entries={entries} />
     )}
     <DialogFooter>
       <p className="text-muted-foreground mr-auto flex min-w-0 items-center gap-2 self-center">
@@ -53,16 +35,9 @@ export const CopyProgress = ({
             </span>
           </>
         )}
-        {status === 'copied' && (
-          <span>
-            Copied to <CopyEndLabel {...target} />
-          </span>
-        )}
-        {status === 'stopped' && (
-          <span>
-            Stopped. <CopyEndLabel {...target} /> is unchanged.
-          </span>
-        )}
+        {status === 'copied' && <span>Copied</span>}
+        {status === 'stopped' && <span>Stopped. Nothing changed.</span>}
+        {status === 'failed' && <span>Failed. Nothing changed.</span>}
       </p>
       {status === 'copying' ? (
         <Button variant="outline" onClick={onStop}>
