@@ -164,6 +164,7 @@ catalog:
   fumadocs-mdx: ^15.4.9
   '@types/ini': ^4.1.1
   '@types/mdx': ^2.0.14
+  sharp: ^0.35.5
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false
