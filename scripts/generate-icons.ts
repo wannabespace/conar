@@ -11,6 +11,9 @@ const VARIANTS = ['cyan', 'dark-cyan', 'dark-white']
 const APP_VARIANT = 'cyan'
 const SOURCE_PREFIX = 'tamery-avatar-'
 const CANVAS = 1024
+const SOURCE_MARK_WIDTH = 616
+const ICON_MARK_WIDTH = 754
+const MASKABLE_MARK_WIDTH = 702
 const ICO_SIZES = [16, 32, 48]
 const ICO_HEADER_SIZE = 6
 const ICO_ENTRY_SIZE = 16
@@ -30,7 +33,7 @@ const readSource = (variant: string) => {
     .toSorted((a, b) => b.size - a.size)
     .at(0)
   if (!sourceDir || !largest) {
-    return readFile(path.join(ROOT, BRAND, variant, 'icon.png'))
+    return readFile(path.join(ROOT, BRAND, variant, 'source.png'))
   }
   return sharp(path.join(sourceDir, largest.file))
     .resize(CANVAS, CANVAS)
@@ -62,7 +65,20 @@ const toIco = async (icon: Buffer) => {
   return Buffer.concat([header, ...images.map(({ png }) => png)])
 }
 
-const getIcons = async (fullBleed: Buffer) => {
+const zoomToMark = (source: Buffer, markWidth: number) => {
+  const crop = (CANVAS * SOURCE_MARK_WIDTH) / markWidth
+  const inset = Math.round((CANVAS - crop) / 2)
+  const size = CANVAS - 2 * inset
+  return sharp(source)
+    .extract({ height: size, left: inset, top: inset, width: size })
+    .resize(CANVAS, CANVAS)
+    .png({ compressionLevel: 9 })
+    .toBuffer()
+}
+
+const getIcons = async (source: Buffer) => {
+  const fullBleed = await zoomToMark(source, ICON_MARK_WIDTH)
+  const maskable = await zoomToMark(source, MASKABLE_MARK_WIDTH)
   const roundedTile = await sharp(fullBleed)
     .composite([
       {
@@ -84,6 +100,7 @@ const getIcons = async (fullBleed: Buffer) => {
       'icon-rounded.png': roundedTile,
       'icon.png': fullBleed,
       'logo.png': await toPng(roundedTile, 512),
+      'source.png': source,
     },
     web: {
       'apple-touch-icon.png': await toPng(fullBleed, 180),
@@ -91,8 +108,8 @@ const getIcons = async (fullBleed: Buffer) => {
       'favicon.ico': await toIco(roundedTile),
       'web-app-manifest-192x192.png': await toPng(roundedTile, 192),
       'web-app-manifest-512x512.png': await toPng(roundedTile, 512),
-      'web-app-manifest-maskable-192x192.png': await toPng(fullBleed, 192),
-      'web-app-manifest-maskable-512x512.png': await toPng(fullBleed, 512),
+      'web-app-manifest-maskable-192x192.png': await toPng(maskable, 192),
+      'web-app-manifest-maskable-512x512.png': await toPng(maskable, 512),
     },
   }
 }
