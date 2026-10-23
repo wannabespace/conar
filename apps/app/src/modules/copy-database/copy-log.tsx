@@ -5,8 +5,8 @@ export const CopyLog = ({ lines }: { lines: string[] }) => {
   const { contentRef, scrollRef } = useStickToBottom({ initial: 'instant' })
 
   return (
-    <div className="bg-card overflow-hidden rounded-xl border">
-      <ScrollArea ref={scrollRef} className="h-72">
+    <div className="bg-popover ring-foreground/4 overflow-hidden rounded-xl ring">
+      <ScrollArea ref={scrollRef} className="h-52">
         <div
           ref={contentRef}
           data-mask

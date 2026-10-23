@@ -63,7 +63,7 @@ export const TablesField = ({
 
   return (
     <>
-      <div className="bg-card overflow-hidden rounded-xl border">
+      <div className="bg-popover ring-foreground/4 overflow-hidden rounded-xl ring">
         <Command variant="flat" label="Tables">
           <CommandInput variant="flat" placeholder="Search tables" />
           <CommandList>
