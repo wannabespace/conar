@@ -67,10 +67,10 @@ const ColumnItem = ({
       render={
         // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
         <li
-          className={cn(
-            rowClass,
-            column.state && draftStateClass[column.state]
-          )}
+          className={
+            // oxlint-disable-next-line shadcn/require-static-classes -- per-row and draft-state classes on the content element AppContextMenu wraps
+            cn(rowClass, column.state && draftStateClass[column.state])
+          }
           onMouseEnter={() => hoverRelation(relationIds)}
           onMouseLeave={() => hoverRelation([])}
         />

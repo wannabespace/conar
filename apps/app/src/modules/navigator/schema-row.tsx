@@ -85,6 +85,7 @@ export const SchemaRow = ({
             onClick={onToggle}
           />
         }
+        // oxlint-disable-next-line shadcn/no-restyle -- page-specific: the Navigator renders the schema label as an interactive toggle row
         className="group hover:bg-foreground/5 text-foreground/70 h-full w-full gap-1 px-1.5"
       >
         <HugeiconsIcon
