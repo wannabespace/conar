@@ -336,7 +336,7 @@ export const ShareLinkForm = ({
           </form.Subscribe>
         )}
         <p className="text-muted-foreground text-xs">
-          {`Anyone with the link sees the ${plural(view.columns.length, 'column')} the table shows, in its order. Tamery’s servers read the rows from your database each time the link refreshes; viewers can sort and scroll, never edit.`}
+          {`Anyone with the link sees the ${plural(view.columns.length, 'column')} the table shows, in its order. Tamery’s servers read the rows from your database each time the link refreshes; viewers can scroll and open any cell to read it, never sort or edit.`}
         </p>
         {save.error && (
           <Alert variant="error">
