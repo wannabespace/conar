@@ -7,7 +7,6 @@ import type { MongoCall } from '@tamery/mongo/parse'
 import { getEffect, parseScript } from '@tamery/mongo/parse'
 import type { Expression } from 'acorn'
 import type {
-  AbstractCursor,
   AggregationCursor,
   AnyBulkWriteOperation,
   ClientSession,
@@ -356,7 +355,7 @@ const rowsOf = (docs: Document[], maxRows: number): ResultSet => {
 }
 
 /** Keeps one document past `maxRows`, then closes the cursor: a read stops there without side effects. */
-const readCursor = async (cursor: AbstractCursor, maxRows: number) => {
+const readCursor = async (cursor: QueryCursor, maxRows: number) => {
   const docs: Document[] = []
   for await (const doc of cursor) {
     docs.push(doc)
