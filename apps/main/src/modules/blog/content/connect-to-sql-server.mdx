@@ -1,4 +1,4 @@
-Connecting to Microsoft SQL Server from a modern machine is mostly a question of the right string and the right auth mode. Here is how to do it in Tamery, including the two things people get stuck on: trusted connections and the `sa` account.
+Connecting to SQL Server comes down to the right string and the right auth mode. Two things catch people out: trusted connections, which do not leave Windows, and the `sa` account.
 
 ## The SQL Server connection string
 
@@ -56,4 +56,4 @@ Yes. Use your Azure server name and database, and allow your IP (or the cloud pr
 
 ---
 
-[Download Tamery](/download), paste the connection string your app already uses, and you are in. The full reference, including the local proxy for localhost on the web, is in the [SQL Server docs](https://docs.tamery.app/connections/mssql).
+[Download Tamery](/download) and paste the connection string your app already uses. The full reference, including the local proxy for localhost on the web, is in the [SQL Server docs](https://docs.tamery.app/connections/mssql).

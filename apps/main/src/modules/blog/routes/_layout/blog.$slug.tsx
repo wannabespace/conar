@@ -6,7 +6,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { format, parseISO } from 'date-fns'
 
-import { seo } from '~/utils/seo'
+import { seo, SITE_URL } from '~/utils/seo'
 
 import { postBodies } from '../../bodies'
 import { mdxComponents } from '../../components/mdx-components'
@@ -68,11 +68,54 @@ export const Route = createFileRoute('/_layout/blog/$slug')({
     if (!post) {
       return {}
     }
-    return seo({
-      title: `${post.title} - Tamery`,
-      description: post.description,
-      image: '/og-image.png',
-      path: `/blog/${post.slug}`,
-    })
+    const pageUrl = `${SITE_URL}/blog/${post.slug}`
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'TechArticle',
+          headline: post.title,
+          description: post.description,
+          datePublished: post.publishedAt,
+          dateModified: post.publishedAt,
+          author: { '@type': 'Person', name: BLOG_AUTHOR },
+          publisher: { '@id': `${SITE_URL}/#org` },
+          image: `${SITE_URL}/og-image.png`,
+          mainEntityOfPage: pageUrl,
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Blog',
+              item: `${SITE_URL}/blog`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: post.title,
+              item: pageUrl,
+            },
+          ],
+        },
+      ],
+    }
+    return {
+      ...seo({
+        title: `${post.title} - Tamery`,
+        description: post.description,
+        image: '/og-image.png',
+        path: `/blog/${post.slug}`,
+        article: { publishedTime: post.publishedAt, author: BLOG_AUTHOR },
+      }),
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify(structuredData),
+        },
+      ],
+    }
   },
 })

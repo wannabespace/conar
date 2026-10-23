@@ -1,4 +1,4 @@
-Most PostgreSQL connection problems are not really connection problems. They are a pooled address that breaks transactions, a placeholder password that never got replaced, or an SSL mode that does not match the server. Here is how to connect in Tamery and skip all three.
+Three things break a PostgreSQL connection far more often than a wrong password: a pooled address that cannot hold a transaction, an unreplaced `[YOUR-PASSWORD]` placeholder, and an SSL mode the server does not accept. Tamery handles all three for you.
 
 ## The PostgreSQL connection string
 
