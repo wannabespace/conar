@@ -11,6 +11,7 @@ import { useSubscription } from 'seitu/react'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import { rowIdentity } from '~/core/queries/rows/shape'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { DataGrid } from '~/core/table/data-grid'
 import { isSaving, useTableSessionStore } from '~/core/table/session'
@@ -124,8 +125,8 @@ export const Table = ({
     { columnOrder, hiddenColumns, pinnedColumns },
     view === 'grid'
   )
-  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
-  const isEditable = primaryColumns.length > 0
+  const identityColumns = rowIdentity(columns, dialect).columns
+  const isEditable = identityColumns.length > 0
   const canWriteRows = isEditable && !!isBaseTable
   const staged = useStagedEdits({
     columns,
@@ -141,8 +142,8 @@ export const Table = ({
     columnLabels
   )
 
-  useSyncSelectionWithRows(rows, primaryColumns)
-  useFlashChangedCells(rows, primaryColumns)
+  useSyncSelectionWithRows(rows, identityColumns)
+  useFlashChangedCells(rows, identityColumns)
   useStagedHistoryHotkeys(
     stagedHistory({ id: connectionResource.id, schema, table })
   )
@@ -184,6 +185,8 @@ export const Table = ({
         bar={tableBar({
           canDelete: !!isBaseTable && hasSelection,
           hasChanges,
+          keys: identityColumns,
+          rows,
           schema,
           table,
         })}
@@ -198,7 +201,7 @@ export const Table = ({
                 sessionStore.set((state) =>
                   rowSelection.extend(state, {
                     direction,
-                    keysInRange: keysInRange(rows, primaryColumns),
+                    keysInRange: keysInRange(rows, identityColumns),
                     rowCount: rows.length,
                   })
                 )
@@ -277,7 +280,7 @@ export const Table = ({
           isEditable
             ? selectColumn({
                 entryAt: staged.rowAt,
-                keys: primaryColumns,
+                keys: identityColumns,
                 rows,
               })
             : undefined

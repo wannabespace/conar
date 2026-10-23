@@ -23,6 +23,7 @@ export type FormMode =
 type Secret = SecretParam | 'password'
 
 const SECRETS: Record<Secret, { field: string; message: string }> = {
+  access_token: { field: 'options', message: 'Enter the access token' },
   password: { field: 'password', message: 'Enter the password' },
   ssh_key: { field: 'ssh.privateKey', message: 'Paste the SSH private key' },
   ssh_passphrase: {

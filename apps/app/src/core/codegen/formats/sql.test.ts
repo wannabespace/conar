@@ -73,6 +73,28 @@ const typeScriptFor = (dialect: Dialect, types: string[]) =>
   })
 
 describe('generators (postgres)', () => {
+  it('quotes an enum type name a hostile database chose', () => {
+    const name = 'x" AS ENUM (\'a\'); DROP TABLE users; CREATE TYPE "y'
+    const sql = generateSchemaSQL({
+      columns: [
+        {
+          availableValues: ['a'],
+          enumName: name,
+          id: 'status',
+          isNullable: true,
+          type: 'USER-DEFINED',
+          uiType: 'select',
+        },
+      ],
+      defaultSchema: 'public',
+      dialect: Dialect.Postgres,
+      schema: 'public',
+      table: 'jobs',
+    })
+    expect(sql).toContain(`CREATE TYPE "${name.replaceAll('"', '""')}" AS ENUM`)
+    expect(sql).not.toContain('"x" AS ENUM')
+  })
+
   it('qualifies schema, keeps identity, resolves FK schema', () => {
     const sql = generateSchemaSQL({
       columns,

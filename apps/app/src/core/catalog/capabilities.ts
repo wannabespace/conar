@@ -87,6 +87,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
+    uniqueKeys: false,
   },
   [Dialect.MongoDB]: {
     alterColumns: false,
@@ -127,6 +128,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
+    uniqueKeys: true,
   },
   [Dialect.MSSQL]: {
     alterColumns: true,
@@ -184,6 +186,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: ['AFTER', 'INSTEAD OF'],
       toggle: true,
     },
+    uniqueKeys: true,
   },
   [Dialect.MySQL]: {
     alterColumns: true,
@@ -241,6 +244,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: ['BEFORE', 'AFTER'],
       toggle: false,
     },
+    uniqueKeys: true,
   },
   [Dialect.Oracle]: {
     alterColumns: true,
@@ -293,6 +297,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: true,
     },
+    uniqueKeys: true,
   },
   [Dialect.Postgres]: {
     alterColumns: true,
@@ -352,6 +357,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: true,
     },
+    uniqueKeys: true,
   },
   [Dialect.SQLite]: {
     alterColumns: false,
@@ -400,6 +406,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: false,
     },
+    uniqueKeys: true,
   },
 }
 

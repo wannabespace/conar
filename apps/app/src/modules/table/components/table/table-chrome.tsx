@@ -92,18 +92,22 @@ export const addColumnColumn = (onAddColumn?: () => void): ExtraColumn => ({
 export const tableBar = ({
   canDelete,
   hasChanges,
+  keys,
+  rows,
   schema,
   table,
 }: {
   canDelete: boolean
   hasChanges: boolean
+  keys: string[]
+  rows: GridRow[]
   schema: string
   table: string
 }): GridBarItem[] => [
   ...(canDelete
     ? [
         {
-          content: <ActionsDelete />,
+          content: <ActionsDelete keys={keys} rows={rows} />,
           id: 'delete',
         },
       ]

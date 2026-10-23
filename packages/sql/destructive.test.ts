@@ -211,6 +211,19 @@ describe('readsOnly', () => {
     expect(readsOnly('SHOW DELETE FROM t', mysql)).toBe(false)
   })
 
+  it('rejects writes hidden by text the engine does not read as a quote or comment', () => {
+    for (const glue of ['€', '²', ' ']) {
+      expect(
+        readsOnly(
+          `SELECT 1 ${glue}$a$; COMMIT; DELETE FROM users; SELECT $a$`,
+          pg
+        )
+      ).toBe(false)
+    }
+    expect(readsOnly("SELECT 1--1 INTO OUTFILE '/tmp/x'", mysql)).toBe(false)
+    expect(readsOnly('SELECT 1 -- note', mysql)).toBe(true)
+  })
+
   it('rejects a SQL Server batch that opens with a procedure call', () => {
     for (const text of [
       'EXPLAIN 1 DELETE FROM t COMMIT',

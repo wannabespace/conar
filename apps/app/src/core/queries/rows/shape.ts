@@ -9,6 +9,8 @@ import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import type { Column } from '~/core/table/cell/utils'
+import { isComparableColumn } from '~/core/table/cell/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
 type Eb = ExpressionBuilder<any, any>
@@ -142,7 +144,7 @@ export const matchesPrimaryKeys = (
 ) =>
   eb.and(
     Object.entries(bindRow(bind, columns, primaryKeys)).map(([id, value]) =>
-      eb(id, '=', value)
+      value === null ? eb(id, 'is', null) : eb(id, '=', value)
     )
   )
 
@@ -177,6 +179,36 @@ export const mongodbMatch = (
 export const mongodbTextContains = (column: string, term: string) => ({
   [column]: { $options: 'i', $regex: likeToRegex(`%${term}%`) },
 })
+
+type IdentityColumn = Pick<
+  Column,
+  'id' | 'isArray' | 'isNullable' | 'primaryKey' | 'type' | 'unique'
+>
+
+/**
+ * The columns a write finds a row by: its primary key where keys are unique, else a unique key with no nullable column, else every column `=` can compare.
+ * `unique: false` means the match can reach identical rows too, so writes count first.
+ */
+export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
+  const primary = columns.filter((column) => column.primaryKey)
+  if (primary.length > 0 && getCapabilities(dialect).uniqueKeys) {
+    return { columns: primary.map((column) => column.id), unique: true }
+  }
+  const uniqueKey = Object.values(
+    Object.groupBy(columns, (column) => column.unique ?? '')
+  ).find(
+    (group) => group?.[0]?.unique && group.every((column) => !column.isNullable)
+  )
+  if (uniqueKey) {
+    return { columns: uniqueKey.map((column) => column.id), unique: true }
+  }
+  return {
+    columns: columns
+      .filter((column) => isComparableColumn(dialect, column))
+      .map((column) => column.id),
+    unique: false,
+  }
+}
 
 // SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
 const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {

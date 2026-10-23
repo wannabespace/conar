@@ -1,5 +1,6 @@
 import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
 import { filterValueBindings } from '@tamery/connection/queries/value-binding'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { queryOptions } from '@tanstack/react-query'
@@ -15,7 +16,15 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import { mongodbMatch } from './shape'
+import type { BindValue } from './shape'
+import {
+  bindValue,
+  clickhouseWrite,
+  matchesPrimaryKeys,
+  mongodbDocument,
+  mongodbMatch,
+  rowsPerStatement,
+} from './shape'
 
 interface CountTarget {
   filters: ActiveFilter[]
@@ -221,4 +230,69 @@ export const resourceTableTotalQueryOptions = ({
       },
     ],
     throwOnError: false,
+  })
+
+interface KeyedRowsTarget {
+  columns: ColumnTypes
+  primaryKeys: Record<string, unknown>[]
+  schema: string
+  table: string
+}
+
+const countKeyedRows = async (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  bind: BindValue,
+  dialect: Dialect,
+  { columns, primaryKeys, schema, table }: KeyedRowsTarget
+) => {
+  const batchSize = rowsPerStatement(
+    dialect,
+    Object.keys(primaryKeys[0] ?? {}).length
+  )
+  let total = 0
+  for (let index = 0; index < primaryKeys.length; index += batchSize) {
+    // oxlint-disable-next-line no-await-in-loop
+    const batch = await db
+      .withSchema(schema)
+      .$extendTables<Record<string, Record<string, unknown>>>()
+      .selectFrom(table)
+      .select(db.fn.countAll().as('total'))
+      .where((eb) =>
+        eb.or(
+          primaryKeys
+            .slice(index, index + batchSize)
+            .map((pk) => matchesPrimaryKeys(eb, bind, columns, pk))
+        )
+      )
+      .executeTakeFirst()
+    total += Number(batch?.total ?? 0)
+  }
+  return total
+}
+
+/** How many rows a write by these keys touches: more than the keys when they are not unique, as ClickHouse's are not. */
+export const keyedRowsCountQuery = (target: KeyedRowsTarget) =>
+  createQuery({
+    query: {
+      clickhouse: (db) =>
+        clickhouseWrite((bind) =>
+          countKeyedRows(db, bind, Dialect.ClickHouse, target)
+        ),
+      mongodb: (db) =>
+        db.collection(target.table).countDocuments({
+          $or: target.primaryKeys.map((pk) =>
+            mongodbDocument(target.columns, pk)
+          ),
+        }),
+      mssql: (db) => countKeyedRows(db, bindValue.mssql, Dialect.MSSQL, target),
+      mysql: (db) => countKeyedRows(db, bindValue.mysql, Dialect.MySQL, target),
+      oracle: (db) =>
+        countKeyedRows(db, bindValue.oracle, Dialect.Oracle, target),
+      postgres: (db) =>
+        countKeyedRows(db, bindValue.postgres, Dialect.Postgres, target),
+      sqlite: (db) =>
+        countKeyedRows(db, bindValue.sqlite, Dialect.SQLite, target),
+    },
+    type: type('number'),
   })

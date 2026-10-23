@@ -293,6 +293,8 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: env.GOOGLE_CLIENT_SECRET ?? '',
+      // An ID token signs in without the OAuth callback, which is where the TOTP challenge hooks in.
+      disableIdTokenSignIn: true,
       enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
       prompt: 'select_account',
     },

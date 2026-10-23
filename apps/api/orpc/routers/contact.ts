@@ -21,7 +21,7 @@ export const contact = orpc
     const { data, error } = await resend.batch.send([
       {
         from: `Tamery <${CONTACT_EMAIL}>`,
-        html: `<p>From: ${context.user.email}</p><p>Message:<br>${input.message}</p>`,
+        html: `<p>From: ${Bun.escapeHTML(context.user.email)}</p><p>Message:<br>${Bun.escapeHTML(input.message).replaceAll('\n', '<br>')}</p>`,
         subject: `Contact request from ${context.user.email}`,
         to: CONTACT_EMAIL,
       },
