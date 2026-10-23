@@ -1,4 +1,3 @@
-/* oxlint-disable no-console */
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -8,9 +7,7 @@ import type { Sharp } from 'sharp'
 type IcoSize = 16 | 24 | 32 | 48 | 64 | 128 | 256
 
 interface Transform {
-  /** `round` cuts the corners with a 22% radius, `squircle` with the macOS continuous curve. */
   corners?: 'round' | 'squircle'
-  /** Crops the edges and scales the rest up; `1.2` makes the content 20% larger. */
   zoom?: number
 }
 
