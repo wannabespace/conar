@@ -38,6 +38,8 @@ const NO_ESCAPES = { backslash: false, doubled: false }
 const WORD_START = /[\p{L}_]/u
 const WORD = /[\p{L}\p{N}_$]/u
 const DIGIT = /\d/u
+const NON_ASCII = /[^\0-\u007F]/u
+const DASH_COMMENT_GAP = /[\s\p{Cc}]/u
 const DOLLAR_TAG = /\$(?<tag>[A-Za-z_]\w*)?\$/uy
 const STRING_OPENER = /[BENXbenx]?'|"/uy
 const ALTERNATIVE_QUOTE_OPENER = /[Nn]?[Qq]'\S/uy
@@ -57,9 +59,15 @@ const stickyMatch = (regex: RegExp, text: string, at: number) => {
   return regex.exec(text)?.[0]
 }
 
-const wordEnd = (text: string, from: number) => {
+const nonAsciiName = (char: string, dialect: DialectSpec) =>
+  dialect.nonAsciiNames && NON_ASCII.test(char)
+
+const wordEnd = (text: string, from: number, dialect: DialectSpec) => {
   let end = from
-  while (end < text.length && WORD.test(text[end] ?? '')) {
+  while (
+    end < text.length &&
+    (WORD.test(text[end] ?? '') || nonAsciiName(text[end] ?? '', dialect))
+  ) {
     end += 1
   }
   return end
@@ -168,6 +176,12 @@ const wordKind = (
   return 'identifier'
 }
 
+const startsLineComment = (text: string, index: number, dialect: DialectSpec) =>
+  (text.startsWith('--', index) &&
+    (!dialect.spacedDashComments ||
+      DASH_COMMENT_GAP.test(text[index + 2] ?? ' '))) ||
+  (dialect.hashComments && text[index] === '#' && text[index + 1] !== '>')
+
 const tokenAt = (
   text: string,
   index: number,
@@ -176,10 +190,7 @@ const tokenAt = (
   const char = text[index] ?? ''
   const next = text[index + 1] ?? ''
 
-  if (
-    text.startsWith('--', index) ||
-    (dialect.hashComments && char === '#' && next !== '>')
-  ) {
+  if (startsLineComment(text, index, dialect)) {
     const newline = text.indexOf('\n', index)
     return { end: newline === -1 ? text.length : newline, kind: 'comment' }
   }
@@ -187,7 +198,7 @@ const tokenAt = (
     (dialect.atVariables && char === '@' && WORD.test(next)) ||
     (char === '$' && DIGIT.test(next))
   ) {
-    return { end: wordEnd(text, index + 1), kind: 'variable' }
+    return { end: wordEnd(text, index + 1, dialect), kind: 'variable' }
   }
   if (DIGIT.test(char) || (char === '.' && DIGIT.test(next))) {
     const match = stickyMatch(NUMBER, text, index)
@@ -195,8 +206,8 @@ const tokenAt = (
       return { end: index + match.length, kind: 'number' }
     }
   }
-  if (WORD_START.test(char)) {
-    const end = wordEnd(text, index + 1)
+  if (WORD_START.test(char) || nonAsciiName(char, dialect)) {
+    const end = wordEnd(text, index + 1, dialect)
     return { end, kind: wordKind(text, index, end, dialect) }
   }
   const operator = OPERATORS.find((candidate) =>
@@ -257,7 +268,8 @@ export const tokenize = (
       pushEnclosed(state, index, index)
       continue
     }
-    if (/\s/u.test(text[index] ?? '')) {
+    const char = text[index] ?? ''
+    if (/\s/u.test(char) && !nonAsciiName(char, dialect)) {
       index += 1
       continue
     }

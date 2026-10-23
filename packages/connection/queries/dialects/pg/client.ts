@@ -60,6 +60,8 @@ export const getPool = memoize(async (connectionString: string) => {
     ...(tunnel && { stream: tunnel.socket }),
     connectionTimeoutMillis: 30_000,
     max: 1,
+    // A database can default this off, making `\'` close a string: `readsOnly`, the tokenizer and Kysely's `sql.lit` all assume it is on.
+    options: '-c standard_conforming_strings=on',
     ssl:
       typeof ssl === 'object' ? readSSLFiles(ssl) : (ssl ?? defaultSSLConfig),
   }

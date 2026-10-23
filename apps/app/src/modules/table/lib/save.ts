@@ -1,12 +1,18 @@
 import { toError } from '@tamery/shared/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
+import { Result } from 'better-result'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { insertQuery } from '~/core/queries/rows/insert'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { setQuery } from '~/core/queries/rows/set'
-import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
+import { rowIdentity } from '~/core/queries/rows/shape'
+import {
+  keyedRowsCountQuery,
+  resourceTableTotalQueryKey,
+} from '~/core/queries/rows/total'
 import {
   connectionResourceToQueryParams,
   transaction,
@@ -74,9 +80,15 @@ export const useSaveStaged = ({
   schema: string
   table: string
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const sessionStore = useTableSessionStore()
   const { columns } = useTableColumnsContext()
+  const [isCounting, setIsCounting] = useState(false)
+  const [sharedKeys, setSharedKeys] = useState<{
+    edited: number
+    matched: number
+    submitted: Submitted
+  } | null>(null)
   const history = stagedHistory({ id: connectionResource.id, schema, table })
   const status = stagedActions(sessionStore)
 
@@ -146,16 +158,58 @@ export const useSaveStaged = ({
     },
   })
 
+  const submit = async (submitted: Submitted) => {
+    const keys = Array.from(
+      getUpdates(submitted.drafts),
+      ({ primaryKeys }) => primaryKeys
+    )
+    if (rowIdentity(columns, dialect).unique || keys.length === 0) {
+      mutation.mutate(submitted)
+      return
+    }
+    setIsCounting(true)
+    const matched = await Result.tryPromise(async () =>
+      keyedRowsCountQuery({ columns, primaryKeys: keys, schema, table }).run(
+        await connectionResourceToQueryParams(connectionResource)
+      )
+    )
+    setIsCounting(false)
+    if (matched.isErr()) {
+      toast.error('Failed to save changes', {
+        description: toError(matched.error.cause).message,
+      })
+    } else if (matched.value < keys.length) {
+      toast.error('Failed to save changes', {
+        description:
+          'Some edited rows are no longer in the table. Refresh it and try again.',
+      })
+    } else if (matched.value > keys.length) {
+      setSharedKeys({ edited: keys.length, matched: matched.value, submitted })
+    } else {
+      mutation.mutate(submitted)
+    }
+  }
+
   return {
-    isSaving: mutation.isPending,
+    isSaving: mutation.isPending || isCounting,
     save: () => {
       if (tableGridRef.current?.commit() === false) {
         return
       }
       const { drafts, newRows } = sessionStore.get()
       if (Object.keys(drafts).length > 0 || newRows.length > 0) {
-        mutation.mutate({ drafts: Object.values(drafts), newRows })
+        void submit({ drafts: Object.values(drafts), newRows })
       }
+    },
+    /** The edited rows' keys also match other rows, which the save would change too. */
+    sharedKeys: sharedKeys && {
+      cancel: () => setSharedKeys(null),
+      confirm: () => {
+        mutation.mutate(sharedKeys.submitted)
+        setSharedKeys(null)
+      },
+      edited: sharedKeys.edited,
+      matched: sharedKeys.matched,
     },
   }
 }

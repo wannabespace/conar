@@ -17,6 +17,7 @@ export const mysql = spec({
   ],
   hashComments: true,
   identifierQuotes: ['`'],
+  spacedDashComments: true,
   keywords: [
     'AUTO_INCREMENT',
     'CHARSET',

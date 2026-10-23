@@ -13,6 +13,17 @@ export const create = orpc
     NOT_FOUND: { message: 'Chat not found' },
   })
   .handler(async ({ context, errors, input }) => {
+    const resource = await db.query.connectionsResources.findFirst({
+      columns: { id: true },
+      where: {
+        connection: { userId: { eq: context.user.id } },
+        id: { eq: input.connectionResourceId },
+      },
+    })
+    if (!resource) {
+      throw errors.NOT_FOUND()
+    }
+
     const [inserted] = await db
       .insert(chats)
       .values({

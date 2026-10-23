@@ -2,6 +2,7 @@ import { spec } from '../dialect'
 
 export const postgres = spec({
   dollarQuotes: true,
+  nonAsciiNames: true,
   functions: [
     'ARRAY_AGG',
     'CEIL',
