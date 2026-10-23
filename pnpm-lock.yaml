@@ -1494,6 +1494,9 @@ importers:
       '@orpc/client':
         specifier: 'catalog:'
         version: 2.0.0-beta.44
+      '@tanstack/react-hotkeys':
+        specifier: 'catalog:'
+        version: 0.16.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.104.5(@types/react@19.3.0)(react@19.3.1)
