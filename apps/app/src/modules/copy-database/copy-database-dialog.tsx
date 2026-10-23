@@ -20,6 +20,7 @@ import type { CopyLogLine } from './copy-log'
 import { appendCopyLog, parseCopyLogLine, toFailureEntries } from './copy-log'
 import type { CopyStatus } from './copy-progress'
 import { CopyProgress } from './copy-progress'
+import { CopyRoute } from './copy-route'
 import type { TableSelection } from './tables-field'
 import type { CopyEnd } from './target-select'
 import { CopyEndLabel } from './target-select'
@@ -131,16 +132,11 @@ export const CopyDatabaseDialog = () => {
           <DialogHeader>
             <DialogTitle>Copy database</DialogTitle>
             <DialogDescription>
-              <span className="text-foreground grid grid-cols-[auto_1fr] gap-x-2">
-                <span className="text-muted-foreground">From</span>
+              {copy.variables ? (
+                <CopyRoute source={source} target={copy.variables.target} />
+              ) : (
                 <CopyEndLabel {...source} />
-                {copy.variables && (
-                  <>
-                    <span className="text-muted-foreground">To</span>
-                    <CopyEndLabel {...copy.variables.target} />
-                  </>
-                )}
-              </span>
+              )}
             </DialogDescription>
           </DialogHeader>
           {copy.variables ? (

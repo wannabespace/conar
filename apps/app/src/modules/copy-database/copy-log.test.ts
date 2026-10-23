@@ -9,19 +9,20 @@ describe('parseCopyLogLine', () => {
         'pg_dump: creating FK CONSTRAINT "public.orders orders_customer_id_fkey"'
       )
     ).toEqual({
-      kind: 'created',
-      label: 'fk constraint',
+      kind: 'step',
+      object: 'FK CONSTRAINT',
       text: 'public.orders orders_customer_id_fkey',
     })
     expect(
       parseCopyLogLine('pg_dump: dumping contents of table "public.orders"')
-    ).toEqual({ kind: 'copied', label: 'data', text: 'public.orders' })
+    ).toEqual({ kind: 'step', object: 'TABLE DATA', text: 'public.orders' })
   })
 
   it('drops catalog reads, notices and hints', () => {
     for (const line of [
       'pg_dump: reading publications',
       'pg_dump: saving encoding = UTF8',
+      'pg_dump: creating SEQUENCE OWNED BY "public.orders_id_seq"',
       'NOTICE:  schema "public" already exists, skipping',
       'HINT:  Use DROP ... CASCADE to drop the dependent objects too.',
     ]) {
@@ -36,7 +37,7 @@ describe('parseCopyLogLine', () => {
       )
     ).toEqual({
       kind: 'error',
-      label: null,
+      object: null,
       text: 'cannot drop table public.orders because other objects depend on it',
     })
     expect(
@@ -48,7 +49,7 @@ describe('parseCopyLogLine', () => {
       parseCopyLogLine('pg_dump: error: connection to server failed')
     ).toEqual({
       kind: 'error',
-      label: null,
+      object: null,
       text: 'connection to server failed',
     })
   })
@@ -87,7 +88,7 @@ describe('appendCopyLog', () => {
     ).toEqual([
       {
         kind: 'error',
-        label: null,
+        object: null,
         text: 'The target is the source database.',
       },
     ])

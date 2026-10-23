@@ -1,0 +1,46 @@
+import { ArrowRight02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
+
+import { ResourceLabel } from '~/core/connection/resource-label'
+
+import type { CopyEnd } from './target-select'
+
+const RouteEnd = ({ connection, resource }: CopyEnd) => (
+  <span
+    data-mask
+    className="bg-popover ring-foreground/4 flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-3 py-2 ring"
+  >
+    <ConnectionIcon
+      type={connection.type}
+      provider={connection.provider}
+      className="size-5 shrink-0"
+    />
+    <span className="flex min-w-0 flex-col">
+      <span className="text-foreground truncate font-medium">
+        {connection.name}
+      </span>
+      <span className="truncate text-xs">
+        <ResourceLabel connection={connection} name={resource.name} />
+      </span>
+    </span>
+  </span>
+)
+
+export const CopyRoute = ({
+  source,
+  target,
+}: {
+  source: CopyEnd
+  target: CopyEnd
+}) => (
+  <span className="flex items-center gap-2">
+    <RouteEnd {...source} />
+    <HugeiconsIcon
+      icon={ArrowRight02Icon}
+      strokeWidth={2}
+      className="text-muted-foreground size-4 shrink-0"
+    />
+    <RouteEnd {...target} />
+  </span>
+)
