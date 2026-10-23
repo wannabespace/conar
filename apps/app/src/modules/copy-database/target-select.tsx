@@ -16,6 +16,7 @@ import { and, eq, inArray, not, useLiveQuery } from '@tanstack/react-db'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import { useCollections } from '~/core/collections'
+import { canQueryConnection } from '~/core/connection/fetching'
 import { ResourceLabel } from '~/core/connection/resource-label'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
@@ -49,7 +50,7 @@ export const TargetSelect = ({
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
-  const { data: targets } = useLiveQuery({
+  const { data: candidates } = useLiveQuery({
     query: (q) =>
       q
         .from({ c: connectionsCollection })
@@ -67,6 +68,9 @@ export const TargetSelect = ({
         .orderBy(({ c }) => c.name)
         .orderBy(({ r }) => r.name),
   })
+  const targets = candidates.filter(({ connection }) =>
+    canQueryConnection(connection)
+  )
   const groups = Map.groupBy(targets, ({ connection }) => connection.id)
 
   return (

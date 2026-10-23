@@ -11,6 +11,7 @@ import { createRef, useEffect, useImperativeHandle, useState } from 'react'
 import { v7 as uuidv7 } from 'uuid'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { canQueryConnection } from '~/core/connection/fetching'
 import { refreshCatalog } from '~/core/connection/refresh-after-run'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 
@@ -38,7 +39,8 @@ export const copyDatabaseDialogRef = createRef<{
 export const getCopyDatabaseAction = (source: CopyEnd | null) =>
   window.electron &&
   source &&
-  getCapabilities(getDialect(source.connection.type)).copyDatabase
+  getCapabilities(getDialect(source.connection.type)).copyDatabase &&
+  canQueryConnection(source.connection)
     ? () => copyDatabaseDialogRef.current?.open(source)
     : null
 

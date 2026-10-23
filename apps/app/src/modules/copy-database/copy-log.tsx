@@ -118,7 +118,7 @@ export const CopyLog = ({ entries }: { entries: CopyLogLine[] }) => {
         <ol
           ref={contentRef}
           data-mask
-          className="space-y-0.5 p-3 font-mono text-xs leading-5 select-text"
+          className="space-y-1 p-3 font-mono text-xs leading-4 select-text"
         >
           {entries.map(({ at, kind, label, text }, index) => (
             // The log only grows, so a line keeps its index.
@@ -131,7 +131,7 @@ export const CopyLog = ({ entries }: { entries: CopyLogLine[] }) => {
                 icon={KIND_ICONS[kind]}
                 strokeWidth={2}
                 className={cn(
-                  'mt-0.75 size-3.5 shrink-0',
+                  'mt-px size-3.5 shrink-0',
                   KIND_TONES[kind] ?? 'text-muted-foreground'
                 )}
               />
