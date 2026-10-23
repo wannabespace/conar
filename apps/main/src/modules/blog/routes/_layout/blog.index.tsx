@@ -17,14 +17,14 @@ const BlogPage = () => (
         Blog
       </h1>
       <p className="text-muted-foreground max-w-xl text-lg text-pretty">
-        Hands-on guides for connecting Tamery to every database it speaks.
+        Updates, deep dives, and how-tos from the people building Tamery.
       </p>
     </header>
     <ol className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
       {blogPosts.map((post) => (
         <li key={post.slug}>
           <Link
-            className="group flex h-full flex-col gap-3"
+            className="group ease-house hover:bg-muted/50 -m-3 flex h-full flex-col gap-3 rounded-xl p-3 transition-colors"
             params={{ slug: post.slug }}
             to="/blog/$slug"
           >
@@ -37,7 +37,7 @@ const BlogPage = () => (
               </time>
               <span className="text-muted-foreground">{post.engine}</span>
             </div>
-            <h2 className="text-foreground text-2xl font-semibold tracking-tight text-pretty underline-offset-4 group-hover:underline">
+            <h2 className="text-foreground text-2xl font-semibold tracking-tight text-pretty">
               {post.title}
             </h2>
             <p className="text-muted-foreground text-pretty">
@@ -64,7 +64,7 @@ export const Route = createFileRoute('/_layout/blog/')({
     seo({
       title: 'Blog - Tamery',
       description:
-        'Hands-on guides for connecting to every database Tamery speaks, each with a live connection-string parser, plus the reasoning behind the product.',
+        'Updates, deep dives, and how-tos from the people building Tamery, the AI database client.',
       image: '/og-image.png',
       path: '/blog',
     }),
