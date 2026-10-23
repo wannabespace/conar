@@ -19,6 +19,13 @@ export const generateIcons = async <
   }: IconsConfig<Source, Shape>,
   { root, sourceDir }: { root: string; sourceDir: string | null }
 ) => {
+  const duplicate = outputs.find(
+    ({ file }, index) =>
+      outputs.findIndex((output) => output.file === file) !== index
+  )
+  if (duplicate) {
+    throw new Error(`${duplicate.file} is listed twice in the icon outputs`)
+  }
   const sourceFiles = sourceDir ? await readdir(sourceDir) : []
 
   const readSource = (name: string, savedFile: string) => {

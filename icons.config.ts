@@ -1,16 +1,17 @@
-import type { IconOutput, IconsConfig } from '@tamery/icons'
+import { defineIconsConfig } from '@tamery/icons'
+import type { IconOutput, IconShape } from '@tamery/icons'
 
 const sources = {
   cyan: 'brand/cyan/source.png',
   'dark-cyan': 'brand/dark-cyan/source.png',
   'dark-white': 'brand/dark-white/source.png',
-}
+} as const
 
 const shapes = {
   maskable: { markWidth: 702 },
   rounded: { cornerRadius: 227, markWidth: 754 },
   square: { markWidth: 754 },
-}
+} satisfies Record<string, IconShape>
 
 type Output = IconOutput<keyof typeof sources, keyof typeof shapes>
 
@@ -81,10 +82,7 @@ const brandIcons = (source: Output['source']): Output[] => [
   },
 ]
 
-export const iconsConfig: IconsConfig<
-  keyof typeof sources,
-  keyof typeof shapes
-> = {
+export const iconsConfig = defineIconsConfig({
   outputs: [
     ...brandIcons('cyan'),
     ...brandIcons('dark-cyan'),
@@ -116,4 +114,4 @@ export const iconsConfig: IconsConfig<
   sourceMarkWidth: 616,
   sourcePrefix: 'tamery-avatar-',
   sources,
-}
+})

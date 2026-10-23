@@ -1,2 +1,9 @@
+export { defineIconsConfig } from './define'
 export { generateIcons } from './generate'
-export type { IconFormat, IconOutput, IconShape, IconsConfig } from './types'
+export type {
+  IcoSize,
+  IconFormat,
+  IconOutput,
+  IconShape,
+  IconsConfig,
+} from './types'
