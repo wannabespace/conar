@@ -15,6 +15,13 @@ const PROGRESS_VALUES: Record<CopyStatus, number | null> = {
   stopped: 0,
 }
 
+const PROGRESS_VARIANTS = {
+  copied: 'success',
+  copying: 'default',
+  failed: 'destructive',
+  stopped: 'default',
+} as const satisfies Record<CopyStatus, string>
+
 const RouteEnd = ({ connection, resource }: CopyEnd) => (
   <span
     data-mask
@@ -58,7 +65,7 @@ export const CopyRoute = ({
     <Progress
       aria-label="Copy progress"
       value={PROGRESS_VALUES[status]}
-      variant={status === 'failed' ? 'destructive' : 'default'}
+      variant={PROGRESS_VARIANTS[status]}
     />
   </span>
 )

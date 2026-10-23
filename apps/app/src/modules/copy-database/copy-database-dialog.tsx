@@ -60,6 +60,7 @@ const startCopy = async (run: CopyRun) => {
     tables: run.tables && [...run.tables.values()],
     target: to.connectionString,
   })
+  return Date.now()
 }
 
 export const CopyDatabaseDialog = () => {
@@ -147,6 +148,7 @@ export const CopyDatabaseDialog = () => {
             <CopyProgress
               entries={entries}
               since={copy.submittedAt}
+              copiedAt={copy.data}
               status={status}
               onBack={() => copy.reset()}
               onStop={stop}

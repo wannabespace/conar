@@ -1,3 +1,5 @@
+import { Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
@@ -9,12 +11,15 @@ import { CopyLog } from './copy-log'
 export type CopyStatus = 'copying' | 'copied' | 'stopped' | 'failed'
 
 export const CopyProgress = ({
+  copiedAt,
   entries,
   onBack,
   onStop,
   since,
   status,
 }: {
+  /** When the copy committed; set only once it has. */
+  copiedAt: number | undefined
   entries: CopyLogLine[]
   onBack: () => void
   onStop: () => void
@@ -44,7 +49,19 @@ export const CopyProgress = ({
               Copying {tables} · <ElapsedSeconds since={since} />
             </span>
           )}
-          {status === 'copied' && <span>Copied {tables}</span>}
+          {status === 'copied' && copiedAt && (
+            <span className="text-foreground flex items-center gap-1.5">
+              <HugeiconsIcon
+                icon={Tick02Icon}
+                strokeWidth={2.5}
+                className="text-success size-4"
+              />
+              <span>
+                Copied {tables} in{' '}
+                {Math.max(1, Math.round((copiedAt - since) / 1000))}s
+              </span>
+            </span>
+          )}
           {status === 'stopped' && <span>Stopped. Nothing changed.</span>}
           {status === 'failed' && <span>Failed. Nothing changed.</span>}
         </p>

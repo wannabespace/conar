@@ -1,12 +1,20 @@
 import { Progress as ProgressPrimitive } from '@base-ui/react/progress'
 import { cn } from '@tamery/ui/lib/utils'
 
+const INDICATOR_VARIANTS = {
+  default: 'bg-foreground/75',
+  destructive: 'bg-destructive',
+  success: 'bg-success',
+}
+
 /** `value={null}` sweeps a segment along the track for work that cannot say how far it is. */
 const Progress = ({
   className,
   variant = 'default',
   ...props
-}: ProgressPrimitive.Root.Props & { variant?: 'default' | 'destructive' }) => (
+}: ProgressPrimitive.Root.Props & {
+  variant?: keyof typeof INDICATOR_VARIANTS
+}) => (
   <ProgressPrimitive.Root
     data-slot="progress"
     className={cn('w-full', className)}
@@ -20,7 +28,7 @@ const Progress = ({
         data-slot="progress-indicator"
         className={cn(
           'ease-house data-indeterminate:animate-progress-sweep h-full rounded-full transition-[width] duration-450 data-indeterminate:w-[28%] motion-reduce:animate-none',
-          variant === 'destructive' ? 'bg-destructive' : 'bg-foreground/75'
+          INDICATOR_VARIANTS[variant]
         )}
       />
     </ProgressPrimitive.Track>
