@@ -15,15 +15,6 @@ export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
 // Anyone can make the API fail a request, and alerts share the Resend quota that sign-in codes need.
 const ALERTS_PER_MINUTE = 10
 
-const alertBudgetSpent = async () => {
-  const key = `resend:alerts:${Math.floor(Date.now() / 60_000)}`
-  const sent = await redis.incr(key)
-  if (sent === 1) {
-    await redis.expire(key, 60)
-  }
-  return sent > ALERTS_PER_MINUTE
-}
-
 export const sendEmail = async <
   T extends keyof typeof templates,
   P extends ComponentProps<(typeof templates)[T]>,
@@ -47,8 +38,15 @@ export const sendEmail = async <
     return
   }
 
-  if (template === 'Alert' && (await alertBudgetSpent())) {
-    return
+  if (template === 'Alert') {
+    const key = `resend:alerts:${Math.floor(Date.now() / 60_000)}`
+    const sent = await redis.incr(key)
+    if (sent === 1) {
+      await redis.expire(key, 60)
+    }
+    if (sent > ALERTS_PER_MINUTE) {
+      return
+    }
   }
 
   const Template = templates[template] as (props?: P) => React.ReactElement

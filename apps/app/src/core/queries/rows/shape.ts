@@ -148,8 +148,6 @@ type IdentityColumn = Pick<
   'id' | 'isArray' | 'isNullable' | 'primaryKey' | 'type' | 'unique'
 >
 
-const ids = (columns: IdentityColumn[]) => columns.map((column) => column.id)
-
 /**
  * The columns a write finds a row by: its primary key where keys are unique, else a unique key with no nullable column, else every column `=` can compare.
  * `unique: false` means the match can reach identical rows too, so writes count first.
@@ -157,7 +155,7 @@ const ids = (columns: IdentityColumn[]) => columns.map((column) => column.id)
 export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
   const primary = columns.filter((column) => column.primaryKey)
   if (primary.length > 0 && getCapabilities(dialect).uniqueKeys) {
-    return { columns: ids(primary), unique: true }
+    return { columns: primary.map((column) => column.id), unique: true }
   }
   const uniqueKey = Object.values(
     Object.groupBy(columns, (column) => column.unique ?? '')
@@ -165,12 +163,12 @@ export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
     (group) => group?.[0]?.unique && group.every((column) => !column.isNullable)
   )
   if (uniqueKey) {
-    return { columns: ids(uniqueKey), unique: true }
+    return { columns: uniqueKey.map((column) => column.id), unique: true }
   }
   return {
-    columns: ids(
-      columns.filter((column) => isComparableColumn(dialect, column))
-    ),
+    columns: columns
+      .filter((column) => isComparableColumn(dialect, column))
+      .map((column) => column.id),
     unique: false,
   }
 }

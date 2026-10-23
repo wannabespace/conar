@@ -95,12 +95,11 @@ export const DeleteRowsDialog = ({
     queryKey: ['keyed-rows-count', connectionResource.id, schema, table, rows],
   })
   const counting = !unique && isCounting
-  const sharedKeyRows =
-    matched !== undefined && matched > rows.length ? matched : undefined
-  const sameValueRows = (sharedKeyRows ?? rows.length) - rows.length
+  const reached = Math.max(matched ?? 0, rows.length)
+  const sameValueRows = reached - rows.length
 
-  const only = rows.length === 1 && !sharedKeyRows ? rows[0] : undefined
-  const noun = only ? 'row' : plural(sharedKeyRows ?? rows.length, 'row')
+  const only = reached === 1 ? rows[0] : undefined
+  const noun = only ? 'row' : plural(reached, 'row')
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     meta: { event: 'rows_deleted' },
@@ -117,9 +116,7 @@ export const DeleteRowsDialog = ({
     },
     onSuccess: () => {
       const { filters, orderBy } = store.get()
-      toast.success(
-        `${plural(sharedKeyRows ?? rows.length, 'row')} successfully deleted`
-      )
+      toast.success(`${plural(reached, 'row')} successfully deleted`)
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
