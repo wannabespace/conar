@@ -662,9 +662,6 @@ importers:
       '@tamery/configs':
         specifier: workspace:*
         version: link:packages/configs
-      '@tamery/resize':
-        specifier: workspace:*
-        version: link:packages/resize
       '@types/bun':
         specifier: 'catalog:'
         version: 1.4.3
@@ -692,6 +689,9 @@ importers:
       portless:
         specifier: 'catalog:'
         version: 0.15.8
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.5(@types/node@26.1.1)
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.3
@@ -1794,19 +1794,6 @@ importers:
       '@tamery/shared':
         specifier: workspace:*
         version: link:../shared
-    devDependencies:
-      '@tamery/configs':
-        specifier: workspace:*
-        version: link:../configs
-      typescript:
-        specifier: 'catalog:'
-        version: 7.0.2
-
-  packages/resize:
-    dependencies:
-      sharp:
-        specifier: 'catalog:'
-        version: 0.35.5(@types/node@26.1.1)
     devDependencies:
       '@tamery/configs':
         specifier: workspace:*
