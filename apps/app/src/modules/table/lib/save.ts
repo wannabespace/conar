@@ -1,4 +1,3 @@
-import { Dialect } from '@tamery/shared/enums/connection-type'
 import { toError } from '@tamery/shared/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -9,6 +8,7 @@ import { toast } from 'sonner'
 import { insertQuery } from '~/core/queries/rows/insert'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { setQuery } from '~/core/queries/rows/set'
+import { rowIdentity } from '~/core/queries/rows/shape'
 import {
   keyedRowsCountQuery,
   resourceTableTotalQueryKey,
@@ -163,7 +163,7 @@ export const useSaveStaged = ({
       getUpdates(submitted.drafts),
       ({ primaryKeys }) => primaryKeys
     )
-    if (dialect !== Dialect.ClickHouse || keys.length === 0) {
+    if (rowIdentity(columns, dialect).unique || keys.length === 0) {
       mutation.mutate(submitted)
       return
     }
@@ -177,6 +177,11 @@ export const useSaveStaged = ({
     if (matched.isErr()) {
       toast.error('Failed to save changes', {
         description: toError(matched.error.cause).message,
+      })
+    } else if (matched.value < keys.length) {
+      toast.error('Failed to save changes', {
+        description:
+          'Some edited rows are no longer in the table. Refresh it and try again.',
       })
     } else if (matched.value > keys.length) {
       setSharedKeys({ edited: keys.length, matched: matched.value, submitted })
@@ -196,7 +201,7 @@ export const useSaveStaged = ({
         void submit({ drafts: Object.values(drafts), newRows })
       }
     },
-    /** ClickHouse keys are not unique: the edited rows' keys also match other rows, which the save would change too. */
+    /** The edited rows' keys also match other rows, which the save would change too. */
     sharedKeys: sharedKeys && {
       cancel: () => setSharedKeys(null),
       confirm: () => {

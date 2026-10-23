@@ -2,6 +2,7 @@ import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import { useSubscription } from 'seitu/react'
 
+import { rowIdentity } from '~/core/queries/rows/shape'
 import type { Column } from '~/core/table/cell/utils'
 import type { DataGridCell } from '~/core/table/cursor'
 import {
@@ -47,8 +48,11 @@ export const useStagedEdits = ({
   const newRows = useSubscription(sessionStore, {
     selector: (state) => state.newRows,
   })
-  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
-  const staged = stagedGrid(newRows, rows, primaryColumns)
+  const staged = stagedGrid(
+    newRows,
+    rows,
+    rowIdentity(columns, dialect).columns
+  )
 
   const getValue = ({ column, row, rowIndex }: DataGridCell) => {
     const entry = staged.rowAt(rowIndex)

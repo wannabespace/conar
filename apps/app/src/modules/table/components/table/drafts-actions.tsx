@@ -140,12 +140,13 @@ export const DraftsActions = ({
                 Change {plural(shownSharedKeys.matched, 'row')}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                ClickHouse keys are not unique: the{' '}
-                {shownSharedKeys.edited === 1
-                  ? 'row you edited shares its key'
-                  : `${shownSharedKeys.edited} rows you edited share their keys`}{' '}
-                with other rows, so saving changes all {shownSharedKeys.matched}{' '}
-                of them.
+                Saving also changes{' '}
+                {plural(
+                  shownSharedKeys.matched - shownSharedKeys.edited,
+                  'other row'
+                )}{' '}
+                with the same values as the{' '}
+                {shownSharedKeys.edited === 1 ? 'row' : 'rows'} you edited.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
