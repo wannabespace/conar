@@ -13,7 +13,7 @@ Copy database moves a PostgreSQL database into another one: staging into your lo
 3. Under **Copy**, keep **Everything** or uncheck tables to copy only some.
 4. Click **Copy and replace**.
 
-The log shows each table and object as it is created. Press **Stop** or Escape to cancel. If the copy fails, the message says what blocked it, such as a view in the target that depends on a table being replaced.
+The log shows each table and object as it is created. Press **Stop** or Escape to cancel. If the copy fails, the message says what blocked it, such as a view in the target that depends on a table being replaced. If your network drops mid-copy, nothing is committed: the target rolls back and frees its tables about half a minute after it loses you, or later when it sits behind an SSH bastion.
 
 ## What gets copied
 

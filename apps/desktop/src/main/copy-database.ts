@@ -37,6 +37,8 @@ const POSTGRES_17 = 170_000
 const TRANSACTION_TIMEOUT = Buffer.from('SET transaction_timeout = 0;')
 const HEADER_BYTES = 4096
 const COMMIT = Buffer.from('COMMIT;\n')
+const KEEPALIVES =
+  '--dbname=keepalives_idle=10 keepalives_interval=5 keepalives_count=3'
 
 const quoteIdentifier = (name: string) => `"${name.replaceAll('"', '""')}"`
 
@@ -215,6 +217,7 @@ export const copyDatabase = async (
           '--no-owner',
           '--no-privileges',
           '--verbose',
+          KEEPALIVES,
           ...(tables ?? []).map(
             ({ schema, table }) =>
               `--table-and-children=${quoteIdentifier(schema)}.${quoteIdentifier(table)}`
@@ -224,7 +227,7 @@ export const copyDatabase = async (
       )
       const restore = spawn(
         toolPath('psql'),
-        ['--no-psqlrc', '--quiet', '--set=ON_ERROR_STOP=1'],
+        ['--no-psqlrc', '--quiet', '--set=ON_ERROR_STOP=1', KEEPALIVES],
         { env: to.env, signal, stdio: ['pipe', 'ignore', 'pipe'] }
       )
       const dumped = watchTool('pg_dump', dump, log)
@@ -232,6 +235,10 @@ export const copyDatabase = async (
       const schemas = new Set(tables?.map(({ schema }) => schema))
       restore.stdin.write(
         [
+          // Not PGOPTIONS: PgBouncer refuses the startup `options` parameter. Before BEGIN, or a rollback resets them and the server keeps a dead client's locks for hours.
+          'SET tcp_keepalives_idle = 10;',
+          'SET tcp_keepalives_interval = 5;',
+          'SET tcp_keepalives_count = 3;',
           'BEGIN;',
           ...[...schemas].map(
             (schema) =>
