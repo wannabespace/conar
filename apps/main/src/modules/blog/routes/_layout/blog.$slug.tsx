@@ -4,7 +4,7 @@ import { Badge } from '@tamery/ui/components/badge'
 import { responseVariants } from '@tamery/ui/components/response.utils'
 import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 
 import { seo } from '~/utils/seo'
 
@@ -37,7 +37,7 @@ const BlogPostPage = () => {
             <span>{BLOG_AUTHOR}</span>
             <span aria-hidden>·</span>
             <time dateTime={post.publishedAt}>
-              {format(new Date(post.publishedAt), 'MMMM d, yyyy')}
+              {format(parseISO(post.publishedAt), 'MMMM d, yyyy')}
             </time>
           </div>
         </header>
@@ -58,7 +58,7 @@ export const Route = createFileRoute('/_layout/blog/$slug')({
   component: BlogPostPage,
   loader: ({ params }) => {
     const post = findPost(params.slug)
-    if (!post) {
+    if (!post || !postBodies[post.slug]) {
       throw notFound()
     }
     return { post }

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 
 import { seo } from '~/utils/seo'
 
@@ -33,7 +33,7 @@ const BlogPage = () => (
                 className="text-foreground font-medium"
                 dateTime={post.publishedAt}
               >
-                {format(new Date(post.publishedAt), 'd MMMM')}
+                {format(parseISO(post.publishedAt), 'd MMMM')}
               </time>
               <span className="text-muted-foreground">{post.engine}</span>
             </div>
