@@ -1,6 +1,7 @@
 import { PORTS } from '@tamery/shared/constants'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
+import { getSessionUser } from '~/lib/auth'
 import { queryClient } from '~/lib/query-client'
 
 const LOCAL_PROXY_HEALTH_KEY = ['proxy-health'] as const
@@ -15,11 +16,14 @@ const localProxyHealthQueryOptions = queryOptions({
         return null
       }
 
-      return (await res.json()) as {
+      const health = (await res.json()) as {
         ok: boolean
         version: string
         userId: string
       }
+      // Anything can listen on the port while `tamery proxy` is not running; it gets connection strings and the session token.
+      const user = await getSessionUser()
+      return health.userId === user?.id ? health : null
     } catch {
       return null
     }

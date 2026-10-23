@@ -48,5 +48,6 @@ export {
   queriesRelations,
   queriesSelectSchema,
 } from './queries'
+export { shareRefresh, shares, sharesRelations } from './shares'
 export { subscriptionPeriod, subscriptions } from './subscriptions'
 export type { SubscriptionStatus } from './subscriptions'

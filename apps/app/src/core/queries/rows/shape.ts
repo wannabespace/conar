@@ -1,9 +1,12 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
+import { clickhouseDateTime } from '@tamery/connection/queries/value-binding'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import type { FilterValueBinding } from '@tamery/shared/filters'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import type { Column } from '~/core/table/cell/utils'
+import { isComparableColumn } from '~/core/table/cell/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
 type Eb = ExpressionBuilder<any, any>
@@ -33,8 +36,6 @@ export const textContains: Record<Dialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), 'text'), 'like', pattern),
 }
 
-export type ColumnTypes = { id: string; type?: string }[]
-
 export type BindValue = (columnType: string, value: unknown) => unknown
 
 const bindJsonAsText = (dialect: Dialect): BindValue => {
@@ -53,17 +54,6 @@ const bindJsonAsText = (dialect: Dialect): BindValue => {
 
 const clickhouseJsonColumnType = getCapabilities(Dialect.ClickHouse).columnTypes
   .json
-const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
-
-// Reads come back ISO (`date_time_output_format`), which a DateTime comparison or cast cannot parse.
-const clickhouseDateTime = (columnType: string, value: unknown) => {
-  const dateTime =
-    typeof value === 'string' && clickhouseDateTimeType.exec(columnType)
-  return dateTime
-    ? sql`parseDateTime64BestEffort(${value}, ${Number(dateTime.groups?.precision ?? 0)})`
-    : value
-}
-
 const clickhouseBind =
   (parseJson: (columnType: string, json: string) => unknown): BindValue =>
   (columnType, value) => {
@@ -149,28 +139,39 @@ export const matchesPrimaryKeys = (
 ) =>
   eb.and(
     Object.entries(bindRow(bind, columns, primaryKeys)).map(([id, value]) =>
-      eb(id, '=', value)
+      value === null ? eb(id, 'is', null) : eb(id, '=', value)
     )
   )
 
-export const clickhouseFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
-    clickhouseDateTime(
-      columns.find(({ id }) => id === column)?.type ?? '',
-      value
-    )
+type IdentityColumn = Pick<
+  Column,
+  'id' | 'isArray' | 'isNullable' | 'primaryKey' | 'type' | 'unique'
+>
 
-const sqliteBooleanType = getCapabilities(Dialect.SQLite).columnTypes.boolean
-
-// SQLite stores a boolean as 1 or 0, so the filter's `true` text never equals it.
-export const sqliteFilterValues =
-  (columns: ColumnTypes = []): FilterValueBinding =>
-  (column, value) =>
-    (value === 'true' || value === 'false') &&
-    sqliteBooleanType?.test(columns.find(({ id }) => id === column)?.type ?? '')
-      ? Number(value === 'true')
-      : value
+/**
+ * The columns a write finds a row by: its primary key where keys are unique, else a unique key with no nullable column, else every column `=` can compare.
+ * `unique: false` means the match can reach identical rows too, so writes count first.
+ */
+export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
+  const primary = columns.filter((column) => column.primaryKey)
+  if (primary.length > 0 && getCapabilities(dialect).uniqueKeys) {
+    return { columns: primary.map((column) => column.id), unique: true }
+  }
+  const uniqueKey = Object.values(
+    Object.groupBy(columns, (column) => column.unique ?? '')
+  ).find(
+    (group) => group?.[0]?.unique && group.every((column) => !column.isNullable)
+  )
+  if (uniqueKey) {
+    return { columns: uniqueKey.map((column) => column.id), unique: true }
+  }
+  return {
+    columns: columns
+      .filter((column) => isComparableColumn(dialect, column))
+      .map((column) => column.id),
+    unique: false,
+  }
+}
 
 // SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
 const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {

@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { assertNoServerFiles, assertPublicHost } from './public-host'
+import { assertReachable } from './public-host'
 
 test.each([
   'postgres://u:p@127.0.0.1/db',
@@ -24,7 +24,7 @@ test.each([
   'postgres:///db',
   'sqlite:///etc/hosts',
 ])('refuses %p', async (connectionString) => {
-  await expect(assertPublicHost(connectionString)).rejects.toThrow(
+  await expect(assertReachable(connectionString)).rejects.toThrow(
     'only public hosts'
   )
 })
@@ -32,15 +32,15 @@ test.each([
 test.each(['postgres://u:p@8.8.8.8/db', 'postgres://u:p@[2001:4860::8888]/db'])(
   'allows %p',
   async (connectionString) => {
-    await expect(assertPublicHost(connectionString)).resolves.toBeUndefined()
+    await expect(assertReachable(connectionString)).resolves.toBeUndefined()
   }
 )
 
 test.each([
   'postgres://u:p@8.8.8.8/db?sslrootcert=/etc/passwd',
   'mysql://u:p@8.8.8.8/db?sslCA=/etc/passwd',
-])('refuses a file on its own disk in %p', (connectionString) => {
-  expect(() => assertNoServerFiles(connectionString)).toThrow(
+])('refuses a file on its own disk in %p', async (connectionString) => {
+  await expect(assertReachable(connectionString)).rejects.toThrow(
     'cannot read certificate files'
   )
 })

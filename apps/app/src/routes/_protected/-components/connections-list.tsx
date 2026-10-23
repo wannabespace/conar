@@ -6,6 +6,7 @@ import {
 } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import {
   Tooltip,
@@ -21,7 +22,6 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
-import { PaneEmpty } from '~/components/pane-empty'
 import { useCollections } from '~/core/collections'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection } from '~/core/connection/sync'
@@ -216,7 +216,7 @@ export const ConnectionsList = () => {
             </div>
           ))}
           {matches.length === 0 && (
-            <PaneEmpty
+            <IconEmpty
               icon={Search01Icon}
               title="No connections found"
               description="Search by name, label or database type."

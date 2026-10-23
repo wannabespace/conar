@@ -1,4 +1,4 @@
-import type { ActiveFilter, Filter } from '@tamery/shared/filters'
+import { activeFilter } from '@tamery/shared/filters'
 import { omit } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
@@ -12,18 +12,7 @@ export const tablePageType = type({
   columnLabels: 'Record<string, string>',
   columnOrder: 'string[]',
   columnSizes: 'Record<string, number>',
-  filters: type({
-    column: 'string',
-    'disabled?': 'boolean',
-    ref: 'object' as type.cast<Filter>,
-    values: 'unknown[]',
-    'via?': {
-      key: 'string',
-      schema: 'string',
-      table: 'string',
-      target: 'string',
-    },
-  }).array() as type.cast<ActiveFilter[]>,
+  filters: activeFilter.array(),
   generators: {
     '[string]': {
       'customExpression?': 'string',

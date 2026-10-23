@@ -1,3 +1,5 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
+import { filterValueBindings } from '@tamery/connection/queries/value-binding'
 import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { type } from 'arktype'
@@ -5,12 +7,8 @@ import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
-import type { ColumnTypes, ContainsText } from './shape'
-import {
-  clickhouseFilterValues,
-  sqliteFilterValues,
-  textContains,
-} from './shape'
+import type { ContainsText } from './shape'
+import { textContains } from './shape'
 
 const valueCountsType = type({
   count: type('number | string | bigint').pipe(Number),
@@ -58,7 +56,7 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
           db,
           textContains.clickhouse,
           params,
-          clickhouseFilterValues(params.columns)
+          filterValueBindings.clickhouse?.(params.columns)
         ),
       mssql: (db) => countValues(db, textContains.mssql, params),
       mysql: (db) => countValues(db, textContains.mysql, params),
@@ -69,7 +67,7 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
           db,
           textContains.sqlite,
           params,
-          sqliteFilterValues(params.columns)
+          filterValueBindings.sqlite?.(params.columns)
         ),
     },
     type: valueCountsType,

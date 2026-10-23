@@ -365,7 +365,7 @@ const ConnectionsBreadcrumb = ({
         currentResourceId={resourceId}
         onRemove={onRemove}
       />
-      {current && currentGroup && (
+      {current && currentGroup && currentGroup.resources.length > 1 && (
         <>
           <HugeiconsIcon
             icon={ArrowRight01Icon}

@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it } from 'bun:test'
 
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
@@ -7,10 +7,8 @@ import type { Column } from '~/core/table/cell/utils'
 import { generateSchemaDrizzle } from './drizzle'
 import { generateQueryKysely, generateSchemaKysely } from './kysely'
 import { generateQueryPrisma, generateSchemaPrisma } from './prisma'
+import { generateSchemaSQL, inlineParameters } from './sql'
 import { generateSchemaTypeScript } from './typescript'
-
-mock.module('../../runtime/dialects', () => ({ coldDialects: {} }))
-const { generateSchemaSQL, inlineParameters } = await import('./sql')
 
 const columns: Column[] = [
   {
@@ -75,6 +73,28 @@ const typeScriptFor = (dialect: Dialect, types: string[]) =>
   })
 
 describe('generators (postgres)', () => {
+  it('quotes an enum type name a hostile database chose', () => {
+    const name = 'x" AS ENUM (\'a\'); DROP TABLE users; CREATE TYPE "y'
+    const sql = generateSchemaSQL({
+      columns: [
+        {
+          availableValues: ['a'],
+          enumName: name,
+          id: 'status',
+          isNullable: true,
+          type: 'USER-DEFINED',
+          uiType: 'select',
+        },
+      ],
+      defaultSchema: 'public',
+      dialect: Dialect.Postgres,
+      schema: 'public',
+      table: 'jobs',
+    })
+    expect(sql).toContain(`CREATE TYPE "${name.replaceAll('"', '""')}" AS ENUM`)
+    expect(sql).not.toContain('"x" AS ENUM')
+  })
+
   it('qualifies schema, keeps identity, resolves FK schema', () => {
     const sql = generateSchemaSQL({
       columns,

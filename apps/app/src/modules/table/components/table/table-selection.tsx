@@ -12,21 +12,29 @@ import {
   getRowPrimaryKeysValues,
   isSaving,
   newRowsActions,
+  primaryKeysKey,
   useTableSessionStore,
 } from '~/core/table/session'
 
-import { rowSelection } from '../../lib/row-selection'
+import { rowSelection, tickedRowCount } from '../../lib/row-selection'
 
 export const keysInRange =
-  (rows: GridRow[], keys: string[]) => (start: number, end: number) =>
-    rows.slice(start, end + 1).map((row) => getRowPrimaryKeysValues(row, keys))
+  (rows: GridRow[], keys: string[]) => (start: number, end: number) => [
+    ...new Map(
+      rows.slice(start, end + 1).map((row) => {
+        const rowKey = getRowPrimaryKeysValues(row, keys)
+        return [primaryKeysKey(rowKey), rowKey]
+      })
+    ).values(),
+  ]
 
 const SelectAll = ({ keys, rows }: { keys: string[]; rows: GridRow[] }) => {
   const store = useTableSessionStore()
-  const count = useSubscription(store, {
-    selector: (state) => state.selected.length,
+  const selected = useSubscription(store, {
+    selector: (state) => state.selected,
   })
-  const checked = rows.length > 0 && count === rows.length
+  const ticked = tickedRowCount(selected, rows, keys)
+  const checked = rows.length > 0 && ticked === rows.length
 
   return (
     <Checkbox
@@ -34,13 +42,11 @@ const SelectAll = ({ keys, rows }: { keys: string[]; rows: GridRow[] }) => {
       tabIndex={-1}
       disabled={rows.length === 0}
       checked={checked}
-      indeterminate={count > 0 && !checked}
+      indeterminate={ticked > 0 && !checked}
       onCheckedChange={() =>
         store.set((state) => ({
           ...state,
-          selected: checked
-            ? []
-            : rows.map((row) => getRowPrimaryKeysValues(row, keys)),
+          selected: checked ? [] : keysInRange(rows, keys)(0, rows.length - 1),
         }))
       }
     />

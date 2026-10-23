@@ -15,6 +15,7 @@ import { useColumnDrag } from './use-column-drag'
 
 const ROW_OVERSCAN = 8
 const COLUMN_OVERSCAN = 2
+const SERVER_RENDERED_VIEWPORT = { height: 1080, width: 1440 }
 
 export type ScrollToCell = (row: number, column: string) => void
 
@@ -41,6 +42,7 @@ export const Grid = ({
     count: rows.length,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
     getScrollElement: () => scrollRef.current,
+    initialRect: SERVER_RENDERED_VIEWPORT,
     overscan: ROW_OVERSCAN,
   })
   const columnVirtualizer = useVirtualizer({
@@ -49,6 +51,7 @@ export const Grid = ({
     getItemKey: (index) => columns[index]?.id ?? index,
     getScrollElement: () => scrollRef.current,
     horizontal: true,
+    initialRect: SERVER_RENDERED_VIEWPORT,
     overscan: COLUMN_OVERSCAN,
     paddingEnd: GUTTER_WIDTH,
     paddingStart: GUTTER_WIDTH,

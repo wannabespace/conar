@@ -1,9 +1,10 @@
+import type { ColumnTypes } from '@tamery/connection/queries/value-binding'
 import type { InsertQueryBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
-import type { BindValue, ColumnTypes } from './shape'
+import type { BindValue } from './shape'
 import { bindRow, bindValue, clickhouseWrite } from './shape'
 
 interface InsertParams {

@@ -93,7 +93,7 @@ catalog:
   date-fns: ^4.4.0
   drizzle-kit: ^1.0.0-rc.4
   drizzle-orm: ^1.0.0-rc.4
-  electron: 43.5.0
+  electron: 43.8.3
   electron-store: ^12.0.0
   hono: ^4.13.13
   hookable: ^6.1.2
@@ -101,6 +101,7 @@ catalog:
   input-otp: ^1.5.0
   js-confetti: ^0.13.1
   kysely: ^0.29.6
+  lru-cache: ^11.5.3
   memoza: ^1.4.0
   monaco-editor: ^0.57.0
   motion: ^14.2.0
@@ -178,4 +179,6 @@ allowBuilds:
   ssh2: false
 # @types/ssh2 pins Node 18 types, which clash with Electron's in any workspace compiling the SSH tunnel.
 overrides:
+  compression: ^1.8.2
+  dompurify: ^3.4.17
   '@types/ssh2>@types/node': ^24.13.3

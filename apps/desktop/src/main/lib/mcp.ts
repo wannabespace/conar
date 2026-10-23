@@ -95,6 +95,11 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
     res.writeHead(404).end()
     return
   }
+  // A website rebinding its own domain to 127.0.0.1 arrives with its own Host.
+  if (!/^(?:127\.0\.0\.1|localhost)(?::\d+)?$/u.test(req.headers.host ?? '')) {
+    res.writeHead(403).end()
+    return
+  }
   if (req.headers.authorization !== `Bearer ${store.get('token')}`) {
     res.writeHead(401).end()
     return

@@ -1,5 +1,6 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
+import { glideIntoView } from '@tamery/table'
 import type { RefObject } from 'react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -22,7 +23,6 @@ import type {
 } from './cursor'
 import { createCursorStore, getRange } from './cursor'
 import { useFollowRows } from './follow-rows'
-import { glideIntoView } from './glide-into-view'
 
 export const useGridCursor = ({
   canEdit,

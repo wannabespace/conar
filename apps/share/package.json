@@ -1,0 +1,48 @@
+{
+  "name": "@tamery/share",
+  "type": "module",
+  "scripts": {
+    "dev": "portless run vite dev",
+    "build": "vite build",
+    "start": "bun run .output/server/index.mjs",
+    "check-types": "tsc"
+  },
+  "dependencies": {
+    "@hugeicons/core-free-icons": "catalog:",
+    "@hugeicons/react": "catalog:",
+    "@orpc/client": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-router-ssr-query": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "arktype": "catalog:",
+    "better-result": "catalog:",
+    "date-fns": "catalog:",
+    "motion": "catalog:",
+    "nitro": "catalog:",
+    "posthog-js": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "sonner": "catalog:"
+  },
+  "devDependencies": {
+    "@orpc/server": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@tamery/api": "workspace:*",
+    "@tamery/configs": "workspace:*",
+    "@tamery/proxy": "workspace:*",
+    "@tamery/query-proxy": "workspace:*",
+    "@tamery/shared": "workspace:*",
+    "@tamery/table": "workspace:*",
+    "@tamery/ui": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  },
+  "portless": "share.local.tamery"
+}

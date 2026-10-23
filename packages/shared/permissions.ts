@@ -1,5 +1,7 @@
 import type { Rules } from 'permix'
 
+import { FREE_SHARE_LIMIT } from './usage'
+
 // oxlint-disable-next-line typescript/consistent-type-definitions -- permix's Definition needs an index signature, which an interface lacks
 export type Permissions = {
   ai: {
@@ -10,6 +12,7 @@ export type Permissions = {
   connection: [{ name: 'create'; type: { count: number } }]
   mcp: ['unlimited']
   seed: ['unlimited']
+  share: [{ name: 'create'; type: { count: number } }]
   tab: ['multiple']
   workspace: ['create']
 }
@@ -35,6 +38,10 @@ export const getPermissions = ({
     },
     mcp: { unlimited: pro },
     seed: { unlimited: pro },
+    share: {
+      create:
+        pro || ((shares) => member && (shares?.count ?? 0) < FREE_SHARE_LIMIT),
+    },
     tab: { multiple: member },
     workspace: { create: pro },
   }

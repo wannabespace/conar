@@ -12,6 +12,7 @@ export const appStore = createStore({
   isOnline: window.navigator.onLine,
   isSubscriptionDialogOpen: false,
   signInPrompt: noSignInPrompt,
+  upgradeHint: null as string | null,
 })
 
 const updateOnline = () => {
@@ -38,12 +39,20 @@ export const promptSignIn = (hint: string) => {
   )
 }
 
-export const setIsSubscriptionDialogOpen = (isOpen: boolean) => {
+export const setIsSubscriptionDialogOpen = (
+  isOpen: boolean,
+  hint: string | null = null
+) => {
   if (isOpen) {
-    posthog.capture('subscription_dialog_opened')
+    posthog.capture('subscription_dialog_opened', { hint })
   }
   appStore.set(
     (state) =>
-      ({ ...state, isSubscriptionDialogOpen: isOpen }) satisfies typeof state
+      ({
+        ...state,
+        isSubscriptionDialogOpen: isOpen,
+        // Kept on close, so the dialog fades out with the text it showed.
+        upgradeHint: isOpen ? hint : state.upgradeHint,
+      }) satisfies typeof state
   )
 }

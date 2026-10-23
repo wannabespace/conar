@@ -1,11 +1,11 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { toError } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { useQueryErrorResetBoundary } from '@tanstack/react-query'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { useDiagnosis } from '~/core/connection/diagnosis'
 import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
@@ -25,7 +25,7 @@ export const ConnectionFailure = ({
 
   return (
     <div className="flex h-screen min-h-[inherit] flex-col">
-      <PaneEmpty
+      <IconEmpty
         variant="destructive"
         icon={Alert02Icon}
         title={diagnosis?.title ?? "Couldn't connect"}
@@ -63,7 +63,7 @@ export const ConnectionFailure = ({
             Edit connection
           </Button>
         </div>
-      </PaneEmpty>
+      </IconEmpty>
     </div>
   )
 }
