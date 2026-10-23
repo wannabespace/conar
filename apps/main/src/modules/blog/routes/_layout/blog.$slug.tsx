@@ -5,6 +5,7 @@ import { responseVariants } from '@tamery/ui/components/response.utils'
 import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { format, parseISO } from 'date-fns'
+import type { Graph } from 'schema-dts'
 
 import { seo, SITE_URL } from '~/utils/seo'
 
@@ -101,7 +102,7 @@ export const Route = createFileRoute('/_layout/blog/$slug')({
           ],
         },
       ],
-    }
+    } satisfies Graph
     return {
       ...seo({
         title: `${post.title} - Tamery`,
