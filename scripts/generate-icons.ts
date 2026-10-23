@@ -5,15 +5,10 @@ import process from 'node:process'
 
 import sharp from 'sharp'
 
+import { iconsConfig } from './icons.config'
+
 const ROOT = path.join(import.meta.dirname, '..')
-const BRAND = 'brand'
-const VARIANTS = ['cyan', 'dark-cyan', 'dark-white']
-const APP_VARIANT = 'cyan'
-const SOURCE_PREFIX = 'tamery-avatar-'
 const CANVAS = 1024
-const SOURCE_MARK_WIDTH = 616
-const ICON_MARK_WIDTH = 754
-const MASKABLE_MARK_WIDTH = 702
 const ICO_SIZES = [16, 32, 48]
 const ICO_HEADER_SIZE = 6
 const ICO_ENTRY_SIZE = 16
@@ -22,7 +17,7 @@ const sourceDir = process.argv.at(2) ?? null
 const sourceFiles = sourceDir ? await readdir(sourceDir) : []
 
 const readSource = (variant: string) => {
-  const prefix = `${SOURCE_PREFIX}${variant}-`
+  const prefix = `${iconsConfig.sourcePrefix}${variant}-`
   const largest = sourceFiles
     .filter((file) => file.startsWith(prefix) && path.extname(file) === '.png')
     .map((file) => ({
@@ -33,7 +28,9 @@ const readSource = (variant: string) => {
     .toSorted((a, b) => b.size - a.size)
     .at(0)
   if (!sourceDir || !largest) {
-    return readFile(path.join(ROOT, BRAND, variant, 'source.png'))
+    return readFile(
+      path.join(ROOT, iconsConfig.brandFolder, variant, 'source.png')
+    )
   }
   return sharp(path.join(sourceDir, largest.file))
     .resize(CANVAS, CANVAS)
@@ -66,7 +63,7 @@ const toIco = async (icon: Buffer) => {
 }
 
 const zoomToMark = (source: Buffer, markWidth: number) => {
-  const crop = (CANVAS * SOURCE_MARK_WIDTH) / markWidth
+  const crop = (CANVAS * iconsConfig.markWidth.source) / markWidth
   const inset = Math.round((CANVAS - crop) / 2)
   const size = CANVAS - 2 * inset
   return sharp(source)
@@ -77,8 +74,8 @@ const zoomToMark = (source: Buffer, markWidth: number) => {
 }
 
 const getIcons = async (source: Buffer) => {
-  const fullBleed = await zoomToMark(source, ICON_MARK_WIDTH)
-  const maskable = await zoomToMark(source, MASKABLE_MARK_WIDTH)
+  const fullBleed = await zoomToMark(source, iconsConfig.markWidth.icon)
+  const maskable = await zoomToMark(source, iconsConfig.markWidth.maskable)
   const roundedTile = await sharp(fullBleed)
     .composite([
       {
@@ -115,7 +112,7 @@ const getIcons = async (source: Buffer) => {
 }
 
 const iconSets = await Promise.all(
-  VARIANTS.map(async (variant) => ({
+  iconsConfig.variants.map(async (variant) => ({
     variant,
     ...(await getIcons(await readSource(variant))),
   }))
@@ -123,23 +120,17 @@ const iconSets = await Promise.all(
 
 const files: Record<string, Buffer> = {}
 for (const { desktop, variant, web } of iconSets) {
-  for (const [name, buffer] of Object.entries({ ...desktop, ...web })) {
-    files[path.join(BRAND, variant, name)] = buffer
+  const icons = { ...desktop, ...web }
+  for (const [name, buffer] of Object.entries(icons)) {
+    files[path.join(iconsConfig.brandFolder, variant, name)] = buffer
   }
-  if (variant !== APP_VARIANT) {
+  if (variant !== iconsConfig.appVariant) {
     continue
   }
-  files['apps/desktop/resources/macos-icon.icon/Assets/icon.png'] =
-    desktop['icon.png']
-  files['apps/desktop/resources/icon-1024x1024.png'] =
-    desktop['icon-rounded.png']
-  files['apps/main/public/logo.png'] = desktop['logo.png']
-  for (const folder of [
-    'apps/app/public',
-    'apps/docs/public',
-    'apps/main/public',
-    'apps/share/public',
-  ]) {
+  for (const [file, name] of Object.entries(iconsConfig.appFiles)) {
+    files[file] = icons[name]
+  }
+  for (const folder of iconsConfig.appWebFolders) {
     for (const [name, buffer] of Object.entries(web)) {
       files[path.join(folder, name)] = buffer
     }
