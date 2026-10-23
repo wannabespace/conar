@@ -18,6 +18,11 @@
 - [How to connect to SQL Server](https://tamery.app/blog/connect-to-sql-server): Connection string, trusted connections vs SQL auth, the sa account
 - [How to connect to PostgreSQL](https://tamery.app/blog/connect-to-postgresql): Connection string, poolers, placeholder passwords, SSL modes
 - [How to connect to MySQL](https://tamery.app/blog/connect-to-mysql): URL, Go DSN and .env formats, SSL, auth plugin errors
+- [How to connect to Oracle](https://tamery.app/blog/connect-to-oracle): Connection string and JDBC URL, service name, schemas, TCPS, limits
+- [How to connect to ClickHouse](https://tamery.app/blog/connect-to-clickhouse): HTTP interface, ports, HTTPS string, differences from a row store
+- [How to connect to SQLite](https://tamery.app/blog/connect-to-sqlite): Drag and drop, paths and schemes, reaching a local file from the web
+- [How to connect to Turso](https://tamery.app/blog/connect-to-turso): libSQL database URL and auth token, self-hosted servers
+- [How to connect to Cloudflare D1](https://tamery.app/blog/connect-to-cloudflare-d1): Account ID, database ID, API token, D1 quirks
 - [Privacy Policy](https://tamery.app/privacy-policy): How Tamery handles your data
 - [Terms of Service](https://tamery.app/terms-of-service): Terms and conditions
 

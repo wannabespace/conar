@@ -25,6 +25,21 @@
     <loc>https://tamery.app/blog/connect-to-mysql</loc>
   </url>
   <url>
+    <loc>https://tamery.app/blog/connect-to-oracle</loc>
+  </url>
+  <url>
+    <loc>https://tamery.app/blog/connect-to-clickhouse</loc>
+  </url>
+  <url>
+    <loc>https://tamery.app/blog/connect-to-sqlite</loc>
+  </url>
+  <url>
+    <loc>https://tamery.app/blog/connect-to-turso</loc>
+  </url>
+  <url>
+    <loc>https://tamery.app/blog/connect-to-cloudflare-d1</loc>
+  </url>
+  <url>
     <loc>https://tamery.app/privacy-policy</loc>
   </url>
   <url>

@@ -1,0 +1,34 @@
+SQLite is a file, not a server, so "connecting" means pointing Tamery at the file. Here is how, and what to do when you are on the web app and the file lives on your machine.
+
+## Open a SQLite file
+
+On desktop, the fastest way is to **drop the database file onto Tamery**. Or choose **SQLite** under Engine and pick the file with the folder button.
+
+Pasting a path works too, as long as the file ends in `.db`, `.db3`, `.sqlite` or `.sqlite3`:
+
+```text
+sqlite:///Users/me/app.db
+```
+
+For any other filename, paste `sqlite3 /path/to/file` instead, so Tamery knows it is a SQLite file and not something else.
+
+The file has to exist already. A `~/` path points to the home folder of whatever computer opens the connection, so the same synced connection can work on your laptop and your desktop. Syncing the connection does not copy the file itself, only the pointer to it.
+
+## On the web app
+
+The browser cannot read a file off your disk, so run [`tamery proxy`](https://docs.tamery.app/cli/commands) on the computer that holds the file. The web app then reaches it through the proxy.
+
+## What works
+
+Browse and edit rows, run SQL, explore relationships, and manage indexes and triggers.
+
+- You can add, rename and drop columns. Changing an existing column's type or nullability is not supported, because SQLite would have to rebuild the whole table to do it.
+- Existing constraints are read-only.
+
+## Turso and Cloudflare D1
+
+If you are looking for hosted SQLite, Tamery connects to both [Turso](/blog/connect-to-turso) and [Cloudflare D1](/blog/connect-to-cloudflare-d1). They are SQLite-compatible but remote, so they have their own short guides.
+
+---
+
+[Download Tamery](/download), drop your `.db` file in, and you are querying. The full reference is in the [SQLite docs](https://docs.tamery.app/connections/sqlite).
