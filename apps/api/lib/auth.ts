@@ -3,17 +3,15 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@conar/db'
 import { users } from '@conar/db/schema'
 import * as schema from '@conar/db/schema'
-import { infisical } from '@conar/infisical'
 import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { createAuthMiddleware } from 'better-auth/api'
 import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
-import { nanoid } from 'nanoid'
 
-import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
+import { userEncryptionKey } from '~/lib/encryption-key'
 import { resend, sendEmail } from '~/lib/resend'
 
 import { redisMemoize } from './redis'
@@ -114,20 +112,14 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async user => {
-          await infisical.secrets
-            .set({
-              path: ['users', user.id],
-              name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-              value: nanoid(),
-            })
-            .catch(async error => {
-              console.error(
-                `Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined,
-              )
-              await db.delete(users).where(eq(users.id, user.id))
-              throw error
-            })
+          await userEncryptionKey.create(user.id).catch(async error => {
+            console.error(
+              `Failed to create user encryption key: ${error instanceof Error ? error.message : error}`,
+              error instanceof Error && error.cause ? error.cause : undefined,
+            )
+            await db.delete(users).where(eq(users.id, user.id))
+            throw error
+          })
 
           await ensureDefaultWorkspace(user.id)
 
@@ -143,18 +135,6 @@ export const auth = betterAuth({
               },
             })
           }
-        },
-      },
-      delete: {
-        after: async user => {
-          await infisical.secrets
-            .delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
-            .catch(async error => {
-              console.error(
-                `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined,
-              )
-            })
         },
       },
       update: {

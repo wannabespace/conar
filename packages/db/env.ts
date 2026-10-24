@@ -7,6 +7,7 @@ export const nodeEnv = type('"production" | "development" | "test"').assert(proc
 export const envType = type({
   DATABASE_URL: 'string',
   ENCRYPTION_SECRET: 'string',
+  USER_KEY_SECRET: 'string',
 })
 
 export const env = envType.assert(process.env)
