@@ -35,6 +35,7 @@ export const Navbar = () => {
     { label: 'Pricing', link: { hash: 'pricing', to: home } },
     { label: 'FAQ', link: { hash: 'faq', to: home } },
     { label: 'Releases', link: { to: '/releases' } },
+    { label: 'Blog', link: { to: '/blog' } },
     {
       label: 'Docs',
       link: { href: DOCS_URL },
