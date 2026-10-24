@@ -48,7 +48,6 @@ AI requests are routed through **OpenRouter** to **Anthropic** (primary), **Open
 | PostHog (EU)               | Usage analytics (inputs masked)             |
 | DataFast                   | Website traffic analytics (marketing site)  |
 | Resend                     | Transactional email delivery                |
-| Infisical                  | Secure per-user encryption key management   |
 | Exa                        | Web search for AI features                  |
 | Upstash / Context7         | Documentation lookup for AI features        |
 | Google OAuth, GitHub OAuth | Social login                                |

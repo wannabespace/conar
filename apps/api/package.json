@@ -21,7 +21,6 @@
     "@tamery/ai": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/db": "workspace:*",
-    "@tamery/infisical": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@upstash/context7-tools-ai-sdk": "catalog:",
     "ai": "catalog:",
