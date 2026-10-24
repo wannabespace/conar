@@ -59,7 +59,7 @@ Better Auth's `organization` plugin is remapped to `workspace`; the plugin's `ac
 
 ## Anonymous users
 
-Desktop-only "Continue without an account" signs in through Better Auth's `anonymous` plugin, so an anonymous user is a real server user with a default workspace and its own Infisical secret — every sync and encryption path stays shared.
+Desktop-only "Continue without an account" signs in through Better Auth's `anonymous` plugin, so an anonymous user is a real server user with a default workspace and its own encryption key — every sync and encryption path stays shared.
 
 - **Getting in stays easy.** Anything that helps someone get their first connection working (the form, parsing, test, diagnosis, Explain with AI on a failed test) is free for guests and Free users, with no quota or sign-in gate; limits only gate what comes after.
 - Limits are the `guest` plan in `packages/shared/permissions.ts`: one connection (`connection.create` with the current count), no AI (`ai.*`) beyond connection diagnosis, no workspaces, one open tab per resource (`tab.multiple`, client-only: `openTab`/`ensureTab` close the other tabs first, so opening another replaces it silently). Guests can edit the database like any member. A locked control's press goes through `checkOrUpgrade` (`architecture.md` → Permissions), which for a guest is the banner prompt `promptSignIn` — it also sends the PostHog event `guest_feature_blocked { hint }`, the signal for which limits push guests to sign up. How a locked control looks is `tamery-ui` patterns. The server checks are the real gate; `handleError` shows a guest's `FORBIDDEN` message in the banner (toasts on `/auth`, which has no banner).
