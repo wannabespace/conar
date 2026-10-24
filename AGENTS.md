@@ -82,7 +82,6 @@ packages/
   ui/           Shared shadcn/base-ui React components and theme.
   table/        TanStack Virtual table component and hooks.
   shared/       Cross-package utils, enums, constants, types.
-  infisical/    Secrets client wrapper (@conar/infisical).
   configs/      Shared TypeScript configs.
 ```
 
@@ -91,7 +90,7 @@ The **proxy app** (`apps/proxy`) is a separate Hono process that executes DB que
 ## Dev commands
 
 ```bash
-pnpm run docker:start       # Start local Postgres (conar DB), Redis, and Infisical (secrets) via docker-compose.dev.yml
+pnpm run docker:start       # Start local Postgres (conar DB) and Redis via docker-compose.dev.yml
 pnpm run drizzle:migrate    # Apply DB migrations (packages/db)
 pnpm run drizzle:generate   # Generate migration from schema changes
 pnpm run dev                # Start all apps via Turbo

@@ -15,7 +15,6 @@
     "@conar/ai": "workspace:*",
     "@conar/connection": "workspace:*",
     "@conar/db": "workspace:*",
-    "@conar/infisical": "workspace:*",
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
     "@octokit/rest": "catalog:",
