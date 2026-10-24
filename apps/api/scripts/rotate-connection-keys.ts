@@ -1,21 +1,27 @@
 import process from 'node:process'
 
 import { db } from '@tamery/db'
-import { connections, members, users } from '@tamery/db/schema'
-import { infisical } from '@tamery/infisical'
+import {
+  connections,
+  members,
+  userEncryptionKeys,
+  users,
+} from '@tamery/db/schema'
 import { decrypt, encrypt } from '@tamery/shared/crypto-node'
 import { toError } from '@tamery/shared/utils'
 import { and, asc, eq, inArray, isNotNull } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
-import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
-
-// Rotates every user's Infisical ENCRYPTION_SECRET and re-encrypts the connection
-// strings it guards in lockstep. A workspace decrypts with its earliest owner's
-// secret (getWorkspaceSecret), so each workspace's rows are rotated under that
-// owner. Dry run by default: reads and decrypts everything to prove the rotation
-// will succeed, writes nothing. Pass --execute to rotate.
+// Rotates the per-user connection key (user_encryption_keys.secret), the inner
+// layer of every connection string. Pure database work under one transaction per
+// user: the ORM column types handle the outer ENCRYPTION_SECRET layer, so this
+// decrypts the inner layer with the user's old key and re-encrypts it with a fresh
+// one, flipping the key row and its connections together. No env change, no redeploy.
+// Dry run by default; pass --execute. Positional user ids scope it (default: all).
 const execute = process.argv.includes('--execute')
+const onlyUserIds = new Set(
+  process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
+)
 
 const ownerMembers = await db
   .select({ userId: members.userId, workspaceId: members.workspaceId })
@@ -40,17 +46,11 @@ for (const [workspaceId, userId] of workspaceOwner) {
   }
 }
 
-const rotateUser = async (userId: string, workspaceIds: string[]) => {
-  let oldSecret: string
-  try {
-    oldSecret = await infisical.secrets.get({
-      name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-      path: ['users', userId],
-    })
-  } catch (error) {
-    return { error: `secret read failed: ${toError(error).message}` }
-  }
-
+const rotateUser = async (
+  userId: string,
+  oldKey: string,
+  workspaceIds: string[]
+) => {
   const rows = workspaceIds.length
     ? await db
         .select({
@@ -76,11 +76,11 @@ const rotateUser = async (userId: string, workspaceIds: string[]) => {
     try {
       plaintexts.push({
         id: row.id,
-        text: decrypt({ encryptedText, secret: oldSecret }),
+        text: decrypt({ encryptedText, secret: oldKey }),
       })
     } catch {
       return {
-        error: `connection ${row.id} does not decrypt with the current secret`,
+        error: `connection ${row.id} does not decrypt with the user's current key`,
       }
     }
   }
@@ -89,29 +89,22 @@ const rotateUser = async (userId: string, workspaceIds: string[]) => {
     return { connections: plaintexts.length }
   }
 
-  const newSecret = nanoid()
+  const newKey = nanoid()
 
-  // Promote the key inside the transaction: if Infisical rejects (the common
-  // failure), the row updates roll back and the old key with its old rows stay
-  // consistent, so a rerun starts clean. The only unrecoverable window is a hard
-  // crash during the commit after Infisical already took the new key, when the old
-  // key is gone but the rows rolled back to it; see the key-version note in
-  // IMPROVEMENTS.md for the format change that would close it.
   try {
     await db.transaction(async (tx) => {
       for (const { id, text } of plaintexts) {
         // oxlint-disable-next-line no-await-in-loop -- one statement per row, each a distinct ciphertext on one tx connection
         await tx
           .update(connections)
-          .set({ connectionString: encrypt({ secret: newSecret, text }) })
+          .set({ connectionString: encrypt({ secret: newKey, text }) })
           .where(eq(connections.id, id))
       }
 
-      await infisical.secrets.update({
-        name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-        path: ['users', userId],
-        value: newSecret,
-      })
+      await tx
+        .update(userEncryptionKeys)
+        .set({ secret: newKey })
+        .where(eq(userEncryptionKeys.userId, userId))
     })
   } catch (error) {
     return {
@@ -122,19 +115,33 @@ const rotateUser = async (userId: string, workspaceIds: string[]) => {
   return { connections: plaintexts.length }
 }
 
-const allUsers = await db.select({ id: users.id }).from(users)
+const keyRows = await db
+  .select({
+    secret: userEncryptionKeys.secret,
+    userId: userEncryptionKeys.userId,
+  })
+  .from(userEncryptionKeys)
+  .innerJoin(users, eq(users.id, userEncryptionKeys.userId))
 
 let rotated = 0
 let reEncrypted = 0
 const failures: string[] = []
 
-for (const { id } of allUsers) {
-  // oxlint-disable-next-line no-await-in-loop -- sequential by design: each user's DB and Infisical writes must settle before the next
-  const result = await rotateUser(id, ownedWorkspaces.get(id) ?? [])
+for (const { secret, userId } of keyRows) {
+  if (onlyUserIds.size && !onlyUserIds.has(userId)) {
+    continue
+  }
+
+  // oxlint-disable-next-line no-await-in-loop -- sequential by design: each user's transaction settles before the next
+  const result = await rotateUser(
+    userId,
+    secret,
+    ownedWorkspaces.get(userId) ?? []
+  )
 
   if ('error' in result) {
-    failures.push(`${id}: ${result.error}`)
-    console.error(`✗ ${id}: ${result.error}`)
+    failures.push(`${userId}: ${result.error}`)
+    console.error(`✗ ${userId}: ${result.error}`)
     continue
   }
 
@@ -144,8 +151,8 @@ for (const { id } of allUsers) {
 
 console.log(
   execute
-    ? `Rotated ${rotated} user secret(s); re-encrypted ${reEncrypted} connection string(s).`
-    : `Dry run: ${rotated} user secret(s) ready to rotate, ${reEncrypted} connection string(s) verified decryptable. Re-run with --execute to apply.`
+    ? `Rotated ${rotated} user key(s); re-encrypted ${reEncrypted} connection string(s).`
+    : `Dry run: ${rotated} user key(s) ready to rotate, ${reEncrypted} connection string(s) verified decryptable. Re-run with --execute to apply.`
 )
 
 if (failures.length) {
