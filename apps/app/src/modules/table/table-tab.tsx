@@ -25,7 +25,7 @@ const addColumn = () => columnDialogRef.current?.add()
 
 const TableContent = ({ table, schema }: { table: string; schema: string }) => {
   const { connectionResource, dialect } = useRouteContext()
-  const onAddColumn = getCapabilities(dialect).declaredColumns
+  const onAddColumn = getCapabilities(dialect).flags.includes('declaredColumns')
     ? addColumn
     : undefined
   const { data = [], isPending } = useTableColumnsQuery({

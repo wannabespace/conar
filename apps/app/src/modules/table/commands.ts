@@ -33,7 +33,9 @@ export const tableCommands = ({
       ?.tables.find((table) => table.name === active.table)?.type === 'table'
 
   return isBaseTable &&
-    getCapabilities(getDialect(current.connection.type)).declaredColumns
+    getCapabilities(getDialect(current.connection.type)).flags.includes(
+      'declaredColumns'
+    )
     ? [
         {
           action: () => columnDialogRef.current?.add(),

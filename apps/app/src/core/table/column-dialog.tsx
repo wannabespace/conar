@@ -59,8 +59,10 @@ const lockedFields = (
   column: EditableColumn | null,
   primaryKey: boolean
 ) => {
-  const { alterColumns, renameColumns, retypeKeyColumns } =
-    getCapabilities(dialect)
+  const { flags } = getCapabilities(dialect)
+  const alterColumns = flags.includes('alterColumns')
+  const renameColumns = flags.includes('renameColumns')
+  const retypeKeyColumns = flags.includes('retypeKeyColumns')
   const stored = column !== null && column.state !== 'added'
   const name = stored && !renameColumns
   const type =
@@ -75,7 +77,9 @@ const lockedFields = (
 }
 
 const editableComment = (dialect: Dialect, column: EditableColumn | null) =>
-  getCapabilities(dialect).comments ? column?.comment : undefined
+  getCapabilities(dialect).flags.includes('comments')
+    ? column?.comment
+    : undefined
 
 const ColumnForm = ({
   onSubmit,

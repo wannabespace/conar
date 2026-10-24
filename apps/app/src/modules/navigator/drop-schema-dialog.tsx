@@ -65,7 +65,7 @@ export const DropSchemaDialog = ({
 
   return (
     <DropDialog
-      cascadable={getCapabilities(dialect).cascade}
+      cascadable={getCapabilities(dialect).flags.includes('cascade')}
       cascade={cascade}
       error={error}
       name={schema}

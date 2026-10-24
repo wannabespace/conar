@@ -191,7 +191,10 @@ type IdentityColumn = Pick<
  */
 export const rowIdentity = (columns: IdentityColumn[], dialect: Dialect) => {
   const primary = columns.filter((column) => column.primaryKey)
-  if (primary.length > 0 && getCapabilities(dialect).uniqueKeys) {
+  if (
+    primary.length > 0 &&
+    getCapabilities(dialect).flags.includes('uniqueKeys')
+  ) {
     return { columns: primary.map((column) => column.id), unique: true }
   }
   const uniqueKey = Object.values(

@@ -53,7 +53,7 @@ export const TreeRowContent = ({
           onCreateView={() => createViewDialogRef.current?.create(row.name)}
           onDrop={() => dialogs.dropSchema.current?.drop(row.name)}
           onRename={
-            getCapabilities(dialect).renameSchema
+            getCapabilities(dialect).flags.includes('renameSchema')
               ? () => dialogs.renameSchema.current?.rename(row.name)
               : undefined
           }
@@ -102,7 +102,8 @@ export const TreeRowContent = ({
         row={row}
         search={search}
         onRename={
-          row.table.type === 'table' || getCapabilities(dialect).renameViews
+          row.table.type === 'table' ||
+          getCapabilities(dialect).flags.includes('renameViews')
             ? () =>
                 dialogs.renameTable.current?.rename(
                   row.schema,

@@ -49,7 +49,7 @@ const VisualizerTab = () => {
       <VisualizerSkeleton
         drafts={hasDrafts}
         schemaPicker={
-          getCapabilities(dialect).schemas &&
+          getCapabilities(dialect).flags.includes('schemas') &&
           (!tables || new Set(tables.map(({ schema }) => schema)).size > 1)
         }
       />

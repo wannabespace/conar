@@ -77,7 +77,7 @@ export const TablesPanel = ({
     pinnedTables,
     schemas: tablesAndSchemas?.schemas ?? [],
     search,
-    showSchemaRows: getCapabilities(dialect).schemas,
+    showSchemaRows: getCapabilities(dialect).flags.includes('schemas'),
   })
 
   const toggleSchema = (name: string) => {
@@ -145,7 +145,8 @@ export const TablesPanel = ({
             <div className="flex flex-col gap-0.5">
               <span>
                 Refresh {names.table}s
-                {getCapabilities(dialect).schemas && ' and schemas'}
+                {getCapabilities(dialect).flags.includes('schemas') &&
+                  ' and schemas'}
               </span>
               <span className="opacity-70">
                 Last updated:{' '}

@@ -200,10 +200,10 @@ const getLocks = ({
   item: GroupedIndex | null
 }) => {
   const owned = !!item?.constraintOwned
-  const { indexes, renameConstraints } = getCapabilities(dialect)
+  const { flags, indexes } = getCapabilities(dialect)
   const readOnly = item
     ? !can.edit ||
-      (owned && !renameConstraints) ||
+      (owned && !flags.includes('renameConstraints')) ||
       (!!item.custom && !indexes.rename)
     : !can.create
 

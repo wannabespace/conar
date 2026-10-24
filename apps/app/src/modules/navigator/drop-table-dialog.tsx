@@ -150,7 +150,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               autoComplete="off"
             />
           </div>
-          {getCapabilities(dialect).cascade && (
+          {getCapabilities(dialect).flags.includes('cascade') && (
             <OptionField
               htmlFor="drop-table-cascade"
               title="Cascade"

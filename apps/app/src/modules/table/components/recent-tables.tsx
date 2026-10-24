@@ -64,7 +64,7 @@ export const RecentTables = () => {
           <span data-mask className="truncate">
             {table.table}
           </span>
-          {getCapabilities(dialect).schemas && (
+          {getCapabilities(dialect).flags.includes('schemas') && (
             <span
               data-mask
               className="text-muted-foreground ml-auto pl-4 text-xs"

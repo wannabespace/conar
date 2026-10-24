@@ -36,7 +36,12 @@ const ESTIMATED_COMMANDS = new Set([
 ])
 
 export const estimateQuery = (text: string, dialect: Dialect) => {
-  if (!(isSqlDialect(dialect) && getCapabilities(dialect).explain)) {
+  if (
+    !(
+      isSqlDialect(dialect) &&
+      getCapabilities(dialect).flags.includes('explain')
+    )
+  ) {
     return null
   }
   const [statement, ...rest] = splitStatements(text, dialects[dialect])

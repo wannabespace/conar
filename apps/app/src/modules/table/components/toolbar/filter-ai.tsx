@@ -153,7 +153,7 @@ export const useFilterAi = ({
         const current = store.get()
         const context = `
           Filters working with AND operator.
-          Database engine: ${connection.type}${getCapabilities(dialect).ilike ? '' : ' (no ilike operator: use like)'}
+          Database engine: ${connection.type}${getCapabilities(dialect).flags.includes('ilike') ? '' : ' (no ilike operator: use like)'}
           Current filters: ${JSON.stringify(
             current.filters.map(({ column, ref, values }) => ({
               column,

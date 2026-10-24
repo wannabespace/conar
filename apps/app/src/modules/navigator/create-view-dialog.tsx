@@ -194,7 +194,7 @@ export const CreateViewDialog = ({ dialect }: { dialect: SqlDialect }) => {
         value={query}
         onChange={setQuery}
       />
-      {getCapabilities(dialect).materializedViews && (
+      {getCapabilities(dialect).flags.includes('materializedViews') && (
         <OptionField
           htmlFor="view-dialog-materialized"
           title="Materialized"

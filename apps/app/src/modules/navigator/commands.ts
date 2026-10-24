@@ -42,7 +42,9 @@ export const navigatorCommands = ({
               } satisfies CommandEntry,
             ]
           : []),
-        ...(getCapabilities(getDialect(current.connection.type)).schemas
+        ...(getCapabilities(getDialect(current.connection.type)).flags.includes(
+          'schemas'
+        )
           ? [
               {
                 action: () => createSchemaDialogRef.current?.create(),

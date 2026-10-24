@@ -151,20 +151,20 @@ export const replaceWarning = ({
   name: string
   noun: string
 }): InspectorWarning | undefined =>
-  getCapabilities(dialect).ddlRollback
+  getCapabilities(dialect).flags.includes('ddlRollback')
     ? undefined
     : {
         action: `Replace ${noun}`,
         description: (
           <>
             This database cannot roll DDL back, so{' '}
-            {getCapabilities(dialect).replacesInPlace
+            {getCapabilities(dialect).flags.includes('replacesInPlace')
               ? 'saving overwrites'
               : 'we drop'}{' '}
             <span data-mask className="font-medium">
               {name}
             </span>{' '}
-            {getCapabilities(dialect).replacesInPlace
+            {getCapabilities(dialect).flags.includes('replacesInPlace')
               ? 'in place'
               : 'and create it again'}
             . If the new statement fails, we recreate the old one from its saved
