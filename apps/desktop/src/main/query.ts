@@ -9,6 +9,9 @@ import { tunnelForwarding } from '@tamery/connection/ssh/tunnel'
 import { isConnectionError } from '@tamery/shared/connections'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 
+import type { CopyDatabaseRequest } from './copy-database'
+import { copyDatabase } from './copy-database'
+
 export type QueryProcessRequest =
   | {
       type: 'call'
@@ -19,6 +22,8 @@ export type QueryProcessRequest =
     }
   | { type: 'hostKey'; hostKeyId: number; trusted: boolean }
   | { type: 'resetTransactions' }
+  | { type: 'copyDatabase'; id: number; request: CopyDatabaseRequest }
+  | { type: 'cancelCopy'; copyId: string }
 
 export type QueryProcessReply =
   | { type: 'result'; id: number; result: unknown }
@@ -28,6 +33,7 @@ export type QueryProcessReply =
       hostKeyId: number
       prompt: Parameters<ConfirmHostKey>[0]
     }
+  | { type: 'copyLog'; id: number; line: string }
 
 const dialects: Record<Dialect, () => Promise<{ query: QueryExecutor }>> = {
   clickhouse: () => import('@tamery/connection/queries/dialects/clickhouse'),
@@ -42,7 +48,26 @@ const reply = (message: QueryProcessReply) =>
   process.parentPort.postMessage(message)
 
 const hostKeyAnswers = new Map<number, (trusted: boolean) => void>()
+const copies = new Map<string, AbortController>()
 let nextHostKeyId = 0
+
+const perform = async (
+  data: Extract<QueryProcessRequest, { type: 'call' | 'copyDatabase' }>
+) => {
+  if (data.type === 'call') {
+    const { query } = await dialects[data.dialect]()
+    const run = query[data.method] as (args: unknown) => Promise<unknown>
+    return run(data.args)
+  }
+  const controller = new AbortController()
+  copies.set(data.request.id, controller)
+  await copyDatabase(
+    data.request,
+    (line) => reply({ id: data.id, line, type: 'copyLog' }),
+    controller.signal
+  ).finally(() => copies.delete(data.request.id))
+  return null
+}
 
 sshForwarding.use((connectionString) =>
   tunnelForwarding(connectionString, (prompt) => {
@@ -62,15 +87,17 @@ process.parentPort.on(
       await resetTransactions()
       return
     }
+    if (data.type === 'cancelCopy') {
+      copies.get(data.copyId)?.abort()
+      return
+    }
     if (data.type === 'hostKey') {
       hostKeyAnswers.get(data.hostKeyId)?.(data.trusted)
       hostKeyAnswers.delete(data.hostKeyId)
       return
     }
     try {
-      const { query } = await dialects[data.dialect]()
-      const run = query[data.method] as (args: unknown) => Promise<unknown>
-      reply({ id: data.id, result: await run(data.args), type: 'result' })
+      reply({ id: data.id, result: await perform(data), type: 'result' })
     } catch (error) {
       reply({
         error: error instanceof Error ? error.message : String(error),

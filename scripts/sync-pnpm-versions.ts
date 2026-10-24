@@ -42,7 +42,7 @@ const versionRegex = /^(?<prefix>\s*version:\s*)(?<oldVersion>[\d.]+)$/gmu
 const updateWorkflowYaml = (filePath: string, version: string) => {
   const content = fs.readFileSync(filePath, 'utf-8')
 
-  const newContent = content.replace(
+  const newContent = content.replaceAll(
     versionRegex,
     (match, ...args: unknown[]) => {
       const groups = args.at(-1) as

@@ -33,4 +33,4 @@ export const b64UrlEncode = (buf: Uint8Array) =>
   toBase64(String.fromCodePoint(...buf))
     .replaceAll('+', '-')
     .replaceAll('/', '_')
-    .replace(/=+$/u, '')
+    .replace(/[=]+$/u, '')

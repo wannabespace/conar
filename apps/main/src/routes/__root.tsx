@@ -14,6 +14,7 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { MotionConfig } from 'motion/react'
 import { useEffect } from 'react'
+import type { Graph } from 'schema-dts'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
@@ -61,7 +62,7 @@ const structuredData = {
       sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
   ],
-}
+} satisfies Graph
 
 const analyticsScripts = [
   {
@@ -141,7 +142,6 @@ export const Route = createRootRouteWithContext<{
           href: '/favicon-96x96.png',
           sizes: '96x96',
         },
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'shortcut icon', href: '/favicon.ico' },
         {
           rel: 'apple-touch-icon',

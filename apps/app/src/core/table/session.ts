@@ -1,4 +1,5 @@
 import { omit } from '@tamery/shared/utils'
+import { valueToText } from '@tamery/shared/value-text'
 import type { GridRow } from '@tamery/table'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
@@ -64,7 +65,10 @@ export const useTableSessionStore = () => {
 export const primaryKeysKey = (primaryKeys: PrimaryKeys) =>
   Object.entries(primaryKeys)
     .toSorted()
-    .map(([key, value]) => `${key}=${value}`)
+    .map(
+      ([key, value]) =>
+        `${key}=${value === null || value === undefined ? value : valueToText(value)}`
+    )
     .join('|')
 
 export const getRowPrimaryKeysValues = (

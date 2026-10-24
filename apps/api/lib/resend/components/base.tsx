@@ -45,7 +45,7 @@ export const Base = ({
         <Container className="mx-auto max-w-120 px-0 pt-5 pb-12">
           <Section className="mb-5">
             <Img
-              src={`${env.MAIN_URL}/web-app-manifest-192x192.png`}
+              src={`${env.MAIN_URL}/logo.png`}
               width="48"
               height="48"
               alt="Tamery"

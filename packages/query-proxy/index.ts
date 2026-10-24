@@ -1,12 +1,7 @@
 import type { BuilderWithMiddlewares, RouterClient } from '@orpc/server'
 import { type } from '@orpc/server'
 import type { QueryExecutor } from '@tamery/connection/queries'
-import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
-import * as mssql from '@tamery/connection/queries/dialects/mssql'
-import * as mysql from '@tamery/connection/queries/dialects/mysql'
-import * as oracle from '@tamery/connection/queries/dialects/oracle'
-import * as pg from '@tamery/connection/queries/dialects/pg'
-import * as sqlite from '@tamery/connection/queries/dialects/sqlite'
+import { executors } from '@tamery/connection/queries/executors'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction, Prettify } from '@tamery/shared/utils'
 
@@ -39,6 +34,9 @@ interface Resolvers<T extends AnyBuilder> {
   /** Who a transaction belongs to, so a leaked `txId` cannot drive another user's transaction. */
   owner: (context: HandlerContext<T>) => string
 }
+
+// A proxy serves many users at once; one unbounded result would hold its memory for all of them.
+const MAX_ROWS = 100_000
 
 const createQueryDialect = <T extends AnyBuilder>(
   dialect: QueryExecutor,
@@ -74,6 +72,7 @@ const createQueryDialect = <T extends AnyBuilder>(
         dialect.execute({
           ...input,
           connectionString: await resolve.connectionString(input, context),
+          maxRows: Math.min(input.maxRows ?? MAX_ROWS, MAX_ROWS),
         })
       ),
     executeTransaction: orpc
@@ -81,6 +80,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(({ input, context }) =>
         dialect.executeTransaction({
           ...input,
+          maxRows: Math.min(input.maxRows ?? MAX_ROWS, MAX_ROWS),
           ownerId: resolve.owner(context),
         })
       ),
@@ -113,12 +113,12 @@ export const createQueryRouter = <T extends AnyBuilder>(
   resolve: Resolvers<T>
 ) =>
   ({
-    clickhouse: createQueryDialect(clickhouse.query, orpc, resolve),
-    mssql: createQueryDialect(mssql.query, orpc, resolve),
-    mysql: createQueryDialect(mysql.query, orpc, resolve),
-    oracle: createQueryDialect(oracle.query, orpc, resolve),
-    postgres: createQueryDialect(pg.query, orpc, resolve),
-    sqlite: createQueryDialect(sqlite.query, orpc, resolve),
+    clickhouse: createQueryDialect(executors.clickhouse, orpc, resolve),
+    mssql: createQueryDialect(executors.mssql, orpc, resolve),
+    mysql: createQueryDialect(executors.mysql, orpc, resolve),
+    oracle: createQueryDialect(executors.oracle, orpc, resolve),
+    postgres: createQueryDialect(executors.postgres, orpc, resolve),
+    sqlite: createQueryDialect(executors.sqlite, orpc, resolve),
   }) satisfies Record<Dialect, Record<keyof QueryExecutor, unknown>>
 
 export type ORPCRouter = RouterClient<ReturnType<typeof createQueryRouter>>

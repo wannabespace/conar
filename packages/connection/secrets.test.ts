@@ -20,6 +20,19 @@ describe('connectionSecrets', () => {
     ])
   })
 
+  it('keeps a ClickHouse access token off the synced string', () => {
+    const synced = new URL(
+      connectionSecrets.strip(
+        'https://default@ch.example.com:8443/?access_token=jwt-secret'
+      )
+    )
+
+    expect(synced.searchParams.get('access_token')).toBe('')
+    expect(connectionSecrets.missing(synced.searchParams)).toEqual([
+      'access_token',
+    ])
+  })
+
   it('copies a string that still connects but carries no tunnel secret', () => {
     const copied = new URL(connectionSecrets.copyable(LOCAL))
 

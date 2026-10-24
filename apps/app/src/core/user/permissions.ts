@@ -1,6 +1,10 @@
-import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
+import {
+  GUEST_CONNECTIONS_MESSAGE,
+  SHARE_ACCOUNT_MESSAGE,
+} from '@tamery/shared/constants'
 import type { Permissions } from '@tamery/shared/permissions'
 import { getPermissions } from '@tamery/shared/permissions'
+import { FREE_SHARE_LIMIT_MESSAGE } from '@tamery/shared/usage'
 import { Result } from 'better-result'
 import { createPermix } from 'permix'
 import { usePermix } from 'permix/react'
@@ -25,6 +29,11 @@ const SIGN_IN_HINTS: Partial<Record<keyof Permissions, string>> = {
   ai: 'AI features need an account.',
   connection: GUEST_CONNECTIONS_MESSAGE,
   mcp: 'Unlimited agent queries need an account and Tamery Pro.',
+  share: SHARE_ACCOUNT_MESSAGE,
+}
+
+const UPGRADE_HINTS: Record<string, string> = {
+  'share.create': FREE_SHARE_LIMIT_MESSAGE,
 }
 
 export const checkOrUpgrade = (...args: Parameters<typeof permix.check>) => {
@@ -40,7 +49,10 @@ export const checkOrUpgrade = (...args: Parameters<typeof permix.check>) => {
       SIGN_IN_HINTS[group as keyof Permissions] ?? 'That needs an account.'
     )
   } else {
-    setIsSubscriptionDialogOpen(true)
+    setIsSubscriptionDialogOpen(
+      true,
+      typeof path === 'string' ? (UPGRADE_HINTS[path] ?? null) : null
+    )
   }
 
   return false

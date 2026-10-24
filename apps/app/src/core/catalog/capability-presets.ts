@@ -85,6 +85,8 @@ export interface ConnectionCapabilities {
   columnTypes: ColumnTypeCapabilities
   comments: boolean
   constraintKinds: readonly ConstraintKind[]
+  /** Desktop only: the copy runs the engine's own dump tool. */
+  copyDatabase: boolean
   ddlRollback: boolean
   // null: the login's schema or the resource, resolved by getDefaultSchema
   defaultSchema: string | null
@@ -112,6 +114,8 @@ export interface ConnectionCapabilities {
   setDefault: boolean
   systemSchemas: readonly string[]
   triggers: TriggerCapabilities
+  // ClickHouse's primary key is its sorting key and repeats, so a write by key would reach rows the user never picked; rows are found by their values instead.
+  uniqueKeys: boolean
 }
 
 export const ROW_EVENTS = TRIGGER_EVENTS.filter((event) => event !== 'TRUNCATE')

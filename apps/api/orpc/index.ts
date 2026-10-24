@@ -1,7 +1,7 @@
 import { ORPCError, os } from '@orpc/server'
 import { db } from '@tamery/db'
 import { members } from '@tamery/db/schema'
-import { infisical } from '@tamery/infisical'
+import { SESSION_NOT_FOUND_MESSAGE } from '@tamery/shared/constants'
 import { decrypt } from '@tamery/shared/crypto-node'
 import type { Permissions } from '@tamery/shared/permissions'
 import { getPermissions } from '@tamery/shared/permissions'
@@ -9,12 +9,13 @@ import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
 import { createPermix } from 'permix/orpc'
 
-import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
+import { userEncryptionKey } from '~/lib/encryption-key'
 import { redis } from '~/lib/redis'
 import { getSubscription } from '~/lib/subscription'
 
 import type { Context } from './context'
+import type { router } from './routers'
 
 export { getSubscription } from '~/lib/subscription'
 
@@ -35,15 +36,12 @@ export const getWorkspaceSecret = memoize(
       throw new ORPCError('NOT_FOUND', { message: 'Workspace not found' })
     }
 
-    return infisical.secrets.get({
-      name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-      path: ['users', owner.userId],
-    })
+    return userEncryptionKey.get(owner.userId)
   },
   { maxAge: 5 * 60 * 1000 }
 )
 
-const decryptConnectionString = async ({
+export const decryptConnectionString = async ({
   encryptedText,
   workspaceId,
 }: {
@@ -54,37 +52,45 @@ const decryptConnectionString = async ({
 const getSession = (headers: Headers) => auth.api.getSession({ headers })
 
 const sessionOrpc = orpc.errors({
-  UNAUTHORIZED: {
-    message: 'We could not find your session. Please sign in again.',
-  },
+  UNAUTHORIZED: { message: SESSION_NOT_FOUND_MESSAGE },
 })
 
-const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
-  // oxlint-disable-next-line node/callback-return -- middleware post-processes next()
-  const result = await next()
+// Every other procedure carries what a user typed or what is encrypted at rest: connection strings, SQL, chat text, share passwords.
+const LOGGED_PAYLOADS: ReadonlySet<string> = new Set([
+  'banner',
+  'connectionsResources',
+  'releases',
+  'repo',
+  'usage',
+  'userCount',
+  'workspaces',
+] satisfies (keyof typeof router)[])
 
-  if (
-    !context.request.url.endsWith('/sync') &&
-    !context.request.url.endsWith('/resolveConnectionString')
-  ) {
-    context.addLogData({
-      input,
-      output:
-        (Array.isArray(result.output) && result.output.length > 0) ||
-        (typeof result.output === 'object' &&
-          result.output !== null &&
-          Object.keys(result.output).length > 0) ||
-        (!Array.isArray(result.output) &&
-          typeof result.output !== 'object' &&
-          result.output !== null &&
-          !!result.output)
-          ? result.output
-          : undefined,
-    })
+const logMiddleware = orpc.middleware(
+  async ({ context, next, path }, input) => {
+    // oxlint-disable-next-line node/callback-return -- middleware post-processes next()
+    const result = await next()
+
+    if (LOGGED_PAYLOADS.has(path[0] ?? '') && path.at(-1) !== 'sync') {
+      context.addLogData({
+        input,
+        output:
+          (Array.isArray(result.output) && result.output.length > 0) ||
+          (typeof result.output === 'object' &&
+            result.output !== null &&
+            Object.keys(result.output).length > 0) ||
+          (!Array.isArray(result.output) &&
+            typeof result.output !== 'object' &&
+            result.output !== null &&
+            !!result.output)
+            ? result.output
+            : undefined,
+      })
+    }
+
+    return result
   }
-
-  return result
-})
+)
 
 export const authMiddleware = logMiddleware.use(
   sessionOrpc.middleware(async ({ context, errors, next }) => {

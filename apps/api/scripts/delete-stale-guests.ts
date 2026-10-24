@@ -57,7 +57,7 @@ await db
 const context = await auth.$context
 
 for (const id of guestIds) {
-  // oxlint-disable-next-line eslint/no-await-in-loop -- one at a time: each delete also calls Infisical to drop the user's secret
+  // oxlint-disable-next-line eslint/no-await-in-loop -- one at a time: each delete cascades to the user's own rows (encryption key, sessions)
   await context.internalAdapter.deleteUser(id)
 }
 

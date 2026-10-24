@@ -48,7 +48,7 @@ export const HighlightText = ({
 
   const regex = new RegExp(RegExp.escape(matchText), 'giu')
   const matched = regex.test(text)
-  const html = text.replace(
+  const html = text.replaceAll(
     regex,
     (matchedSegment) =>
       `<mark class="text-white bg-primary/50">${matchedSegment}</mark>`

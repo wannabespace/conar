@@ -8,6 +8,10 @@ export interface DialectSpec {
   dollarQuotes: boolean
   backslashEscapes: boolean
   hashComments: boolean
+  /** MySQL: `--` starts a comment only before whitespace or a control character, so `1--1` is `1 - -1`. */
+  spacedDashComments: boolean
+  /** Postgres reads every non-ASCII character, a no-break space included, as part of a name, so `€$a$` is a name and not a dollar quote. */
+  nonAsciiNames: boolean
   /** The case an unquoted name folds to; `null` where the engine compares names without case. */
   nameCase: NameCase | null
   atVariables: boolean
@@ -37,8 +41,10 @@ export const spec = (
   hashComments: false,
   identifierQuotes: ['"'],
   nameCase: null,
+  nonAsciiNames: false,
   plsqlUnits: false,
   separatorFreeStatements: false,
+  spacedDashComments: false,
   transactions: true,
   ...overrides,
   functions: new Set([...COMMON_FUNCTIONS, ...(overrides.functions ?? [])]),

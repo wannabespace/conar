@@ -48,6 +48,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.ClickHouse],
     comments: true,
     constraintKinds: ['check'],
+    copyDatabase: false,
     ddlRollback: false,
     defaultSchema: null,
     explain: false,
@@ -84,6 +85,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
+    uniqueKeys: false,
   },
   [Dialect.MSSQL]: {
     alterColumns: true,
@@ -91,6 +93,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.MSSQL],
     comments: true,
     constraintKinds: CONSTRAINT_KINDS,
+    copyDatabase: false,
     ddlRollback: true,
     defaultSchema: 'dbo',
     explain: false,
@@ -139,6 +142,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: ['AFTER', 'INSTEAD OF'],
       toggle: true,
     },
+    uniqueKeys: true,
   },
   [Dialect.MySQL]: {
     alterColumns: true,
@@ -146,6 +150,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.MySQL],
     comments: true,
     constraintKinds: CONSTRAINT_KINDS,
+    copyDatabase: false,
     ddlRollback: false,
     defaultSchema: null,
     explain: true,
@@ -194,6 +199,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: ['BEFORE', 'AFTER'],
       toggle: false,
     },
+    uniqueKeys: true,
   },
   [Dialect.Oracle]: {
     alterColumns: true,
@@ -201,6 +207,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.Oracle],
     comments: true,
     constraintKinds: CONSTRAINT_KINDS,
+    copyDatabase: false,
     ddlRollback: false,
     defaultSchema: null,
     explain: false,
@@ -244,6 +251,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: true,
     },
+    uniqueKeys: true,
   },
   [Dialect.Postgres]: {
     alterColumns: true,
@@ -251,6 +259,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.Postgres],
     comments: true,
     constraintKinds: CONSTRAINT_KINDS,
+    copyDatabase: true,
     ddlRollback: true,
     defaultSchema: 'public',
     explain: true,
@@ -301,6 +310,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: true,
     },
+    uniqueKeys: true,
   },
   [Dialect.SQLite]: {
     alterColumns: false,
@@ -308,6 +318,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.SQLite],
     comments: false,
     constraintKinds: CONSTRAINT_KINDS,
+    copyDatabase: false,
     ddlRollback: true,
     defaultSchema: SQLITE_RESOURCE_NAME,
     explain: false,
@@ -347,6 +358,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: false,
     },
+    uniqueKeys: true,
   },
 }
 

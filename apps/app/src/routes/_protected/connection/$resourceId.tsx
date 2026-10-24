@@ -2,6 +2,7 @@ import { UnavailableIcon } from '@hugeicons/core-free-icons'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import { title } from '@tamery/shared/title'
 import { Button } from '@tamery/ui/components/button'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import {
   ResizableGroup,
   ResizableSeparator,
@@ -16,7 +17,6 @@ import {
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { getDefaultSchema } from '~/core/catalog/capabilities'
 import {
   prefetchConnectionResourceCore,
@@ -132,7 +132,7 @@ const ResourcePage = () => {
   if (!fetching.canSend && fetching.reason) {
     return (
       <div className="flex h-screen min-h-[inherit] flex-col">
-        <PaneEmpty
+        <IconEmpty
           icon={UnavailableIcon}
           title="Can't open this connection here"
           description={<FetchingReason reason={fetching.reason} />}
@@ -140,7 +140,7 @@ const ResourcePage = () => {
           <Button variant="outline" onClick={goBack}>
             Back
           </Button>
-        </PaneEmpty>
+        </IconEmpty>
       </div>
     )
   }

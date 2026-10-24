@@ -1,3 +1,4 @@
+import { quoteIdentifier } from '@tamery/sql/identifier'
 import {
   Autocomplete,
   ComboboxCollection,
@@ -16,7 +17,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
-import { quoteIdentifier } from '~/core/codegen/utils'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 
 import type { useColumnType } from './use-column-type'

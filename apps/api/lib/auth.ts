@@ -2,7 +2,6 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@tamery/db'
 import { users } from '@tamery/db/schema'
 import * as schema from '@tamery/db/schema'
-import { infisical } from '@tamery/infisical'
 import { AUTH_COOKIE_PREFIX } from '@tamery/shared/constants'
 import { getPermissions } from '@tamery/shared/permissions'
 import { betterAuth } from 'better-auth'
@@ -17,10 +16,9 @@ import {
   twoFactor,
 } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
-import { nanoid } from 'nanoid'
 
-import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
+import { userEncryptionKey } from '~/lib/encryption-key'
 import { resend, sendEmail } from '~/lib/resend'
 
 import { requireEarlyAccess, requireUserEarlyAccess } from './early-access'
@@ -88,20 +86,14 @@ export const auth = betterAuth({
           return { data: user }
         },
         after: async (user) => {
-          await infisical.secrets
-            .set({
-              name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-              path: ['users', user.id],
-              value: nanoid(),
-            })
-            .catch(async (error) => {
-              console.error(
-                `Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined
-              )
-              await db.delete(users).where(eq(users.id, user.id))
-              throw error
-            })
+          await userEncryptionKey.create(user.id).catch(async (error) => {
+            console.error(
+              `Failed to create user encryption key: ${error instanceof Error ? error.message : error}`,
+              error instanceof Error && error.cause ? error.cause : undefined
+            )
+            await db.delete(users).where(eq(users.id, user.id))
+            throw error
+          })
 
           if (resend && !user.isAnonymous) {
             const [firstName = '', ...lastName] = user.name.split(' ')
@@ -115,21 +107,6 @@ export const auth = betterAuth({
               },
             })
           }
-        },
-      },
-      delete: {
-        after: async (user) => {
-          await infisical.secrets
-            .delete({
-              name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-              path: ['users', user.id],
-            })
-            .catch((error) => {
-              console.error(
-                `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined
-              )
-            })
         },
       },
       update: {
@@ -293,6 +270,8 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: env.GOOGLE_CLIENT_SECRET ?? '',
+      // An ID token signs in without the OAuth callback, which is where the TOTP challenge hooks in.
+      disableIdTokenSignIn: true,
       enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
       prompt: 'select_account',
     },

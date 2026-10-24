@@ -7,6 +7,7 @@ import { useSubscription } from 'seitu/react'
 import { DiscardButton } from '~/core/drafts/discard-button'
 import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import { rowIdentity } from '~/core/queries/rows/shape'
 import {
   draftsActions,
   getRowKeyByPrimaryKeys,
@@ -50,7 +51,7 @@ export const DraftsReviewDrawer = ({
   const { connectionResource, dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const columnsById = new Map(columns.map((column) => [column.id, column]))
-  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
+  const identityColumns = rowIdentity(columns, dialect).columns
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const drafts = useSubscription(sessionStore, {
@@ -80,7 +81,7 @@ export const DraftsReviewDrawer = ({
   const rowsByPrimaryKey = new Map(
     rows.map(
       (row, index) =>
-        [getRowKeyByPrimaryKeys(row, primaryColumns), { index, row }] as const
+        [getRowKeyByPrimaryKeys(row, identityColumns), { index, row }] as const
     )
   )
   const rowIndex = (key: string) =>

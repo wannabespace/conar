@@ -1,0 +1,45 @@
+---
+title: 'Sharing tables'
+sidebarTitle: 'Sharing tables'
+description: 'Send anyone a read-only link to a table, with your filters and columns.'
+---
+
+A share is a link like `share.tamery.app/…` that shows one table's rows to anyone who opens it, without a Tamery account. Viewers see it the way the table looks in Tamery and can scroll to load more rows, with the mouse or the keyboard (Tab into the table, arrows to move). They cannot edit or reorder anything, and the rows stay in the sort you set. Search engines and AI crawlers are told to keep shared links out of their results and training data, so only people you send the link to find it.
+
+## Share a table
+
+Sharing needs a Tamery account and a connection synced with **Full** (see [Security](/connections/security)), since Tamery's servers read the rows from your database each time the link refreshes.
+
+1. Open the table and set it up the way you want it seen: filters, hidden columns, column order and sort.
+2. Open the **⋯** menu in the table toolbar and choose **Share**.
+3. Enter a name and an optional description.
+4. Click **Share**. The link is copied.
+
+Before saving, Tamery checks that its servers can reach the database. A database on `localhost`, on a private network, behind a VPN or in a SQLite file can't be shared, and the dialog says why.
+
+The share shows the columns the table shows, in the same order, sorted the way the table is. With filters on, **Apply the table's filters** decides whether viewers see only the matching rows.
+
+| Option | What it does |
+| --- | --- |
+| **Refresh** | How long viewers see the same rows before Tamery reads them again: **Live**, **Every minute**, **Every hour** or **Every day**. An open page picks up new rows on its own until the viewer scrolls past the first rows. |
+| **Expires** | The link stops working after 1, 7 or 30 days, or never. |
+| **Max rows** | The most rows viewers can scroll through. Pick a preset (100, 500, 1,000, 5,000 or 10,000) or type your own number up to 10,000. Filter or sort the table so the rows that matter fall inside the limit. |
+| **Require a password** | Viewers enter the password once to open the link. It needs at least 4 characters. |
+
+## Several links for one table
+
+A table can have as many links as you need, each with its own filters, columns and sort: for example one link per customer, or one sorted by date and one by total. Change how the table looks and choose **Share** again to make another link.
+
+## Change or stop sharing
+
+Choose **Share** in the same menu to copy a link or change it. The dialog opens on the link saved with exactly what the table shows now; when the table has other links, the menu under the title switches between them and **New link** starts another. **Save changes** also stores the table's current filters, columns and sort in the link you picked, and the dialog says so when they differ.
+
+**Manage shares** in the dialog, or **Shares** in the account menu, opens [share.tamery.app](https://share.tamery.app), which lists every shared link once you sign in there with your Tamery account. A share whose rows stopped loading for viewers is marked there. Viewers of such a link see that the database is not answering, with **Try again** to load the rows once it is back. When only a later batch of rows fails, viewers keep the rows they have and get **Try again** at the bottom of the table. Click **Stop sharing** to turn a link off for everyone.
+
+Deleting a connection stops sharing its tables.
+
+## Limits
+
+The Free plan keeps up to 3 links at a time; expired links don't count, so a link that ran out frees its place. [Pro](/account/plans) has no limit.
+
+Viewers can scroll through as many rows as the link's **Max rows** allows, up to 10,000. Sort or filter the table so the rows that matter come first.

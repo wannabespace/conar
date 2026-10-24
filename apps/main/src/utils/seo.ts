@@ -13,12 +13,14 @@ export const seo = ({
   keywords,
   image,
   path = '/',
+  article,
 }: {
   title: string
   description?: string
   image?: string
   keywords?: string
   path?: string
+  article?: { publishedTime: string; author: string }
 }) => {
   const pageUrl = absoluteUrl(path)
   const imageUrl = image ? absoluteUrl(image) : undefined
@@ -39,7 +41,16 @@ export const seo = ({
       ? [{ content: description, name: 'twitter:description' }]
       : []),
     ...(imageUrl ? [{ content: imageUrl, name: 'twitter:image' }] : []),
-    { content: 'website', property: 'og:type' },
+    { content: article ? 'article' : 'website', property: 'og:type' },
+    ...(article
+      ? [
+          {
+            content: article.publishedTime,
+            property: 'article:published_time',
+          },
+          { content: article.author, property: 'article:author' },
+        ]
+      : []),
     { content: 'en_US', property: 'og:locale' },
     { content: 'Tamery', property: 'og:site_name' },
     { content: pageUrl, property: 'og:url' },

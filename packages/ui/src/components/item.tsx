@@ -32,7 +32,7 @@ const ItemSeparator = ({
 const smallItemInsetClassName = 'px-3.5'
 
 const itemVariants = cva(
-  `group/item focus-visible:focus-ring [a]:hover:bg-accent flex w-full flex-wrap items-center rounded-2xl border text-sm transition-colors duration-100 outline-none [a]:transition-colors`,
+  `group/item focus-visible:focus-ring [a]:hover:bg-accent [a]:text-foreground flex w-full flex-wrap items-center rounded-2xl border text-sm transition-colors duration-100 outline-none [a]:transition-colors`,
   {
     defaultVariants: {
       size: 'default',

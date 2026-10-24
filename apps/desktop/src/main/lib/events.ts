@@ -7,6 +7,7 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
+import type { CopyDatabaseRequest } from '../copy-database'
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
@@ -49,6 +50,13 @@ export const electron = {
     },
   },
   connectionLinks,
+  copyDatabase: {
+    cancel: queryProcess.cancelCopy,
+    start: ((request: CopyDatabaseRequest, event?: IpcMainInvokeEvent) =>
+      queryProcess.copyDatabase(request, (line) =>
+        event?.sender.send('copyDatabase.log', { copyId: request.id, line })
+      )) as (request: CopyDatabaseRequest) => Promise<null>,
+  },
   deviceEncryption,
   localDatabases: {
     find: async () => {
@@ -92,20 +100,29 @@ export const electron = {
   },
 }
 
-const registerHandlers = (prefix: string, value: unknown) => {
+const registerHandlers = (
+  prefix: string,
+  value: unknown,
+  isAppUrl: (url: string) => boolean
+) => {
   if (typeof value === 'function') {
-    ipcMain.handle(prefix, (event, arg) => value(arg, event))
+    ipcMain.handle(prefix, (event, arg) => {
+      if (!isAppUrl(event.senderFrame?.url ?? '')) {
+        throw new Error(`Refused ${prefix} from outside the app`)
+      }
+      return value(arg, event)
+    })
     return
   }
   if (value && typeof value === 'object') {
     for (const [key, nested] of Object.entries(value)) {
-      registerHandlers(`${prefix}.${key}`, nested)
+      registerHandlers(`${prefix}.${key}`, nested, isAppUrl)
     }
   }
 }
 
-export const initElectronEvents = () => {
+export const initElectronEvents = (isAppUrl: (url: string) => boolean) => {
   for (const [key, value] of Object.entries(electron)) {
-    registerHandlers(key, value)
+    registerHandlers(key, value, isAppUrl)
   }
 }

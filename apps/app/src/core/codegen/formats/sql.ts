@@ -1,5 +1,7 @@
+import { coldDialect } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
+import { quoteIdentifier } from '@tamery/sql/identifier'
 
 import { explicitIndexes } from '~/core/codegen/indexes'
 import type { QueryParams, SchemaParams } from '~/core/codegen/types'
@@ -7,10 +9,8 @@ import {
   formatValue,
   isSerialDefault,
   isSingleColumnConstraint,
-  quoteIdentifier,
 } from '~/core/codegen/utils'
 import { referentialActionClauses } from '~/core/queries/constraints/shape'
-import { coldDialects } from '~/core/runtime/dialects'
 import type { Column } from '~/core/table/cell/utils'
 import { formatSql } from '~/utils/formatter'
 
@@ -54,7 +54,7 @@ export const generateQuerySQL = ({
   filters,
   dialect,
 }: QueryParams) => {
-  const db = coldDialects[dialect]()
+  const db = coldDialect(dialect)
   const base = db
     .withSchema(schema)
     .$extendTables<{ [table]: Record<string, unknown> }>()
@@ -88,7 +88,7 @@ const formatEnumType = (
   if (dialect === Dialect.MSSQL) {
     return enumName
   }
-  return `"${enumName}"${c.isArray ? '[]' : ''}`
+  return `${quoteIdentifier(enumName, dialect)}${c.isArray ? '[]' : ''}`
 }
 
 const formatScalarType = (c: Column, dialect: Dialect) => {
@@ -261,7 +261,7 @@ export const generateSchemaSQL = ({
   const enumStatements = Array.from(
     usedEnums,
     ([name, values]) =>
-      `CREATE TYPE "${name}" AS ENUM (${values.map((v) => formatValue(v, dialect)).join(', ')});`
+      `CREATE TYPE ${quoteIdentifier(name, dialect)} AS ENUM (${values.map((v) => formatValue(v, dialect)).join(', ')});`
   )
   const indexStatements = explicitIndexes({
     columns,

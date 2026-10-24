@@ -11,6 +11,8 @@ const openClient = (connectionString: string) => {
   const protocol = searchParams.get('tls') === '0' ? 'http' : 'https'
   return createClient({
     authToken: password || undefined,
+    // The cloud proxy checks only the first host; a followed redirect would reach its private network.
+    fetch: (request: Request) => fetch(request, { redirect: 'error' }),
     intMode: 'bigint',
     url: `${protocol}://${host}${port ? `:${port}` : ''}`,
   })

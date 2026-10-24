@@ -2,6 +2,7 @@ import { ArrowTurnBackwardIcon, SaveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { cardClass } from '@tamery/ui/components/card.utils'
+import { IconEmpty } from '@tamery/ui/components/custom/icon-empty'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Drawer,
@@ -20,7 +21,6 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { PaneEmpty } from '~/components/pane-empty'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 /** `title` is not masked here; the caller masks its user values. */
@@ -94,7 +94,7 @@ export const StagedReviewDrawer = ({
       </DrawerHeader>
       <div className="flex min-h-0 flex-1 flex-col overflow-auto p-3">
         {count === 0 ? (
-          <PaneEmpty
+          <IconEmpty
             icon={SaveIcon}
             title="Nothing to review"
             description={emptyDescription}

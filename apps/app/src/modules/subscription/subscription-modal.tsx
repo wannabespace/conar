@@ -19,8 +19,11 @@ import { accountUrl } from '~/lib/urls'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
 export const SubscriptionModal = () => {
-  const isSubscriptionDialogOpen = useSubscription(appStore, {
-    selector: (state) => state.isSubscriptionDialogOpen,
+  const { isSubscriptionDialogOpen, upgradeHint } = useSubscription(appStore, {
+    selector: (state) => ({
+      isSubscriptionDialogOpen: state.isSubscriptionDialogOpen,
+      upgradeHint: state.upgradeHint,
+    }),
   })
   const { subscription } = useUserSubscription()
 
@@ -37,14 +40,18 @@ export const SubscriptionModal = () => {
   return (
     <Dialog
       open={isSubscriptionDialogOpen}
-      onOpenChange={setIsSubscriptionDialogOpen}
+      onOpenChange={(open) => setIsSubscriptionDialogOpen(open)}
     >
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>This one is part of Pro</DialogTitle>
+          <DialogTitle>
+            {upgradeHint
+              ? 'You reached the Free limit'
+              : 'This one is part of Pro'}
+          </DialogTitle>
           <DialogDescription>
-            Upgrade to unlock this and everything else. Tamery is independent,
-            and your support is what keeps it going.
+            {upgradeHint ??
+              'Upgrade to unlock this and everything else. Tamery is independent, and your support is what keeps it going.'}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

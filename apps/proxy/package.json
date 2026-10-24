@@ -9,13 +9,16 @@
   },
   "dependencies": {
     "@orpc/client": "catalog:",
+    "@orpc/ratelimit": "catalog:",
     "@orpc/server": "catalog:",
     "@tamery/api": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
     "@tamery/shared": "workspace:*",
     "arktype": "catalog:",
+    "better-result": "catalog:",
     "hono": "catalog:",
+    "lru-cache": "catalog:",
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {

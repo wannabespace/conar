@@ -25,9 +25,11 @@
           "features/table-browser",
           "features/sql-editor",
           "features/export",
+          "features/copy-database",
           "features/ai-assistant",
           "features/schema-visualizer",
           "features/definitions",
+          "features/sharing",
           "features/workspaces",
           "features/command-palette"
         ]

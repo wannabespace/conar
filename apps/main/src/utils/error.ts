@@ -1,4 +1,8 @@
 import { ORPCError } from '@orpc/client'
+import {
+  SESSION_EXPIRED_MESSAGE,
+  UNKNOWN_ERROR_MESSAGE,
+} from '@tamery/shared/constants'
 import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
@@ -7,7 +11,7 @@ import { posthog } from '~/lib/posthog'
 const getErrorMessage = (error: unknown) =>
   (error instanceof ORPCError && error.message) ||
   (error as Error)?.message ||
-  'Our server is practicing its meditation. Please, try again later.'
+  UNKNOWN_ERROR_MESSAGE
 
 const isUnauthorizedError = (error: unknown) =>
   error instanceof ORPCError && error.code === 'UNAUTHORIZED'
@@ -37,7 +41,7 @@ export const handleError = async (error: unknown) => {
   }
 
   if (isSessionExpiredError(error)) {
-    toast.info('Your session has expired. Please, sign in again.', {
+    toast.info(SESSION_EXPIRED_MESSAGE, {
       id: 'session-expired',
     })
     void posthog.reset()

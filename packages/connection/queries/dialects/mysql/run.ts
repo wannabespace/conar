@@ -18,7 +18,7 @@ export const inlineValues = (
   escape: (value: unknown) => string
 ) => {
   let index = 0
-  return sql.replace(placeholderRegex, (token) => {
+  return sql.replaceAll(placeholderRegex, (token) => {
     if (token !== '?') {
       return token
     }

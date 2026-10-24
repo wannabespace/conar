@@ -76,7 +76,9 @@ const app = new Hono<{
         ) {
           return origin
         }
-        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin)
+        return (origin.startsWith('https://') &&
+          origin.endsWith('.tamery.app')) ||
+          allowedOrigins.includes(origin)
           ? origin
           : null
       },
