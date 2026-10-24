@@ -22,10 +22,31 @@ export enum Dialect {
   MongoDB = 'mongodb',
 }
 
-export type SqlDialect = Exclude<Dialect, Dialect.MongoDB>
+export enum QueryLanguage {
+  SQL = 'sql',
+  Mongosh = 'mongosh',
+}
+
+// `satisfies`, never `: Record<…>`: the annotation would widen each value to
+// `QueryLanguage` and collapse `SqlDialect` to every dialect.
+export const dialectLanguage = {
+  [Dialect.Postgres]: QueryLanguage.SQL,
+  [Dialect.MySQL]: QueryLanguage.SQL,
+  [Dialect.MSSQL]: QueryLanguage.SQL,
+  [Dialect.ClickHouse]: QueryLanguage.SQL,
+  [Dialect.SQLite]: QueryLanguage.SQL,
+  [Dialect.Oracle]: QueryLanguage.SQL,
+  [Dialect.MongoDB]: QueryLanguage.Mongosh,
+} satisfies Record<Dialect, QueryLanguage>
+
+export type SqlDialect = {
+  [K in Dialect]: (typeof dialectLanguage)[K] extends QueryLanguage.SQL
+    ? K
+    : never
+}[Dialect]
 
 export const isSqlDialect = (dialect: Dialect): dialect is SqlDialect =>
-  dialect !== Dialect.MongoDB
+  dialectLanguage[dialect] === QueryLanguage.SQL
 
 const DIALECT_OF_TYPE: Record<ConnectionType, Dialect> = {
   [ConnectionType.ClickHouse]: Dialect.ClickHouse,
