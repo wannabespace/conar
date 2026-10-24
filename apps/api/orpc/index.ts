@@ -1,7 +1,6 @@
 import { ORPCError, os } from '@orpc/server'
 import { db } from '@tamery/db'
 import { members } from '@tamery/db/schema'
-import { infisical } from '@tamery/infisical'
 import { SESSION_NOT_FOUND_MESSAGE } from '@tamery/shared/constants'
 import { decrypt } from '@tamery/shared/crypto-node'
 import type { Permissions } from '@tamery/shared/permissions'
@@ -10,8 +9,8 @@ import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
 import { createPermix } from 'permix/orpc'
 
-import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
+import { userEncryptionKey } from '~/lib/encryption-key'
 import { redis } from '~/lib/redis'
 import { getSubscription } from '~/lib/subscription'
 
@@ -37,10 +36,7 @@ export const getWorkspaceSecret = memoize(
       throw new ORPCError('NOT_FOUND', { message: 'Workspace not found' })
     }
 
-    return infisical.secrets.get({
-      name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-      path: ['users', owner.userId],
-    })
+    return userEncryptionKey.get(owner.userId)
   },
   { maxAge: 5 * 60 * 1000 }
 )
