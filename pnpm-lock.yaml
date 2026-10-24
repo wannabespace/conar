@@ -781,10 +781,10 @@ importers:
         version: 2.2.9
       better-auth:
         specifier: 'catalog:'
-        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
+        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
       better-auth-harmony:
         specifier: 'catalog:'
-        version: 1.3.2(better-auth@1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17))
+        version: 1.3.2(better-auth@1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17))
       date-fns:
         specifier: 'catalog:'
         version: 4.4.0
@@ -950,7 +950,7 @@ importers:
         version: 2.2.9
       better-auth:
         specifier: 'catalog:'
-        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
+        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
       better-result:
         specifier: 'catalog:'
         version: 3.0.1
@@ -1104,7 +1104,7 @@ importers:
         version: 4.13.13
       mongodb:
         specifier: 'catalog:'
-        version: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10)
+        version: 7.7.0(socks@2.8.10)
       mssql:
         specifier: 'catalog:'
         version: 12.7.11(supports-color@7.2.0)
@@ -1201,7 +1201,7 @@ importers:
         version: 7.0.0
       mongodb:
         specifier: 'catalog:'
-        version: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10)
+        version: 7.7.0(socks@2.8.10)
       mssql:
         specifier: 'catalog:'
         version: 12.7.11(supports-color@7.2.0)
@@ -1383,7 +1383,7 @@ importers:
         version: 2.2.9
       better-auth:
         specifier: 'catalog:'
-        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
+        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
       better-result:
         specifier: 'catalog:'
         version: 3.0.1
@@ -1529,7 +1529,7 @@ importers:
         version: link:../../packages/configs
       better-auth:
         specifier: 'catalog:'
-        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
+        version: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
 
   apps/share:
     dependencies:
@@ -1743,7 +1743,7 @@ importers:
         version: 1.15.6
       mongodb:
         specifier: 'catalog:'
-        version: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10)
+        version: 7.7.0(socks@2.8.10)
       mssql:
         specifier: 'catalog:'
         version: 12.7.11(supports-color@7.2.0)
@@ -3161,9 +3161,6 @@ packages:
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
     engines: {node: '>=6.0.0'}
-
-  '@jridgewell/sourcemap-codec@1.5.5':
-    resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
@@ -11244,12 +11241,12 @@ snapshots:
       '@better-auth/core': 1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0)
       '@better-auth/utils': 0.5.0
 
-  '@better-auth/mongo-adapter@1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))':
+  '@better-auth/mongo-adapter@1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)(mongodb@7.7.0(socks@2.8.10))':
     dependencies:
       '@better-auth/core': 1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0)
       '@better-auth/utils': 0.5.0
     optionalDependencies:
-      mongodb: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10)
+      mongodb: 7.7.0(socks@2.8.10)
 
   '@better-auth/prisma-adapter@1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)':
     dependencies:
@@ -11954,8 +11951,6 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/resolve-uri@3.1.2': {}
-
-  '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
 
@@ -14639,20 +14634,20 @@ snapshots:
       jsonpointer: 5.0.1
       leven: 3.1.0
 
-  better-auth-harmony@1.3.2(better-auth@1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)):
+  better-auth-harmony@1.3.2(better-auth@1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)):
     dependencies:
-      better-auth: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
+      better-auth: 1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17)
       libphonenumber-js: 1.13.8
       mailchecker: 6.0.20
       validator: 13.15.35
 
-  better-auth@1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17):
+  better-auth@1.7.12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(drizzle-kit@1.0.0-rc.5-ab785fc)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))(mongodb@7.7.0(socks@2.8.10))(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(solid-js@1.9.17):
     dependencies:
       '@better-auth/core': 1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0)
       '@better-auth/drizzle-adapter': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)(drizzle-orm@1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7))
       '@better-auth/kysely-adapter': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)(kysely@0.29.7)
       '@better-auth/memory-adapter': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)
-      '@better-auth/mongo-adapter': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)(mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10))
+      '@better-auth/mongo-adapter': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)(mongodb@7.7.0(socks@2.8.10))
       '@better-auth/prisma-adapter': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)
       '@better-auth/telemetry': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(@opentelemetry/api@1.9.1)(better-call@1.4.4(zod@4.6.7))(jose@6.2.3)(kysely@0.29.7)(nanostores@1.4.0))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)
       '@better-auth/utils': 0.5.0
@@ -14669,7 +14664,7 @@ snapshots:
       '@tanstack/react-start': 1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(rollup@4.65.0)(supports-color@7.2.0)(vite@8.3.5(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       drizzle-kit: 1.0.0-rc.5-ab785fc
       drizzle-orm: 1.0.0-rc.5-ab785fc(@libsql/client@0.18.0)(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.9)(bun-types@1.4.3)(mysql2@3.24.6(@types/node@26.1.1))(pg@8.23.1)(valibot@1.5.0(typescript@7.0.2))(zod@4.6.7)
-      mongodb: 7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10)
+      mongodb: 7.7.0(socks@2.8.10)
       mysql2: 3.24.6(@types/node@26.1.1)
       pg: 8.23.1
       react: 19.3.1
@@ -16701,7 +16696,7 @@ snapshots:
 
   magic-string@0.30.21:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
 
   magic-string@1.4.3:
     dependencies:
@@ -17252,13 +17247,12 @@ snapshots:
       '@types/whatwg-url': 13.0.0
       whatwg-url: 14.2.0
 
-  mongodb@7.7.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.10):
+  mongodb@7.7.0(socks@2.8.10):
     dependencies:
       '@mongodb-js/saslprep': 1.6.1
       bson: 7.3.3
       mongodb-connection-string-url: 7.0.2
     optionalDependencies:
-      '@aws-sdk/credential-providers': 3.993.0
       socks: 2.8.10
 
   moo@0.5.3: {}
