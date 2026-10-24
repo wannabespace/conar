@@ -223,7 +223,10 @@ export const StatementControls = ({
                 finalFocus: () => editorRef.current?.focus(),
               }}
               items={() =>
-                statementMenuItems(actions, getCapabilities(dialect).explain)
+                statementMenuItems(
+                  actions,
+                  getCapabilities(dialect).flags.includes('explain')
+                )
               }
             />
             <TooltipContent>More actions</TooltipContent>

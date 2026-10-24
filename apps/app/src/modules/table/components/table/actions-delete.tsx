@@ -28,6 +28,7 @@ import { createRef, useImperativeHandle, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
@@ -69,6 +70,7 @@ export const DeleteRowsDialog = ({
   table: string
   schema: string
 }) => {
+  const names = useObjectNames()
   const { connectionResource, dialect } = useRouteContext()
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState<PrimaryKeys[]>([])
@@ -99,7 +101,7 @@ export const DeleteRowsDialog = ({
   const sameValueRows = reached - rows.length
 
   const only = reached === 1 ? rows[0] : undefined
-  const noun = only ? 'row' : plural(reached, 'row')
+  const noun = only ? names.row : plural(reached, names.row)
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     meta: { event: 'rows_deleted' },
@@ -112,11 +114,13 @@ export const DeleteRowsDialog = ({
       }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onError: (error) => {
-      toast.error('Failed to delete rows', { description: error.message })
+      toast.error(`Failed to delete ${names.row}s`, {
+        description: error.message,
+      })
     },
     onSuccess: () => {
       const { filters, orderBy } = store.get()
-      toast.success(`${plural(reached, 'row')} successfully deleted`)
+      toast.success(`${plural(reached, names.row)} successfully deleted`)
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
@@ -150,13 +154,13 @@ export const DeleteRowsDialog = ({
           <AlertDialogDescription>
             {only ? (
               <>
-                The row with{' '}
+                The {names.row} with{' '}
                 <span data-mask className="text-foreground font-medium">
                   {rowLabel(only)}
                 </span>
               </>
             ) : (
-              'These rows'
+              `These ${names.row}s`
             )}{' '}
             will be removed from{' '}
             <span data-mask className="text-foreground font-medium">
@@ -164,7 +168,7 @@ export const DeleteRowsDialog = ({
             </span>
             . This cannot be undone.
             {sameValueRows > 0 &&
-              ` ${plural(sameValueRows, 'other row')} with the same values ${sameValueRows === 1 ? 'goes' : 'go'} too.`}
+              ` ${plural(sameValueRows, `other ${names.row}`)} with the same values ${sameValueRows === 1 ? 'goes' : 'go'} too.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {!only && (
@@ -208,6 +212,7 @@ export const ActionsDelete = ({
   keys: string[]
   rows: GridRow[]
 }) => {
+  const names = useObjectNames()
   const sessionStore = useTableSessionStore()
   const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
@@ -235,7 +240,7 @@ export const ActionsDelete = ({
           <NumberFlow spinTiming={{ duration: 200 }} value={ticked} />)
         </span>
       </TooltipTrigger>
-      <TooltipContent>Delete selected rows</TooltipContent>
+      <TooltipContent>Delete selected {names.row}s</TooltipContent>
     </Tooltip>
   )
 }

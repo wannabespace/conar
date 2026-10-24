@@ -24,6 +24,7 @@ import type { CSSProperties } from 'react'
 import { useDeferredValue, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { columnStatsQuery } from '~/core/queries/rows/column-stats'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { valueCountsQuery } from '~/core/queries/rows/value-counts'
@@ -84,6 +85,7 @@ const StatsBody = ({
   schema: string
   table: string
 }) => {
+  const names = useObjectNames()
   const { columns } = useTableColumnsContext()
   const { connectionResource, dialect } = useRouteContext()
   const [search, setSearch] = useState('')
@@ -137,7 +139,11 @@ const StatsBody = ({
             <span className="whitespace-nowrap">
               <Count label="unique of" value={number.format(stats.unique)} />{' '}
               <Count
-                label={filters.length > 0 ? 'filtered rows' : 'rows'}
+                label={
+                  filters.length > 0
+                    ? `filtered ${names.row}s`
+                    : `${names.row}s`
+                }
                 value={number.format(stats.total)}
               />
             </span>

@@ -36,11 +36,15 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useDeferredValue, useState } from 'react'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
+import { useObjectNames } from '~/core/catalog/names'
 import type { ExportDataProps } from '~/core/export/export-data'
 import { ExportData } from '~/core/export/export-data'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import type { ResultSet } from '~/core/queries/connection/custom'
+import { getQueryLanguage } from '~/core/runtime/language'
 import { useIsAnonymous } from '~/lib/auth'
+import { plural } from '~/utils/plural'
 
 import { useRunnerActions } from '../lib/actions'
 import type { FailedRunnerResult, RunnerResult } from '../lib/run'
@@ -131,6 +135,7 @@ const ResultBody = ({
   rows: Record<string, unknown>[]
 }) => {
   const { dialect } = useRouteContext()
+  const { names } = getCapabilities(dialect)
 
   if (result.pending) {
     return running
@@ -164,7 +169,7 @@ const ResultBody = ({
         title={
           affected === null
             ? 'Statement finished'
-            : `${affected} ${affected === 1 ? 'row' : 'rows'} affected`
+            : `${plural(affected, names.row)} affected`
         }
         description="The statement returned no result set"
       />
@@ -175,7 +180,7 @@ const ResultBody = ({
       <IconEmpty
         icon={TableIcon}
         title="Nothing matches"
-        description="No row contains the search text"
+        description={`No ${names.row} contains the search text`}
       />
     )
   }
@@ -186,8 +191,9 @@ const ResultMeta = ({
   result: { duration, pending, set, stopped },
 }: {
   result: RunnerResult
-}) =>
-  stopped || pending ? null : (
+}) => {
+  const names = useObjectNames()
+  return stopped || pending ? null : (
     <span className="text-2xs text-muted-foreground flex items-center gap-1.5 tabular-nums">
       {set && set.columns.length > 0 && (
         <>
@@ -195,15 +201,18 @@ const ResultMeta = ({
             <NumberFlow value={set.rows.length} />
             {set.truncated && '+'}
           </span>
-          {set.rows.length === 1 ? 'row' : 'rows'}
+          {set.rows.length === 1 ? names.row : `${names.row}s`}
           <span className="text-muted-foreground/40">·</span>
         </>
       )}
       {duration.toFixed(0)} ms
     </span>
   )
+}
 
 export const RunnerResults = () => {
+  const { dialect } = useRouteContext()
+  const { names } = getCapabilities(dialect)
   const tab = useRunnerTab()
   const { data: run } = useQuery(runnerResultsOptions(tab))
   const results = run?.results ?? []
@@ -226,7 +235,7 @@ export const RunnerResults = () => {
         <IconEmpty
           icon={PlayIcon}
           title="No results yet"
-          description="Run a statement to see its rows here"
+          description={`Run a statement to see its ${names.row}s here`}
         />
       </div>
     )
@@ -287,7 +296,7 @@ export const RunnerResults = () => {
                       padding="popup"
                       className="max-h-80"
                       code={payload}
-                      language="sql"
+                      language={getQueryLanguage(dialect).highlight}
                       size="xs"
                       wrap
                     />
@@ -306,7 +315,7 @@ export const RunnerResults = () => {
             <SearchInput
               size="xs"
               className="w-40"
-              placeholder="Search rows"
+              placeholder={`Search ${names.row}s`}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               onClear={() => setSearch('')}

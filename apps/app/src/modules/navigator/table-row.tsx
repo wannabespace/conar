@@ -26,7 +26,8 @@ import { useSubscription } from 'seitu/react'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { Link } from '~/components/link'
-import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
+import { getCapabilities } from '~/core/catalog/capabilities'
+import { getTableTypeLabel, tableTypeIcon } from '~/core/catalog/table-type'
 import { focusGridWhenReady } from '~/core/table/pending-grid-focus'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
@@ -56,7 +57,7 @@ export const TableRow = ({
   onRename?: () => void
   onDrop: () => void
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const router = useRouter()
   const tabId = tableTabId(row.schema, row.table.name)
   const isActive = useParams({
@@ -161,7 +162,9 @@ export const TableRow = ({
               <Indicator className="-top-0.5 -right-0.5 size-1.5" />
             )}
           </TooltipTrigger>
-          <TooltipContent>{tableTypeLabel[row.table.type]}</TooltipContent>
+          <TooltipContent>
+            {getTableTypeLabel(dialect, row.table.type)}
+          </TooltipContent>
         </Tooltip>
         <span
           className={cn(
@@ -187,7 +190,7 @@ export const TableRow = ({
             <SidebarMenuAction
               showOnHover={!row.pinned}
               tabIndex={-1}
-              aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
+              aria-label={`${row.pinned ? 'Unpin' : 'Pin'} ${getCapabilities(dialect).names.table}`}
               className="group/pin right-6"
               onClick={() =>
                 pinnedTable.toggle(

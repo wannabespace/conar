@@ -25,7 +25,9 @@ export const offeredFilters = (dialect: Dialect) =>
   FILTERS_GROUPED.map((group) => ({
     ...group,
     filters: group.filters.filter(
-      (filter) => filter.operator !== 'ilike' || getCapabilities(dialect).ilike
+      (filter) =>
+        filter.operator !== 'ilike' ||
+        getCapabilities(dialect).flags.includes('ilike')
     ),
   }))
 

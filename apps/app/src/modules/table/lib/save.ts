@@ -5,6 +5,7 @@ import { Result } from 'better-result'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { insertQuery } from '~/core/queries/rows/insert'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { setQuery } from '~/core/queries/rows/set'
@@ -152,7 +153,7 @@ export const useSaveStaged = ({
         submitted.drafts.map((draft) => primaryKeysKey(draft.primaryKeys))
       )
       toast.success(
-        `Saved ${plural(rows.size + submitted.newRows.length, 'row')}`
+        `Saved ${plural(rows.size + submitted.newRows.length, getCapabilities(dialect).names.row)}`
       )
       onSaved()
     },

@@ -4,6 +4,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
@@ -23,6 +24,7 @@ export const TableRefresh = ({
 }: {
   params: TableParams
 }) => {
+  const names = useObjectNames()
   const { connectionResource } = useRouteContext()
   const store = tablePageStore({ id: connectionResource.id, schema, table })
   const { filters, orderBy } = useSubscription(store, {
@@ -73,7 +75,7 @@ export const TableRefresh = ({
 
   return (
     <TabRefreshButton
-      label="Refresh table"
+      label={`Refresh ${names.table}`}
       refreshing={isUserRefreshing}
       onRefresh={handleRefresh}
     />

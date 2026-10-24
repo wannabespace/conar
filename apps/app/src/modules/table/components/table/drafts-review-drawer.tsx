@@ -4,6 +4,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { useObjectNames } from '~/core/catalog/names'
 import { DiscardButton } from '~/core/drafts/discard-button'
 import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
@@ -48,6 +49,7 @@ export const DraftsReviewDrawer = ({
   onSave: () => void
   onDiscardAll: () => void
 }) => {
+  const names = useObjectNames()
   const { connectionResource, dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const columnsById = new Map(columns.map((column) => [column.id, column]))
@@ -120,7 +122,7 @@ export const DraftsReviewDrawer = ({
           </span>
         </>
       }
-      emptyDescription="Edit cells in the table and the changes will show up here."
+      emptyDescription={`Edit cells in the ${names.table} and the changes will show up here.`}
       onDiscardAll={onDiscardAll}
       onSubmit={onSave}
       submit={{
@@ -149,10 +151,10 @@ export const DraftsReviewDrawer = ({
         {newRows.map((newRow) => (
           <ChangeGroup
             key={newRow.id}
-            title="New row"
+            title={`New ${names.row}`}
             action={
               <DiscardButton
-                label="Discard row"
+                label={`Discard ${names.row}`}
                 onClick={() => newRowsActions(sessionStore).discard(newRow.id)}
                 disabled={isSaving}
               />
@@ -186,7 +188,7 @@ export const DraftsReviewDrawer = ({
               }
               action={
                 <DiscardButton
-                  label="Discard row"
+                  label={`Discard ${names.row}`}
                   onClick={() => discardRow(primaryKeys)}
                   disabled={isSaving}
                 />

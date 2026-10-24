@@ -9,14 +9,9 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { isSqlDialect } from '@tamery/shared/enums/connection-type'
 import type { Statement } from '@tamery/sql'
-import {
-  destructiveKeywords,
-  dialects,
-  splitStatements,
-  statementAt,
-  unwrapTransaction,
-} from '@tamery/sql'
+import { statementAt } from '@tamery/sql'
 import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import {
@@ -49,6 +44,7 @@ import { useCollections } from '~/core/collections'
 import { wrapExplainQuery } from '~/core/connection/utils'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcuts } from '~/core/keyboard/use-shortcuts'
+import { getQueryLanguage } from '~/core/runtime/language'
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { formatSql } from '~/utils/formatter'
 
@@ -159,7 +155,7 @@ export const Runner = () => {
   const { data: lastRun } = useQuery(runnerResultsOptions(tab))
   const running = lastRun?.running ?? false
   const statements = runnerStatements({ ...tab, dialect })
-  const spec = dialects[dialect]
+  const language = getQueryLanguage(dialect)
   const aiEdit = useAiEdit({ connectionType: connection.type, editorRef })
 
   const current = (): {
@@ -177,9 +173,9 @@ export const Runner = () => {
       const offset = model.getOffsetAt(selection.getStartPosition())
       return {
         range: selection,
-        statements: splitStatements(model.getValueInRange(selection), spec).map(
-          (statement) => toRunnerStatement(statement, offset)
-        ),
+        statements: language
+          .split(model.getValueInRange(selection))
+          .map((statement) => toRunnerStatement(statement, offset)),
       }
     }
     const statement = statementAt(
@@ -233,9 +229,8 @@ export const Runner = () => {
         statements: pending,
         tabId: tab.tabId,
       })
-    const keywords = destructiveKeywords(
-      pending.map((statement) => statement.text).join(';\n'),
-      spec
+    const keywords = language.destructive(
+      pending.map((statement) => statement.text).join(';\n')
     )
     if (keywords.length > 0) {
       alertDialogRef.current?.confirm(keywords, start)
@@ -258,7 +253,7 @@ export const Runner = () => {
       run(
         current().statements.flatMap((statement) =>
           (
-            unwrapTransaction(statement.source, spec)?.statements ?? [
+            language.unwrapTransaction(statement.source)?.statements ?? [
               statement.source,
             ]
           ).map((text) => ({ ...statement, text: wrapExplainQuery(text) }))
@@ -357,21 +352,23 @@ export const Runner = () => {
             )}
             <TransactionControls disabled={running} />
             <div className="ml-auto flex shrink-0 items-center gap-1">
-              <ToolbarButton label="Format" onClick={() => actions.format()}>
-                <ContentSwitch
-                  active={formatted}
-                  activeContent={
-                    <HugeiconsIcon
-                      icon={Tick02Icon}
-                      strokeWidth={2}
-                      className="text-success"
-                    />
-                  }
-                  onSwitchEnd={() => setFormatted(false)}
-                >
-                  <HugeiconsIcon icon={BrushCleaningIcon} strokeWidth={2} />
-                </ContentSwitch>
-              </ToolbarButton>
+              {isSqlDialect(dialect) && (
+                <ToolbarButton label="Format" onClick={() => actions.format()}>
+                  <ContentSwitch
+                    active={formatted}
+                    activeContent={
+                      <HugeiconsIcon
+                        icon={Tick02Icon}
+                        strokeWidth={2}
+                        className="text-success"
+                      />
+                    }
+                    onSwitchEnd={() => setFormatted(false)}
+                  >
+                    <HugeiconsIcon icon={BrushCleaningIcon} strokeWidth={2} />
+                  </ContentSwitch>
+                </ToolbarButton>
+              )}
               <ToolbarButton
                 label="Save tab as query"
                 shortcut={<ShortcutKbd shortcut="saveTab" />}

@@ -13,6 +13,7 @@ import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { useObjectNames } from '~/core/catalog/names'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
 
@@ -30,6 +31,7 @@ export const TablesPanel = ({
   onCreateTable: (schema?: string) => void
 }) => {
   const { connectionResource, dialect } = useRouteContext()
+  const names = useObjectNames()
   const { tabId: activeTabId } = useParams({ strict: false })
   const store = navigatorStore(connectionResource.id)
   const search = useSubscription(store, {
@@ -75,7 +77,7 @@ export const TablesPanel = ({
     pinnedTables,
     schemas: tablesAndSchemas?.schemas ?? [],
     search,
-    showSchemaRows: getCapabilities(dialect).schemas,
+    showSchemaRows: getCapabilities(dialect).flags.includes('schemas'),
   })
 
   const toggleSchema = (name: string) => {
@@ -114,7 +116,7 @@ export const TablesPanel = ({
           size="sm"
           data-mask
           placeholder="Search"
-          aria-label="Search tables"
+          aria-label={`Search ${names.table}s`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
@@ -131,7 +133,7 @@ export const TablesPanel = ({
           <TooltipTrigger
             render={
               <RefreshButton
-                aria-label="Refresh tables"
+                aria-label={`Refresh ${names.table}s`}
                 variant="outline-muted"
                 size="icon-sm"
                 onClick={() => refetch()}
@@ -141,7 +143,11 @@ export const TablesPanel = ({
           />
           <TooltipContent side="bottom">
             <div className="flex flex-col gap-0.5">
-              <span>Refresh tables and schemas</span>
+              <span>
+                Refresh {names.table}s
+                {getCapabilities(dialect).flags.includes('schemas') &&
+                  ' and schemas'}
+              </span>
               <span className="opacity-70">
                 Last updated:{' '}
                 {dataUpdatedAt

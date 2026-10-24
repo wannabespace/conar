@@ -4,6 +4,7 @@ import {
   SproutIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { isSqlDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
@@ -55,11 +56,11 @@ export const TableToolbar = ({
   table,
   schema,
 }: {
-  onAddColumn: () => void
+  onAddColumn?: () => void
   table: string
   schema: string
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -201,11 +202,13 @@ export const TableToolbar = ({
                 Code
               </DropdownMenuItem>
             )}
-            <ShareMenuItem
-              schema={schema}
-              table={table}
-              onOpen={() => setShareOpen(true)}
-            />
+            {isSqlDialect(dialect) && (
+              <ShareMenuItem
+                schema={schema}
+                table={table}
+                onOpen={() => setShareOpen(true)}
+              />
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
         <Dialog open={shareOpen} onOpenChange={setShareOpen}>

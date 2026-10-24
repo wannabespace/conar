@@ -1,7 +1,7 @@
 import { Monaco } from '@tamery/monaco/editor'
 import {
   SQL_COMPLETION_OPTIONS,
-  sqlLanguageIds,
+  languageIds,
 } from '@tamery/monaco/sql-language'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -130,7 +130,7 @@ export const RunnerEditor = ({
       <Monaco
         data-mask
         ref={editorRef}
-        language={sqlLanguageIds[dialect]}
+        language={languageIds[dialect]}
         value={query}
         onChange={(next) => setQuery(store, next)}
         className="size-full"

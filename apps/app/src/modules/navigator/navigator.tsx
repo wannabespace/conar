@@ -1,5 +1,6 @@
 import { PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { isSqlDialect } from '@tamery/shared/enums/connection-type'
 import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -52,7 +53,7 @@ const createTable = (schema?: string) =>
   createTableDialogRef.current?.create(schema)
 
 export const Navigator = () => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { tabId } = useParams({ strict: false })
   const navigator = useSubscription(
     getNavigatorStore(connectionResource.id, tabId)
@@ -84,7 +85,7 @@ export const Navigator = () => {
       <NavigatorFooter />
       <CreateTableDialog />
       <CreateSchemaDialog />
-      <CreateViewDialog />
+      {isSqlDialect(dialect) && <CreateViewDialog dialect={dialect} />}
     </div>
   )
 }
